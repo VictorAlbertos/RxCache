@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">RxJavaCache</string>
+    <string name="user_name">Username on Github</string>
+    <string name="recreate_activity">Recreate activity</string>
+    <string name="login">Login</string>
+    <string name="logout">Logout</string>
+    <string name="refresh">Refresh</string>
+    <string name="profile">Profile</string>
+</resources>

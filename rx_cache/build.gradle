@@ -1,0 +1,48 @@
+apply plugin: 'java'
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    dependencies {
+        classpath "net.ltgt.gradle:gradle-apt-plugin:0.4"
+    }
+}
+
+apply plugin: 'idea'
+apply plugin: "net.ltgt.apt"
+apply plugin: 'maven'
+
+group = 'com.github.VictorAlbertos'
+
+configurations {
+    provided
+}
+
+sourceSets {
+    main {
+        compileClasspath += configurations.provided
+        runtimeClasspath += configurations.provided
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    apt "com.google.dagger:dagger-compiler:2.0.1"
+    compile "com.google.dagger:dagger:2.0.1"
+
+    provided "org.glassfish:javax.annotation:10.0-b28"
+    compile "io.reactivex:rxjava:1.1.0"
+    compile "net.tribe7.seeds:seeds-cache:16.0.1"
+    compile 'com.google.code.gson:gson:2.5'
+
+    testCompile "junit:junit:4.12"
+}

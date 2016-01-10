@@ -1,0 +1,110 @@
+/*
+ * Copyright 2015 Victor Albertos
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.rx_cache.internal;
+
+import org.junit.Test;
+
+import io.rx_cache.Invalidator;
+import io.rx_cache.PolicyHeapCache;
+import io.rx_cache.Reply;
+import io.rx_cache.Source;
+import io.rx_cache.internal.common.BaseTest;
+import rx.Observable;
+import rx.observers.TestSubscriber;
+
+import static junit.framework.TestCase.assertNotNull;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertThat;
+
+/**
+ * Created by victor on 28/12/15.
+ */
+public class ProxyProvidersTest extends BaseTest {
+    private ProxyProviders proxyProvidersUT;
+    private Cache cacheMock;
+
+    @Override public void setUp() {
+        super.setUp();
+        cacheMock = new Cache(PolicyHeapCache.MODERATE, disk);
+    }
+
+    @Test public void When_First_Retrieve_Then_Source_Retrieved_Is_Cloud() {
+        TestSubscriber subscriberMock = getSubscriberCompleted(false, false, true, true, false);
+        Reply<Mock> reply = (Reply) subscriberMock.getOnNextEvents().get(0);
+        assertThat(reply.getSource(), is(Source.CLOUD));
+        assertNotNull(reply.getData());
+    }
+
+    @Test public void When_Invalidate_Cache_Then_Source_Retrieved_Is_Cloud() {
+        TestSubscriber subscriberMock = getSubscriberCompleted(true, true, true, true, false);
+        Reply<Mock> reply = (Reply) subscriberMock.getOnNextEvents().get(0);
+        assertThat(reply.getSource(), is(Source.CLOUD));
+        assertNotNull(reply.getData());
+    }
+
+    @Test public void When_No_Invalidate_Cache_Then_Source_Retrieved_Is_Not_Cloud() {
+        TestSubscriber subscriberMock = getSubscriberCompleted(true, false, true, true, false);
+        Reply<Mock> reply = (Reply) subscriberMock.getOnNextEvents().get(0);
+        assertThat(reply.getSource(), is(not(Source.CLOUD)));
+        assertNotNull(reply.getData());
+    }
+
+    @Test public void When_No_Reply_Then_Get_Mock() {
+        TestSubscriber subscriberMock = getSubscriberCompleted(true, false, false, true, false);
+        Mock mock = (Mock) subscriberMock.getOnNextEvents().get(0);
+        assertNotNull(mock);
+    }
+
+    @Test public void When_No_Loader_And_Not_Cache_Then_Get_Throw_Exception() {
+        TestSubscriber subscriberMock = getSubscriberCompleted(false, false, false, false, false);
+        assertThat(subscriberMock.getOnErrorEvents().size(), is(1));
+        assertThat(subscriberMock.getOnNextEvents().size(), is(0));
+    }
+
+    @Test public void When_No_Loader_And_Cache_Expired_Then_Get_Throw_Exception() {
+        TestSubscriber subscriberMock = getSubscriberCompleted(true, true, false, false, false);
+        assertThat(subscriberMock.getOnErrorEvents().size(), is(1));
+        assertThat(subscriberMock.getOnNextEvents().size(), is(0));
+    }
+
+    @Test public void When_No_Loader_And_Cache_Expired_But_Use_Expired_Data_If_Loader_Not_Available_Then_Get_Mock() {
+        proxyProvidersUT = new ProxyProviders(null, cacheMock, false);
+
+        TestSubscriber subscriberMock = getSubscriberCompleted(true, true, false, false, true);
+        assertThat(subscriberMock.getOnErrorEvents().size(), is(0));
+        assertThat(subscriberMock.getOnNextEvents().size(), is(1));
+    }
+
+    private TestSubscriber getSubscriberCompleted(boolean hasCache, final boolean invalidateCache, boolean detailResponse, boolean loader, boolean useExpiredDataIfLoaderNotAvailable) {
+        Observable observable = loader ? Observable.just(new Mock("message")) : Observable.just(null);
+        ProxyTranslator.Translation translation = new ProxyTranslator.Translation("mockKey", "", observable, 0, detailResponse, new Invalidator() {
+            @Override public boolean invalidate() {
+                return invalidateCache;
+            }
+        });
+
+        if (hasCache) cacheMock.save("mockKey", "", new Mock("message"), 0);
+
+        TestSubscriber subscriberMock = new TestSubscriber<>();
+        proxyProvidersUT = new ProxyProviders(null, cacheMock, useExpiredDataIfLoaderNotAvailable);
+        proxyProvidersUT.getMethodImplementation(translation).subscribe(subscriberMock);
+
+        subscriberMock.awaitTerminalEvent();
+        return subscriberMock;
+    }
+}
