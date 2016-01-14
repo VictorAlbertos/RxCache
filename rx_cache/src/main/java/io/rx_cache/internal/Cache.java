@@ -17,13 +17,13 @@
 package io.rx_cache.internal;
 
 
-import net.tribe7.common.annotations.VisibleForTesting;
-import net.tribe7.common.cache.CacheBuilder;
-import net.tribe7.common.cache.CacheLoader;
-import net.tribe7.common.cache.LoadingCache;
-import net.tribe7.common.cache.RemovalCause;
-import net.tribe7.common.cache.RemovalListener;
-import net.tribe7.common.cache.RemovalNotification;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalCause;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -117,7 +117,8 @@ final class Cache {
         records.invalidateAll();
     }
 
-    @VisibleForTesting void mockMemoryDestroyed() {
+    @VisibleForTesting
+    void mockMemoryDestroyed() {
         mockMemoryDestroyed = true;
         clearAll();
         mockMemoryDestroyed = false;

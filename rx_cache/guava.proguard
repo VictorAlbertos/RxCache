@@ -1,0 +1,13 @@
+-dontoptimize
+-dontobfuscate
+
+-keep class com.google.common.annotations.** { *; }
+
+-keep class com.google.common.cache.** { *; }
+
+-keep class com.google.j2objc.annotations.** { *; }
+
+-keep class org.codehaus.mojo.animal_sniffer.** { *; }
+
+-dontwarn com.google.common.**
+

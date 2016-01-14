@@ -1,4 +1,6 @@
 apply plugin: 'java'
+apply plugin: 'base'
+
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
@@ -13,6 +15,7 @@ buildscript {
 
     dependencies {
         classpath "net.ltgt.gradle:gradle-apt-plugin:0.4"
+        classpath 'net.sf.proguard:proguard-gradle:4.11'
     }
 }
 
@@ -41,8 +44,59 @@ dependencies {
 
     provided "org.glassfish:javax.annotation:10.0-b28"
     compile "io.reactivex:rxjava:1.1.0"
-    compile "net.tribe7.seeds:seeds-cache:16.0.1"
     compile 'com.google.code.gson:gson:2.5'
 
     testCompile "junit:junit:4.12"
+}
+
+configurations {
+    injar
+    libjar
+}
+
+String getClassesJar() {
+    def javaHome = System.properties.'java.home'
+    def candidates = ["$javaHome/lib/rt.jar", "$javaHome/bin/rt.jar", "$javaHome/../Classes/classes.jar"]
+    def found
+
+    candidates.find {
+        if (new File(it).exists()) {
+            found = it
+            return true
+        }
+        return false;
+    }
+
+    if (!found) {
+        throw new GradleException('unable to determine java runtime classes it is none of the expected: ' + candidates)
+    }
+
+    found
+}
+
+def guavaVersion = '19.0'
+def classesJar = files(getClassesJar())
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    injar "com.google.guava:guava:${guavaVersion}"
+    libjar 'com.google.code.findbugs:jsr305:3.0.0'
+    libjar classesJar
+}
+
+/**
+ * Run proguard to shrink guava to only include the stuff we specify and its dependencies.
+ */
+task createCustomGuava(type: proguard.gradle.ProGuardTask) {
+    injars configurations.injar.files
+    libraryjars configurations.libjar.files
+    outjars file("libs/guava_${guavaVersion}_base.jar")
+    configuration "guava.proguard"
+}
+
+artifacts {
+    'default'(file: createCustomGuava.outputs.files.singleFile, builtBy: createCustomGuava)
 }

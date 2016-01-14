@@ -16,7 +16,8 @@
 
 package io.rx_cache.internal;
 
-import net.tribe7.common.annotations.VisibleForTesting;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
