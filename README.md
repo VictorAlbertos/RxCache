@@ -28,10 +28,11 @@ repositories {
 }
 ```
 
-And add the dependency in the build.gradle of the module:
+And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos:RxCache:0.1"
+    compile "com.github.VictorAlbertos:RxCache:0.4.1"
+    compile "io.reactivex:rxjava:1.0.14"
 }
 ```
 

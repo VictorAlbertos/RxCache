@@ -41,8 +41,8 @@ dependencies {
 
     apt "com.google.dagger:dagger-compiler:2.0.1"
     compile "com.google.dagger:dagger:2.0.1"
+    compile "org.glassfish:javax.annotation:10.0-b28"
 
-    provided "org.glassfish:javax.annotation:10.0-b28"
     compile "io.reactivex:rxjava:1.1.0"
     compile 'com.google.code.gson:gson:2.5'
 
