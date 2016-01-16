@@ -15,7 +15,7 @@ configurations {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile project(':rx_cache')
+    compile "com.github.VictorAlbertos:RxCache:0.3"
 
     provided "org.glassfish:javax.annotation:10.0-b28"
     compile "io.reactivex:rxjava:1.0.14"
