@@ -107,4 +107,21 @@ public class ProxyProvidersTest extends BaseTest {
         subscriberMock.awaitTerminalEvent();
         return subscriberMock;
     }
+
+    @Test public void When_Get_Method_Implementation_Is_Called_Retrieve_Operation_Is_Deferred_Until_Subscription() {
+        ProxyTranslator.Translation translation = new ProxyTranslator.Translation("mockKey", "", Observable.just(new Mock("message")), 0, false, new Invalidator() {
+            @Override public boolean invalidate() {
+                return false;
+            }
+        });
+
+        TestSubscriber subscriberMock = new TestSubscriber<>();
+        proxyProvidersUT = new ProxyProviders(null, cacheMock, true);
+        Observable<Object> oData = proxyProvidersUT.getMethodImplementation(translation);
+        assertThat(cacheMock.recordsSize(), is(0l));
+
+        oData.subscribe(subscriberMock);
+        subscriberMock.awaitTerminalEvent();
+        assertThat(cacheMock.recordsSize(), is(1l));
+    }
 }

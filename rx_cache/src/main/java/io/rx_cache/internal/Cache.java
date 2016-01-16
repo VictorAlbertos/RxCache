@@ -128,4 +128,8 @@ final class Cache {
         long amountMemoryBytes  = Runtime.getRuntime().totalMemory();
         return (long) (amountMemoryBytes * policyHeapCache.getPercentageReserved());
     }
+
+    @VisibleForTesting long recordsSize() {
+        return records.size();
+    }
 }
