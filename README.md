@@ -126,7 +126,7 @@ interface Providers {
     }
 ```
 
-Nevertheless, there are complete examples for [Android](https://github.com/VictorAlbertos/RxCache/tree/master/sample_android) and [Java](https://github.com/VictorAlbertos/RxCache/tree/master/sample_java) applications.
+Nevertheless, there are complete examples for [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).
 
 Configure general behaviour
 ---------------------------
@@ -202,10 +202,12 @@ Also, it is recommended to use this Android Application class to provide a uniqu
 
 In order execute the Observable on a new thread, and emit results through onNext on the main UI thread, you should use the built in methods provided by [RxAndroid](https://github.com/ReactiveX/RxAndroid).
 
+Check the [Android example](https://github.com/VictorAlbertos/RxCacheSamples/tree/master/sample_android)
+
 Retrofit
 -----------
 RxCache is the perfect match for Retrofit to create a repository of auto-managed-caching data pointing to endpoints. 
-You can check an [example](https://github.com/VictorAlbertos/RxCache/blob/master/sample_data/src/main/java/sample_data/Repository.java) of RxCache and Retrofit working together.
+You can check an [example](https://github.com/VictorAlbertos/RxCacheSamples/blob/master/sample_data/src/main/java/sample_data/Repository.java) of RxCache and Retrofit working together.
 
 Internals
 ---------
