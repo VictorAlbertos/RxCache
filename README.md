@@ -32,7 +32,7 @@ And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
     compile "com.github.VictorAlbertos:RxCache:0.4.2"
-    compile "io.reactivex:rxjava:1.0.14"
+    compile "io.reactivex:rxjava:1.1.0"
 }
 ```
 
