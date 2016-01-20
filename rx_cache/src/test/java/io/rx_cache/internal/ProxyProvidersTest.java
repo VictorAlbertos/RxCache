@@ -92,7 +92,7 @@ public class ProxyProvidersTest extends BaseTest {
 
     private TestSubscriber getSubscriberCompleted(boolean hasCache, final boolean invalidateCache, boolean detailResponse, boolean loader, boolean useExpiredDataIfLoaderNotAvailable) {
         Observable observable = loader ? Observable.just(new Mock("message")) : Observable.just(null);
-        ProxyTranslator.Translation translation = new ProxyTranslator.Translation("mockKey", "", observable, 0, detailResponse, new Invalidator() {
+        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", observable, 0, detailResponse, new Invalidator() {
             @Override public boolean invalidate() {
                 return invalidateCache;
             }
@@ -102,14 +102,14 @@ public class ProxyProvidersTest extends BaseTest {
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
         proxyProvidersUT = new ProxyProviders(null, cacheMock, useExpiredDataIfLoaderNotAvailable);
-        proxyProvidersUT.getMethodImplementation(translation).subscribe(subscriberMock);
+        proxyProvidersUT.getMethodImplementation(configProvider).subscribe(subscriberMock);
 
         subscriberMock.awaitTerminalEvent();
         return subscriberMock;
     }
 
     @Test public void When_Get_Method_Implementation_Is_Called_Retrieve_Operation_Is_Deferred_Until_Subscription() {
-        ProxyTranslator.Translation translation = new ProxyTranslator.Translation("mockKey", "", Observable.just(new Mock("message")), 0, false, new Invalidator() {
+        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", Observable.just(new Mock("message")), 0, false, new Invalidator() {
             @Override public boolean invalidate() {
                 return false;
             }
@@ -117,7 +117,7 @@ public class ProxyProvidersTest extends BaseTest {
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
         proxyProvidersUT = new ProxyProviders(null, cacheMock, true);
-        Observable<Object> oData = proxyProvidersUT.getMethodImplementation(translation);
+        Observable<Object> oData = proxyProvidersUT.getMethodImplementation(configProvider);
         assertThat(cacheMock.recordsSize(), is(0l));
 
         oData.subscribe(subscriberMock);

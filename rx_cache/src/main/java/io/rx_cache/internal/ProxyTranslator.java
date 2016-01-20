@@ -30,97 +30,88 @@ import io.rx_cache.Reply;
 import rx.Observable;
 
 final class ProxyTranslator {
+    private Method method;
+    private Object[] objectsMethod;
 
     @Inject ProxyTranslator() {}
 
-    Translation processMethod(Method method, Object[] objectsMethod) {
-        return new Translator(method, objectsMethod).getTranslation();
+    ConfigProvider processMethod(Method method, Object[] objectsMethod) {
+        this.method = method;
+        this.objectsMethod = objectsMethod;
+        return new ConfigProvider(getKey(), getDynamicKey(), getLoaderObservable(),
+                getLifeTimeCache(), requiredDetailResponse(), invalidator());
     }
 
-    private static class Translator {
-        protected final Method method;
-        protected final Object[] objectsMethod;
+    protected String getKey() {
+        return method.getName();
+    }
 
-        public Translator(Method method, Object[] objectsMethod) {
-            this.method = method;
-            this.objectsMethod = objectsMethod;
-        }
+    protected String getDynamicKey() {
+        Object page = annotationConverter(DynamicKey.class, Object.class);
+        return page != null ? page.toString() : "";
+    }
 
-        Translation getTranslation() {
-            return new Translation(getKey(), getDynamicKey(), getLoaderObservable(), getLifeTimeCache(), requiredDetailResponse(), invalidator());
-        }
+    protected Observable getLoaderObservable() {
+        Observable observable = annotationConverter(Loader.class, Observable.class);
+        if (observable != null) return observable;
 
-        protected String getKey() {
-            return method.getName();
-        }
+        String errorMessage = method.getName() + Locale.NOT_OBSERVABLE_LOADER_FOUND;
+        throw new IllegalArgumentException(errorMessage);
+    }
 
-        protected String getDynamicKey() {
-            Object page = annotationConverter(DynamicKey.class, Object.class);
-            return page != null ? page.toString() : "";
-        }
+    protected long getLifeTimeCache() {
+        LifeCache lifeCache = method.getAnnotation(LifeCache.class);
+        if (lifeCache == null) return 0;
+        return lifeCache.timeUnit().toMillis(lifeCache.duration());
+    }
 
-        protected Observable getLoaderObservable() {
-            Observable observable = annotationConverter(Loader.class, Observable.class);
-            if (observable != null) return observable;
-
-            String errorMessage = method.getName() + Locale.NOT_OBSERVABLE_LOADER_FOUND;
+    protected boolean requiredDetailResponse() {
+        if (method.getReturnType() != Observable.class) {
+            String errorMessage = method.getName() + Locale.INVALID_RETURN_TYPE;
             throw new IllegalArgumentException(errorMessage);
         }
 
-        protected long getLifeTimeCache() {
-            LifeCache lifeCache = method.getAnnotation(LifeCache.class);
-            if (lifeCache == null) return 0;
-            return lifeCache.timeUnit().toMillis(lifeCache.duration());
+        return method.getGenericReturnType().toString().contains(Reply.class.getName());
+    }
+
+    protected Invalidator invalidator() {
+        Invalidator invalidateCache = annotationConverter(InvalidateCache.class, Invalidator.class);
+        if (invalidateCache != null) return invalidateCache;
+        else return new Invalidator() {
+            @Override public boolean invalidate() {
+                return false;
+            }
+        };
+    }
+
+    protected <T> T annotationConverter(Class candidate, Class<T> expectedCast) {
+        int indexObjectForAnnotation = -1;
+        Annotation[][] annotations = method.getParameterAnnotations();
+
+        for (int i = 0; i < annotations.length; i++) {
+            Annotation[] annotation = annotations[i];
+            if (annotation.length == 0) continue;
+            if (annotation[0].annotationType() != candidate) continue;
+
+            if (indexObjectForAnnotation != -1) throw new IllegalArgumentException(Locale.NOT_MORE_THAN_ONE_ANNOTATION_TYPE + candidate.getName());
+            else indexObjectForAnnotation = i;
         }
 
-        protected boolean requiredDetailResponse() {
-            if (method.getReturnType() != Observable.class) {
-                String errorMessage = method.getName() + Locale.INVALID_RETURN_TYPE;
-                throw new IllegalArgumentException(errorMessage);
-            }
-
-            return method.getGenericReturnType().toString().contains(Reply.class.getName());
-        }
-
-        protected Invalidator invalidator() {
-            Invalidator invalidateCache = annotationConverter(InvalidateCache.class, Invalidator.class);
-            if (invalidateCache != null) return invalidateCache;
-            else return new Invalidator() {
-                @Override public boolean invalidate() {
-                    return false;
-                }
-            };
-        }
-
-        protected <T> T annotationConverter(Class candidate, Class<T> expectedCast) {
-            int indexObjectForAnnotation = -1;
-            Annotation[][] annotations = method.getParameterAnnotations();
-
-            for (int i = 0; i < annotations.length; i++) {
-                Annotation[] annotation = annotations[i];
-                if (annotation.length == 0) continue;
-                if (annotation[0].annotationType() != candidate) continue;
-
-                if (indexObjectForAnnotation != -1) throw new IllegalArgumentException(Locale.NOT_MORE_THAN_ONE_ANNOTATION_TYPE + candidate.getName());
-                else indexObjectForAnnotation = i;
-            }
-
-            try {
-                return expectedCast.cast(objectsMethod[indexObjectForAnnotation]);
-            } catch (Exception ignore) {
-                return null;
-            }
+        try {
+            return expectedCast.cast(objectsMethod[indexObjectForAnnotation]);
+        } catch (Exception ignore) {
+            return null;
         }
     }
 
-    final static class Translation {
+    final static class ConfigProvider {
         private final String key, dynamicKey;
         private final Observable loaderObservable;
         private final long lifeTime;
         private final boolean requiredDetailedResponse;
         private final Invalidator invalidator;
 
-        Translation(String key, String dynamicKey, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, Invalidator invalidator) {
+        ConfigProvider(String key, String dynamicKey, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, Invalidator invalidator) {
             this.key = key;
             this.dynamicKey = dynamicKey;
             this.loaderObservable = loaderObservable;

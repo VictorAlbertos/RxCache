@@ -44,64 +44,64 @@ final class ProxyProviders implements InvocationHandler {
     }
 
     @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        final ProxyTranslator.Translation translation = proxyTranslator.processMethod(method, args);
-        return getMethodImplementation(translation);
+        final ProxyTranslator.ConfigProvider configProvider = proxyTranslator.processMethod(method, args);
+        return getMethodImplementation(configProvider);
     }
 
-    @VisibleForTesting Observable<Object> getMethodImplementation(final ProxyTranslator.Translation translation) {
+    @VisibleForTesting Observable<Object> getMethodImplementation(final ProxyTranslator.ConfigProvider configProvider) {
         return Observable.defer(new Func0<Observable<Object>>() {
             @Override public Observable<Object> call() {
-                return getData(translation);
+                return getData(configProvider);
             }
         });
     }
 
-    private Observable<Object> getData(final ProxyTranslator.Translation translation) {
-        return Observable.just(cache.retrieve(translation.getKey(), translation.getDynamicKey(), useExpiredDataIfLoaderNotAvailable))
+    private Observable<Object> getData(final ProxyTranslator.ConfigProvider configProvider) {
+        return Observable.just(cache.retrieve(configProvider.getKey(), configProvider.getDynamicKey(), useExpiredDataIfLoaderNotAvailable))
                 .map(new Func1<Record, Observable<Reply>>() {
                     @Override public Observable<Reply> call(final Record record) {
-                        if (record != null && !translation.invalidator().invalidate())
+                        if (record != null && !configProvider.invalidator().invalidate())
                             return Observable.just(new Reply(record.getData(), record.getSource()));
 
-                        return getDataFromLoader(translation, record);
+                        return getDataFromLoader(configProvider, record);
                     }
                 }).flatMap(new Func1<Observable<Reply>, Observable<Object>>() {
                     @Override public Observable<Object> call(Observable<Reply> responseObservable) {
                         return responseObservable.map(new Func1<Reply, Object>() {
                             @Override public Object call(Reply reply) {
-                                return getReturnType(translation, reply);
+                                return getReturnType(configProvider, reply);
                             }
                         });
                     }
                 });
     }
 
-    private Observable<Reply> getDataFromLoader(final ProxyTranslator.Translation translation, final Record record) {
-        return translation.getLoaderObservable().map(new Func1() {
+    private Observable<Reply> getDataFromLoader(final ProxyTranslator.ConfigProvider configProvider, final Record record) {
+        return configProvider.getLoaderObservable().map(new Func1() {
             @Override public Reply call(Object data) {
                 if (data == null && useExpiredDataIfLoaderNotAvailable && record != null) {
                     return new Reply(record.getData(), record.getSource());
                 }
 
-                if (translation.invalidator() instanceof InvalidatorDynamicKey) {
-                    InvalidatorDynamicKey invalidatorDynamicKey = (InvalidatorDynamicKey) translation.invalidator();
+                if (configProvider.invalidator() instanceof InvalidatorDynamicKey) {
+                    InvalidatorDynamicKey invalidatorDynamicKey = (InvalidatorDynamicKey) configProvider.invalidator();
                     if (invalidatorDynamicKey.invalidate())
-                        cache.clearDynamicKey(translation.getKey(), invalidatorDynamicKey.dynamicKey().toString());
-                } else if (translation.invalidator().invalidate()) {
-                    cache.clear(translation.getKey());
+                        cache.clearDynamicKey(configProvider.getKey(), invalidatorDynamicKey.dynamicKey().toString());
+                } else if (configProvider.invalidator().invalidate()) {
+                    cache.clear(configProvider.getKey());
                 }
 
                 if (data == null)
-                    throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + translation.getKey());
+                    throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getKey());
 
-                cache.save(translation.getKey(), translation.getDynamicKey(), data, translation.getLifeTimeMillis());
+                cache.save(configProvider.getKey(), configProvider.getDynamicKey(), data, configProvider.getLifeTimeMillis());
                 return new Reply(data, Source.CLOUD);
             }
         });
     }
 
-    private Object getReturnType(ProxyTranslator.Translation translation, Reply reply) {
-        if (translation.requiredDetailedResponse()) {
+    private Object getReturnType(ProxyTranslator.ConfigProvider configProvider, Reply reply) {
+        if (configProvider.requiredDetailedResponse()) {
             return reply;
         } else {
             return reply.getData();

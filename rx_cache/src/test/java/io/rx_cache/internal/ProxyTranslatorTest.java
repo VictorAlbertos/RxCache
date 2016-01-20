@@ -43,27 +43,27 @@ public class ProxyTranslatorTest extends BaseTest {
 
     @Test public void Check_Basic_Method() throws NoSuchMethodException {
         Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocks", Observable.class);
-        ProxyTranslator.Translation translation = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
+        ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
 
-        assertThat(translation.getKey(), is("getMocks"));
-        assertNotNull(translation.getLoaderObservable());
-        assertThat(translation.getLifeTimeMillis(), is(0l));
-        assertThat(translation.invalidator().invalidate(), is(false));
-        assertThat(translation.requiredDetailedResponse(), is(false));
+        assertThat(configProvider.getKey(), is("getMocks"));
+        assertNotNull(configProvider.getLoaderObservable());
+        assertThat(configProvider.getLifeTimeMillis(), is(0l));
+        assertThat(configProvider.invalidator().invalidate(), is(false));
+        assertThat(configProvider.requiredDetailedResponse(), is(false));
     }
 
     @Test public void Check_Method_With_Life_Time_Defined() throws NoSuchMethodException {
         Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksLifeTimeMinutes", Observable.class);
-        ProxyTranslator.Translation translation = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
-        assertThat(translation.getLifeTimeMillis(), is(60000l));
+        ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
+        assertThat(configProvider.getLifeTimeMillis(), is(60000l));
 
         mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksLifeTimeSeconds", Observable.class);
-        translation = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
-        assertThat(translation.getLifeTimeMillis(), is(1000l));
+        configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
+        assertThat(configProvider.getLifeTimeMillis(), is(1000l));
 
         mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksLifeTimeMillis", Observable.class);
-        translation = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
-        assertThat(translation.getLifeTimeMillis(), is(65000l));
+        configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
+        assertThat(configProvider.getLifeTimeMillis(), is(65000l));
     }
 
     @Test(expected=IllegalArgumentException.class) public void When_Not_Loader_Defined_Throw_Exception() throws NoSuchMethodException {
@@ -73,9 +73,9 @@ public class ProxyTranslatorTest extends BaseTest {
 
     @Test public void When_Return_Response_Then_Required_Detail_Response_Is_True() throws NoSuchMethodException {
         Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksWithDetailResponse", Observable.class);
-        ProxyTranslator.Translation translation = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
+        ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
 
-        assertThat(translation.requiredDetailedResponse(), is(true));
+        assertThat(configProvider.requiredDetailedResponse(), is(true));
     }
 
     @Test(expected=IllegalArgumentException.class) public void When_Method_Not_Return_Observable_Then_Throw_Exception() throws NoSuchMethodException {
@@ -92,16 +92,16 @@ public class ProxyTranslatorTest extends BaseTest {
             }
         }};
 
-        ProxyTranslator.Translation translation = proxyTranslatorUT.processMethod(mockMethod, dataMethodInvalidate);
-        assertThat(translation.invalidator().invalidate(), is(true));
+        ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodInvalidate);
+        assertThat(configProvider.invalidator().invalidate(), is(true));
 
         Object[] dataMethodNoInvalidate = {Observable.just(null), new Invalidator() {
             @Override public boolean invalidate() {
                 return false;
             }
         }};
-        translation = proxyTranslatorUT.processMethod(mockMethod, dataMethodNoInvalidate);
-        assertThat(translation.invalidator().invalidate(), is(false));
+        configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodNoInvalidate);
+        assertThat(configProvider.invalidator().invalidate(), is(false));
     }
 
     @Test public void When_Invalidate_Cache_Dynamic_Key_Invalidate() throws NoSuchMethodException {
@@ -119,8 +119,8 @@ public class ProxyTranslatorTest extends BaseTest {
             }
         }};
 
-        ProxyTranslator.Translation translation = proxyTranslatorUT.processMethod(mockMethod, dataMethodInvalidate);
-        InvalidatorDynamicKey invalidatorDynamicKey = (InvalidatorDynamicKey) translation.invalidator();
+        ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodInvalidate);
+        InvalidatorDynamicKey invalidatorDynamicKey = (InvalidatorDynamicKey) configProvider.invalidator();
         assertThat(invalidatorDynamicKey.dynamicKey().toString(), is(dynamicKey));
         assertThat(invalidatorDynamicKey.invalidate(), is(true));
 
@@ -134,8 +134,8 @@ public class ProxyTranslatorTest extends BaseTest {
             }
         }};
 
-        translation = proxyTranslatorUT.processMethod(mockMethod, dataMethodNoInvalidate);
-        invalidatorDynamicKey = (InvalidatorDynamicKey) translation.invalidator();
+        configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodNoInvalidate);
+        invalidatorDynamicKey = (InvalidatorDynamicKey) configProvider.invalidator();
         assertThat(invalidatorDynamicKey.dynamicKey().toString(), is(dynamicKey));
         assertThat(invalidatorDynamicKey.invalidate(), is(false));
     }
@@ -144,9 +144,9 @@ public class ProxyTranslatorTest extends BaseTest {
         Object[] dataMethodPaginate = {Observable.just(null), 1};
 
         Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksPaginate", Observable.class, int.class);
-        ProxyTranslator.Translation translation = proxyTranslatorUT.processMethod(mockMethod, dataMethodPaginate);
+        ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodPaginate);
 
-        assertThat(translation.getDynamicKey(), is("1"));
+        assertThat(configProvider.getDynamicKey(), is("1"));
     }
 
 }
