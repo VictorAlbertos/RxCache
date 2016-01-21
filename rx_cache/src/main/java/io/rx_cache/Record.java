@@ -23,11 +23,11 @@ package io.rx_cache;
 public class Record<T> {
     private Source source;
     private final T data;
-    private final long expirationDate;
+    private final long timeAtWhichWasPersisted;
 
-    public Record(T data, long expirationDate) {
+    public Record(T data) {
         this.data = data;
-        this.expirationDate = expirationDate;
+        this.timeAtWhichWasPersisted = System.currentTimeMillis();
         this.source = Source.MEMORY;
     }
 
@@ -43,7 +43,7 @@ public class Record<T> {
         return data;
     }
 
-    public long getExpirationDate() {
-        return expirationDate;
+    public long getTimeAtWhichWasPersisted() {
+        return timeAtWhichWasPersisted;
     }
 }

@@ -57,7 +57,7 @@ final class ProxyProviders implements InvocationHandler {
     }
 
     private Observable<Object> getData(final ProxyTranslator.ConfigProvider configProvider) {
-        return Observable.just(cache.retrieve(configProvider.getKey(), configProvider.getDynamicKey(), useExpiredDataIfLoaderNotAvailable))
+        return Observable.just(cache.retrieve(configProvider.getKey(), configProvider.getDynamicKey(), useExpiredDataIfLoaderNotAvailable, configProvider.getLifeTimeMillis()))
                 .map(new Func1<Record, Observable<Reply>>() {
                     @Override public Observable<Reply> call(final Record record) {
                         if (record != null && !configProvider.invalidator().invalidate())
@@ -94,7 +94,7 @@ final class ProxyProviders implements InvocationHandler {
                 if (data == null)
                     throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getKey());
 
-                cache.save(configProvider.getKey(), configProvider.getDynamicKey(), data, configProvider.getLifeTimeMillis());
+                cache.save(configProvider.getKey(), configProvider.getDynamicKey(), data);
                 return new Reply(data, Source.CLOUD);
             }
         });

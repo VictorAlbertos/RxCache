@@ -98,7 +98,7 @@ public class ProxyProvidersTest extends BaseTest {
             }
         });
 
-        if (hasCache) cacheMock.save("mockKey", "", new Mock("message"), 0);
+        if (hasCache) cacheMock.save("mockKey", "", new Mock("message"));
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
         proxyProvidersUT = new ProxyProviders(null, cacheMock, useExpiredDataIfLoaderNotAvailable);

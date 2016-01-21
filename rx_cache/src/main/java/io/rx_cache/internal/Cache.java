@@ -66,7 +66,7 @@ final class Cache {
                 });
     }
 
-    <T> Record<T> retrieve(String key, String dynamicKey, boolean useExpiredDataIfLoaderNotAvailable) {
+    <T> Record<T> retrieve(String key, String dynamicKey, boolean useExpiredDataIfLoaderNotAvailable, long lifeTime) {
         key = key + PREFIX_DYNAMIC_KEY + dynamicKey;
 
         Record<T> record = records.getIfPresent(key);
@@ -83,8 +83,8 @@ final class Cache {
         }
 
         long now = System.currentTimeMillis();
-        long expiration = record.getExpirationDate();
-        if (expiration != 0 && now > expiration) {
+        long expirationDate = record.getTimeAtWhichWasPersisted() + lifeTime;
+        if (lifeTime != 0 && now > expirationDate) {
             clear(key);
             return useExpiredDataIfLoaderNotAvailable ? record : null;
         }
@@ -93,10 +93,9 @@ final class Cache {
     }
 
 
-    void save(String key, String dynamicKey, Object data, long lifeTimeMilli) {
+    void save(String key, String dynamicKey, Object data) {
         key = key + PREFIX_DYNAMIC_KEY + dynamicKey;
-        long expirationDate = lifeTimeMilli == 0 ? 0 : System.currentTimeMillis() + lifeTimeMilli;
-        Record record = new Record(data, expirationDate);
+        Record record = new Record(data);
         records.put(key, record);
         persistence.saveRecord(key, record);
     }
