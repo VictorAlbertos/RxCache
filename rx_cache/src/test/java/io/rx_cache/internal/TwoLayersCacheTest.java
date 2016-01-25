@@ -30,20 +30,20 @@ import static org.hamcrest.core.IsNull.nullValue;
 /**
  * Created by victor on 20/12/15.
  */
-public class CacheTest extends BaseTest {
-    private Cache cacheUT;
+public class TwoLayersCacheTest extends BaseTest {
+    private TwoLayersCache twoLayersCacheUT;
     private static final long ONE_SECOND_LIFE = 1000, THREE_SECOND_LIFE = 3000, MORE_THAN_ONE_SECOND_LIFE = 1250;
     private static final String KEY = "mock_key", PAGE = "", MOCK_VALUE = "mock_value";
 
     @Override public void setUp() {
         super.setUp();
-        cacheUT = new Cache(PolicyHeapCache.CONSERVATIVE, disk);
+        twoLayersCacheUT = new TwoLayersCache(PolicyHeapCache.CONSERVATIVE, disk);
     }
 
     @Test public void When_Save_And_Object_Not_Expired_And_Memory_Not_Destroyed_Retrieve_It_From_Memory() {
-        cacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
 
-        Record<Mock> record = cacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE + 1000);
+        Record<Mock> record = twoLayersCacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE + 1000);
         Mock mock = record.getData();
 
         assertThat(mock.getMessage(), is(MOCK_VALUE));
@@ -51,58 +51,58 @@ public class CacheTest extends BaseTest {
     }
 
     @Test public void When_Save_And_Record_Has_Not_Expired_And_Memory_Destroyed_Retrieve_It_From_Disk() {
-        cacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
-        cacheUT.mockMemoryDestroyed();
+        twoLayersCacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
+        twoLayersCacheUT.mockMemoryDestroyed();
 
-        Record<Mock> record = cacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE);
+        Record<Mock> record = twoLayersCacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE);
         Mock mock = record.getData();
 
         assertThat(mock.getMessage(), is(MOCK_VALUE));
         assertThat(record.getSource(), is(Source.PERSISTENCE));
 
-        record = cacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE);
+        record = twoLayersCacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE);
         assertThat(mock.getMessage(), is(MOCK_VALUE));
         assertThat(record.getSource(), is(Source.MEMORY));
     }
 
     @Test public void When_Save_And_Record_Has_Expired_Get_Null() {
-        cacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
-        Record<Mock> record = cacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE);
+        Record<Mock> record = twoLayersCacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE);
 
         assertThat(record, is(nullValue()));
     }
 
     @Test public void When_Save_And_Record_Has_Not_Expired_Date_Do_Not_Get_Null() {
-        cacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
-        Record<Mock> record = cacheUT.retrieve(KEY, PAGE, false, 0);
+        Record<Mock> record = twoLayersCacheUT.retrieve(KEY, PAGE, false, 0);
 
         assertThat(record.getData().getMessage(), is(MOCK_VALUE));
         assertThat(record.getSource(), is(Source.MEMORY));
 
-        cacheUT.mockMemoryDestroyed();
-        record = cacheUT.retrieve(KEY, PAGE, false, 0);
+        twoLayersCacheUT.mockMemoryDestroyed();
+        record = twoLayersCacheUT.retrieve(KEY, PAGE, false, 0);
         assertThat(record.getData().getMessage(), is(MOCK_VALUE));
         assertThat(record.getSource(), is(Source.PERSISTENCE));
     }
 
     @Test public void When_Save_And_Clear_Get_Null() {
-        cacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
-        cacheUT.clear(KEY);
-        Record<Mock> record = cacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE);
+        twoLayersCacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
+        twoLayersCacheUT.clear(KEY);
+        Record<Mock> record = twoLayersCacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE);
 
         assertThat(record, is(nullValue()));
     }
 
     @Test public void When_Save_And_Not_Clear_Pages_Get_All() {
-        cacheUT.save(KEY, "1", new Mock(MOCK_VALUE+1));
-        cacheUT.save(KEY, "2", new Mock(MOCK_VALUE+2));
-        cacheUT.save(KEY, "3", new Mock(MOCK_VALUE + 3));
+        twoLayersCacheUT.save(KEY, "1", new Mock(MOCK_VALUE+1));
+        twoLayersCacheUT.save(KEY, "2", new Mock(MOCK_VALUE+2));
+        twoLayersCacheUT.save(KEY, "3", new Mock(MOCK_VALUE + 3));
 
-        Record<Mock> record1 = cacheUT.retrieve(KEY, "1", false, ONE_SECOND_LIFE);
-        Record<Mock> record2 = cacheUT.retrieve(KEY, "2", false, ONE_SECOND_LIFE);
-        Record<Mock> record3 = cacheUT.retrieve(KEY, "3", false, ONE_SECOND_LIFE);
+        Record<Mock> record1 = twoLayersCacheUT.retrieve(KEY, "1", false, ONE_SECOND_LIFE);
+        Record<Mock> record2 = twoLayersCacheUT.retrieve(KEY, "2", false, ONE_SECOND_LIFE);
+        Record<Mock> record3 = twoLayersCacheUT.retrieve(KEY, "3", false, ONE_SECOND_LIFE);
 
         assertThat(record1.getData().getMessage(), is(MOCK_VALUE + 1));
         assertThat(record2.getData().getMessage(), is(MOCK_VALUE + 2));
@@ -110,56 +110,56 @@ public class CacheTest extends BaseTest {
     }
 
     @Test public void When_Save_Page_And_Re_Save_Page_Get_Last_Value() {
-        cacheUT.save(KEY, "1", new Mock(MOCK_VALUE + 1));
-        cacheUT.save(KEY, "1", new Mock(MOCK_VALUE + 2));
+        twoLayersCacheUT.save(KEY, "1", new Mock(MOCK_VALUE + 1));
+        twoLayersCacheUT.save(KEY, "1", new Mock(MOCK_VALUE + 2));
 
-        Record<Mock> record = cacheUT.retrieve(KEY, "1", false, ONE_SECOND_LIFE);
+        Record<Mock> record = twoLayersCacheUT.retrieve(KEY, "1", false, ONE_SECOND_LIFE);
 
         assertThat(record.getData().getMessage(), is(MOCK_VALUE+2));
     }
 
     @Test public void When_Save_And_Clear_Pages_Get_All_Null() {
-        cacheUT.save(KEY, "9g34ye__w$$crvgwhq$", new Mock(MOCK_VALUE));
-        cacheUT.save(KEY, "83fgyewbuh", new Mock(MOCK_VALUE));
-        cacheUT.save(KEY, "3:973h2uewnsaj", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(KEY, "9g34ye__w$$crvgwhq$", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(KEY, "83fgyewbuh", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(KEY, "3:973h2uewnsaj", new Mock(MOCK_VALUE));
 
-        cacheUT.clear(KEY);
+        twoLayersCacheUT.clear(KEY);
 
-        assertThat(cacheUT.retrieve(KEY, "9g34ye__w$$crvgwhq$", false, ONE_SECOND_LIFE), is(nullValue()));
-        assertThat(cacheUT.retrieve(KEY, "83fgyewbuh", false, ONE_SECOND_LIFE), is(nullValue()));
-        assertThat(cacheUT.retrieve(KEY, "3:973h2uewnsaj", false, ONE_SECOND_LIFE), is(nullValue()));
+        assertThat(twoLayersCacheUT.retrieve(KEY, "9g34ye__w$$crvgwhq$", false, ONE_SECOND_LIFE), is(nullValue()));
+        assertThat(twoLayersCacheUT.retrieve(KEY, "83fgyewbuh", false, ONE_SECOND_LIFE), is(nullValue()));
+        assertThat(twoLayersCacheUT.retrieve(KEY, "3:973h2uewnsaj", false, ONE_SECOND_LIFE), is(nullValue()));
     }
 
     @Test public void When_Save_And_Clear_One_Page_Get_Others() {
-        cacheUT.save(KEY, "9g34ye__w$$crvgwhq$", new Mock(MOCK_VALUE));
-        cacheUT.save(KEY, "83fgyewbuh", new Mock(MOCK_VALUE + 1));
-        cacheUT.save(KEY, "3:973h2uewnsaj", new Mock(MOCK_VALUE + 2));
+        twoLayersCacheUT.save(KEY, "9g34ye__w$$crvgwhq$", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(KEY, "83fgyewbuh", new Mock(MOCK_VALUE + 1));
+        twoLayersCacheUT.save(KEY, "3:973h2uewnsaj", new Mock(MOCK_VALUE + 2));
 
-        cacheUT.clearDynamicKey(KEY, "9g34ye__w$$crvgwhq$");
+        twoLayersCacheUT.clearDynamicKey(KEY, "9g34ye__w$$crvgwhq$");
 
-        assertThat(cacheUT.retrieve(KEY, "9g34ye__w$$crvgwhq$", false, ONE_SECOND_LIFE), is(nullValue()));
+        assertThat(twoLayersCacheUT.retrieve(KEY, "9g34ye__w$$crvgwhq$", false, ONE_SECOND_LIFE), is(nullValue()));
 
-        Record<Mock> record1 = cacheUT.retrieve(KEY, "83fgyewbuh", false, ONE_SECOND_LIFE);
+        Record<Mock> record1 = twoLayersCacheUT.retrieve(KEY, "83fgyewbuh", false, ONE_SECOND_LIFE);
         assertThat(record1.getData().getMessage(), is(MOCK_VALUE + 1));
 
-        Record<Mock> record2 = cacheUT.retrieve(KEY, "3:973h2uewnsaj", false, ONE_SECOND_LIFE);
+        Record<Mock> record2 = twoLayersCacheUT.retrieve(KEY, "3:973h2uewnsaj", false, ONE_SECOND_LIFE);
         assertThat(record2.getData().getMessage(), is(MOCK_VALUE + 2));
     }
 
     @Test public void When_Expiration_Date_Has_Been_Modified_Then_Reflect_This_Change() {
-        cacheUT.save(KEY, "1", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(KEY, "1", new Mock(MOCK_VALUE));
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
 
-        Record<Mock> record = cacheUT.retrieve(KEY, "1", false, THREE_SECOND_LIFE);
+        Record<Mock> record = twoLayersCacheUT.retrieve(KEY, "1", false, THREE_SECOND_LIFE);
         assertThat(record.getData().getMessage(), is(MOCK_VALUE));
 
-        record = cacheUT.retrieve(KEY, "1", false, ONE_SECOND_LIFE);
+        record = twoLayersCacheUT.retrieve(KEY, "1", false, ONE_SECOND_LIFE);
         assertThat(record, is(nullValue()));
 
-        record = cacheUT.retrieve(KEY, "1", false, THREE_SECOND_LIFE);
+        record = twoLayersCacheUT.retrieve(KEY, "1", false, THREE_SECOND_LIFE);
         assertThat(record.getData().getMessage(), is(MOCK_VALUE));
 
-        record = cacheUT.retrieve(KEY, "1", false, ONE_SECOND_LIFE);
+        record = twoLayersCacheUT.retrieve(KEY, "1", false, ONE_SECOND_LIFE);
         assertThat(record, is(nullValue()));
     }
 
@@ -176,8 +176,8 @@ public class CacheTest extends BaseTest {
     }
 
     private void checkPolicy(PolicyHeapCache policy) {
-        cacheUT = new Cache(policy, disk);
-        long maxCacheSizeBytes = cacheUT.maxCacheSizeBytes();
+        twoLayersCacheUT = new TwoLayersCache(policy, disk);
+        long maxCacheSizeBytes = twoLayersCacheUT.maxCacheSizeBytes();
 
         long amountMemoryBytes  = Runtime.getRuntime().totalMemory();
         long expectedMemory = (long) (amountMemoryBytes * policy.getPercentageReserved());

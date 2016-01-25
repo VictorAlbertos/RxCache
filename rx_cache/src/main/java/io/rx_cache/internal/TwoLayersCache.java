@@ -18,12 +18,8 @@ package io.rx_cache.internal;
 
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.cache.RemovalCause;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -34,36 +30,23 @@ import io.rx_cache.Record;
 import io.rx_cache.Source;
 
 @Singleton
-final class Cache {
+final class TwoLayersCache {
     private static final String PREFIX_DYNAMIC_KEY = "$_$_$";
     private final PolicyHeapCache policyHeapCache;
-    private final LoadingCache<String, Record> records;
+    private final Cache<String, Record> records;
     private final Persistence persistence;
     private boolean mockMemoryDestroyed;
 
-    @Inject public Cache(PolicyHeapCache policyHeapCache, Persistence persistence) {
+    @Inject public TwoLayersCache(PolicyHeapCache policyHeapCache, Persistence persistence) {
         this.policyHeapCache = policyHeapCache;
         this.persistence = persistence;
         this.records = initLoadingCache();
     }
 
-    private LoadingCache<String, Record> initLoadingCache() {
-        return CacheBuilder.newBuilder()
+    private com.google.common.cache.Cache<String, Record> initLoadingCache() {
+        return CacheBuilder.<String, Record>newBuilder()
                 .maximumSize(maxCacheSizeBytes())
-                .removalListener(new RemovalListener<String, Record>() {
-                    @Override public void onRemoval(RemovalNotification<String, Record> notification) {
-                        if (mockMemoryDestroyed) return;
-
-                        if (notification.getCause() == RemovalCause.EXPLICIT ||
-                                notification.getCause() == RemovalCause.REPLACED) {
-                            persistence.delete(notification.getKey());
-                        }
-                    }
-                }).build(new CacheLoader<String, Record>() {
-                    public Record load(String key) throws Exception {
-                        return persistence.retrieveRecord(key);
-                    }
-                });
+                .build();
     }
 
     <T> Record<T> retrieve(String key, String dynamicKey, boolean useExpiredDataIfLoaderNotAvailable, long lifeTime) {
@@ -75,8 +58,9 @@ final class Cache {
             record.setSource(Source.MEMORY);
         } else {
             try {
-                record = records.getUnchecked(key);
+                record = persistence.retrieveRecord(key);
                 record.setSource(Source.PERSISTENCE);
+                records.put(key, record);
             } catch (Exception ignore) {
                 return null;
             }
@@ -92,7 +76,6 @@ final class Cache {
         return record;
     }
 
-
     void save(String key, String dynamicKey, Object data) {
         key = key + PREFIX_DYNAMIC_KEY + dynamicKey;
         Record record = new Record(data);
@@ -103,13 +86,17 @@ final class Cache {
     void clear(final String key) {
         for (String composedKeyRecord : records.asMap().keySet()) {
             final String keyRecord = composedKeyRecord.substring(0, composedKeyRecord.lastIndexOf(PREFIX_DYNAMIC_KEY));
-            if (key.equals(keyRecord)) records.invalidate(composedKeyRecord);
+            if (key.equals(keyRecord)) {
+                records.invalidate(composedKeyRecord);
+                if (!mockMemoryDestroyed) persistence.delete(composedKeyRecord);
+            }
         }
     }
 
     void clearDynamicKey(String key, String dynamicKey) {
         key = key + PREFIX_DYNAMIC_KEY + dynamicKey;
         records.invalidate(key);
+        if (!mockMemoryDestroyed) persistence.delete(key);
     }
 
     void clearAll() {

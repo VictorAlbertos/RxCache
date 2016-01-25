@@ -36,11 +36,11 @@ import static org.junit.Assert.assertThat;
  */
 public class ProxyProvidersTest extends BaseTest {
     private ProxyProviders proxyProvidersUT;
-    private Cache cacheMock;
+    private TwoLayersCache twoLayersCacheMock;
 
     @Override public void setUp() {
         super.setUp();
-        cacheMock = new Cache(PolicyHeapCache.MODERATE, disk);
+        twoLayersCacheMock = new TwoLayersCache(PolicyHeapCache.MODERATE, disk);
     }
 
     @Test public void When_First_Retrieve_Then_Source_Retrieved_Is_Cloud() {
@@ -83,7 +83,7 @@ public class ProxyProvidersTest extends BaseTest {
     }
 
     @Test public void When_No_Loader_And_Cache_Expired_But_Use_Expired_Data_If_Loader_Not_Available_Then_Get_Mock() {
-        proxyProvidersUT = new ProxyProviders(null, cacheMock, false);
+        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, false);
 
         TestSubscriber subscriberMock = getSubscriberCompleted(true, true, false, false, true);
         assertThat(subscriberMock.getOnErrorEvents().size(), is(0));
@@ -98,10 +98,10 @@ public class ProxyProvidersTest extends BaseTest {
             }
         });
 
-        if (hasCache) cacheMock.save("mockKey", "", new Mock("message"));
+        if (hasCache) twoLayersCacheMock.save("mockKey", "", new Mock("message"));
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
-        proxyProvidersUT = new ProxyProviders(null, cacheMock, useExpiredDataIfLoaderNotAvailable);
+        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, useExpiredDataIfLoaderNotAvailable);
         proxyProvidersUT.getMethodImplementation(configProvider).subscribe(subscriberMock);
 
         subscriberMock.awaitTerminalEvent();
@@ -116,12 +116,12 @@ public class ProxyProvidersTest extends BaseTest {
         });
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
-        proxyProvidersUT = new ProxyProviders(null, cacheMock, true);
+        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, true);
         Observable<Object> oData = proxyProvidersUT.getMethodImplementation(configProvider);
-        assertThat(cacheMock.recordsSize(), is(0l));
+        assertThat(twoLayersCacheMock.recordsSize(), is(0l));
 
         oData.subscribe(subscriberMock);
         subscriberMock.awaitTerminalEvent();
-        assertThat(cacheMock.recordsSize(), is(1l));
+        assertThat(twoLayersCacheMock.recordsSize(), is(1l));
     }
 }

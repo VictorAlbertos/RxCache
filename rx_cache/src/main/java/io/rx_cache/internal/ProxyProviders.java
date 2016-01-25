@@ -34,12 +34,12 @@ import rx.functions.Func1;
 
 final class ProxyProviders implements InvocationHandler {
     private final ProxyTranslator proxyTranslator;
-    private final Cache cache;
+    private final TwoLayersCache twoLayersCache;
     private final Boolean useExpiredDataIfLoaderNotAvailable;
 
-    @Inject public ProxyProviders(ProxyTranslator proxyTranslator, Cache cache, Boolean useExpiredDataIfLoaderNotAvailable) {
+    @Inject public ProxyProviders(ProxyTranslator proxyTranslator, TwoLayersCache twoLayersCache, Boolean useExpiredDataIfLoaderNotAvailable) {
         this.proxyTranslator = proxyTranslator;
-        this.cache = cache;
+        this.twoLayersCache = twoLayersCache;
         this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
     }
 
@@ -57,7 +57,7 @@ final class ProxyProviders implements InvocationHandler {
     }
 
     private Observable<Object> getData(final ProxyTranslator.ConfigProvider configProvider) {
-        return Observable.just(cache.retrieve(configProvider.getKey(), configProvider.getDynamicKey(), useExpiredDataIfLoaderNotAvailable, configProvider.getLifeTimeMillis()))
+        return Observable.just(twoLayersCache.retrieve(configProvider.getKey(), configProvider.getDynamicKey(), useExpiredDataIfLoaderNotAvailable, configProvider.getLifeTimeMillis()))
                 .map(new Func1<Record, Observable<Reply>>() {
                     @Override public Observable<Reply> call(final Record record) {
                         if (record != null && !configProvider.invalidator().invalidate())
@@ -86,15 +86,15 @@ final class ProxyProviders implements InvocationHandler {
                 if (configProvider.invalidator() instanceof InvalidatorDynamicKey) {
                     InvalidatorDynamicKey invalidatorDynamicKey = (InvalidatorDynamicKey) configProvider.invalidator();
                     if (invalidatorDynamicKey.invalidate())
-                        cache.clearDynamicKey(configProvider.getKey(), invalidatorDynamicKey.dynamicKey().toString());
+                        twoLayersCache.clearDynamicKey(configProvider.getKey(), invalidatorDynamicKey.dynamicKey().toString());
                 } else if (configProvider.invalidator().invalidate()) {
-                    cache.clear(configProvider.getKey());
+                    twoLayersCache.clear(configProvider.getKey());
                 }
 
                 if (data == null)
                     throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getKey());
 
-                cache.save(configProvider.getKey(), configProvider.getDynamicKey(), data);
+                twoLayersCache.save(configProvider.getKey(), configProvider.getDynamicKey(), data);
                 return new Reply(data, Source.CLOUD);
             }
         });

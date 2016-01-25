@@ -70,7 +70,7 @@ public final class RxCache {
         /**
          * Sets the File cache system used by Cache
          * @param cacheDirectory The File system used by the persistence implementation of Disk
-         * @see Cache
+         * @see TwoLayersCache
          */
         public RxCache persistence(File cacheDirectory) {
             if (cacheDirectory == null)
