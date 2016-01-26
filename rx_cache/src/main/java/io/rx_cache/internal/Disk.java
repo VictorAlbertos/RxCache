@@ -77,6 +77,14 @@ public final class Disk implements Persistence {
         file.delete();
     }
 
+    /** Delete all objects previously saved.
+     * */
+    @Override public void deleteAll() {
+        for(File file: cacheDirectory.listFiles()) {
+            file.delete();
+        }
+    }
+
     /** Retrieve the object previously saved.
      * @param key the key whereby the object could be retrieved.
      * @param clazz the type of class against the object need to be serialized

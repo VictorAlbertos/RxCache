@@ -101,6 +101,7 @@ final class TwoLayersCache {
 
     void clearAll() {
         records.invalidateAll();
+        persistence.deleteAll();
     }
 
     @VisibleForTesting

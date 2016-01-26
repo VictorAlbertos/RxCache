@@ -35,6 +35,12 @@ public interface Persistence {
      * @param key The key associated with the object to be deleted from persistence
      */
     void delete(String key);
+
+    /**
+     * Delete all the data
+     */
+    void deleteAll();
+
     /**
      * Retrieve the record associated with its particular key
      * @param <T> The actual data to be persisted encapsulated inside a Record object

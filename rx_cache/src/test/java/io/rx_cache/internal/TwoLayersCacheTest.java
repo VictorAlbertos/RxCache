@@ -95,6 +95,24 @@ public class TwoLayersCacheTest extends BaseTest {
         assertThat(record, is(nullValue()));
     }
 
+    @Test public void When_Save_And_Clear_All_Get_Null() {
+        twoLayersCacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(KEY, PAGE+1, new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(KEY+1, PAGE, new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(KEY+1, PAGE+1, new Mock(MOCK_VALUE));
+
+        twoLayersCacheUT.clearAll();
+
+        Record<Mock> record = twoLayersCacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE);
+        assertThat(record, is(nullValue()));
+        record = twoLayersCacheUT.retrieve(KEY, PAGE+1, false, ONE_SECOND_LIFE);
+        assertThat(record, is(nullValue()));
+        record = twoLayersCacheUT.retrieve(KEY+1, PAGE, false, ONE_SECOND_LIFE);
+        assertThat(record, is(nullValue()));
+        record = twoLayersCacheUT.retrieve(KEY+1, PAGE+1, false, ONE_SECOND_LIFE);
+        assertThat(record, is(nullValue()));
+    }
+
     @Test public void When_Save_And_Not_Clear_Pages_Get_All() {
         twoLayersCacheUT.save(KEY, "1", new Mock(MOCK_VALUE+1));
         twoLayersCacheUT.save(KEY, "2", new Mock(MOCK_VALUE+2));
