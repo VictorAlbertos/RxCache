@@ -44,40 +44,40 @@ public class ProxyProvidersTest extends BaseTest {
     }
 
     @Test public void When_First_Retrieve_Then_Source_Retrieved_Is_Cloud() {
-        TestSubscriber subscriberMock = getSubscriberCompleted(false, false, true, true, false);
+        TestSubscriber subscriberMock = getSubscriberCompleted(false, false, true, Loader.VALID, false);
         Reply<Mock> reply = (Reply) subscriberMock.getOnNextEvents().get(0);
         assertThat(reply.getSource(), is(Source.CLOUD));
         assertNotNull(reply.getData());
     }
 
     @Test public void When_Invalidate_Cache_Then_Source_Retrieved_Is_Cloud() {
-        TestSubscriber subscriberMock = getSubscriberCompleted(true, true, true, true, false);
+        TestSubscriber subscriberMock = getSubscriberCompleted(true, true, true, Loader.VALID, false);
         Reply<Mock> reply = (Reply) subscriberMock.getOnNextEvents().get(0);
         assertThat(reply.getSource(), is(Source.CLOUD));
         assertNotNull(reply.getData());
     }
 
     @Test public void When_No_Invalidate_Cache_Then_Source_Retrieved_Is_Not_Cloud() {
-        TestSubscriber subscriberMock = getSubscriberCompleted(true, false, true, true, false);
+        TestSubscriber subscriberMock = getSubscriberCompleted(true, false, true, Loader.VALID, false);
         Reply<Mock> reply = (Reply) subscriberMock.getOnNextEvents().get(0);
         assertThat(reply.getSource(), is(not(Source.CLOUD)));
         assertNotNull(reply.getData());
     }
 
     @Test public void When_No_Reply_Then_Get_Mock() {
-        TestSubscriber subscriberMock = getSubscriberCompleted(true, false, false, true, false);
+        TestSubscriber subscriberMock = getSubscriberCompleted(true, false, false, Loader.VALID, false);
         Mock mock = (Mock) subscriberMock.getOnNextEvents().get(0);
         assertNotNull(mock);
     }
 
     @Test public void When_No_Loader_And_Not_Cache_Then_Get_Throw_Exception() {
-        TestSubscriber subscriberMock = getSubscriberCompleted(false, false, false, false, false);
+        TestSubscriber subscriberMock = getSubscriberCompleted(false, false, false, Loader.NULL, false);
         assertThat(subscriberMock.getOnErrorEvents().size(), is(1));
         assertThat(subscriberMock.getOnNextEvents().size(), is(0));
     }
 
     @Test public void When_No_Loader_And_Cache_Expired_Then_Get_Throw_Exception() {
-        TestSubscriber subscriberMock = getSubscriberCompleted(true, true, false, false, false);
+        TestSubscriber subscriberMock = getSubscriberCompleted(true, true, false, Loader.NULL, false);
         assertThat(subscriberMock.getOnErrorEvents().size(), is(1));
         assertThat(subscriberMock.getOnNextEvents().size(), is(0));
     }
@@ -85,13 +85,43 @@ public class ProxyProvidersTest extends BaseTest {
     @Test public void When_No_Loader_And_Cache_Expired_But_Use_Expired_Data_If_Loader_Not_Available_Then_Get_Mock() {
         proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, false);
 
-        TestSubscriber subscriberMock = getSubscriberCompleted(true, true, false, false, true);
+        TestSubscriber subscriberMock = getSubscriberCompleted(true, true, false, Loader.NULL, true);
         assertThat(subscriberMock.getOnErrorEvents().size(), is(0));
         assertThat(subscriberMock.getOnNextEvents().size(), is(1));
     }
 
-    private TestSubscriber getSubscriberCompleted(boolean hasCache, final boolean invalidateCache, boolean detailResponse, boolean loader, boolean useExpiredDataIfLoaderNotAvailable) {
-        Observable observable = loader ? Observable.just(new Mock("message")) : Observable.just(null);
+    @Test public void When_Loader_Throws_Exception_And_Cache_Expired_Then_Get_Throw_Exception() {
+        TestSubscriber subscriberMock = getSubscriberCompleted(true, true, false, Loader.EXCEPTION, false);
+        assertThat(subscriberMock.getOnErrorEvents().size(), is(1));
+        assertThat(subscriberMock.getOnNextEvents().size(), is(0));
+    }
+
+    @Test public void When_Loader_Throws_Exception_And_Cache_Expired_But_Use_Expired_Data_If_Loader_Not_Available_Then_Get_Mock() {
+        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, false);
+
+        TestSubscriber subscriberMock = getSubscriberCompleted(true, true, false, Loader.EXCEPTION, true);
+        assertThat(subscriberMock.getOnErrorEvents().size(), is(0));
+        assertThat(subscriberMock.getOnNextEvents().size(), is(1));
+    }
+
+    private TestSubscriber getSubscriberCompleted(boolean hasCache, final boolean invalidateCache, boolean detailResponse, Loader loader, boolean useExpiredDataIfLoaderNotAvailable) {
+        Observable observable;
+        switch (loader) {
+            case VALID:
+                observable = Observable.just(new Mock("message"));
+                break;
+            case NULL:
+                observable = Observable.just(null);
+                break;
+            default:
+                observable = Observable.create(new Observable.OnSubscribe() {
+                    @Override public void call(Object o) {
+                        throw new RuntimeException("error");
+                    }
+                });
+                break;
+        }
+
         ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", observable, 0, detailResponse, new Invalidator() {
             @Override public boolean invalidate() {
                 return invalidateCache;
@@ -123,5 +153,9 @@ public class ProxyProvidersTest extends BaseTest {
         oData.subscribe(subscriberMock);
         subscriberMock.awaitTerminalEvent();
         assertThat(twoLayersCacheMock.recordsSize(), is(1l));
+    }
+
+    enum Loader {
+        VALID, NULL, EXCEPTION
     }
 }

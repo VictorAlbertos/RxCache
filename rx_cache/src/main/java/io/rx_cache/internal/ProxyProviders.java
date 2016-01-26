@@ -97,6 +97,14 @@ final class ProxyProviders implements InvocationHandler {
                 twoLayersCache.save(configProvider.getKey(), configProvider.getDynamicKey(), data);
                 return new Reply(data, Source.CLOUD);
             }
+        }).onErrorReturn(new Func1() {
+            @Override public Object call(Object o) {
+                if (useExpiredDataIfLoaderNotAvailable && record != null) {
+                    return new Reply(record.getData(), record.getSource());
+                }
+
+                throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getKey());
+            }
         });
     }
 
