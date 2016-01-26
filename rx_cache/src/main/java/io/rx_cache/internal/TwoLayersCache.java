@@ -35,7 +35,6 @@ final class TwoLayersCache {
     private final PolicyHeapCache policyHeapCache;
     private final Cache<String, Record> records;
     private final Persistence persistence;
-    private boolean mockMemoryDestroyed;
 
     @Inject public TwoLayersCache(PolicyHeapCache policyHeapCache, Persistence persistence) {
         this.policyHeapCache = policyHeapCache;
@@ -43,7 +42,7 @@ final class TwoLayersCache {
         this.records = initLoadingCache();
     }
 
-    private com.google.common.cache.Cache<String, Record> initLoadingCache() {
+    private Cache<String, Record> initLoadingCache() {
         return CacheBuilder.<String, Record>newBuilder()
                 .maximumSize(maxCacheSizeBytes())
                 .build();
@@ -88,7 +87,7 @@ final class TwoLayersCache {
             final String keyRecord = composedKeyRecord.substring(0, composedKeyRecord.lastIndexOf(PREFIX_DYNAMIC_KEY));
             if (key.equals(keyRecord)) {
                 records.invalidate(composedKeyRecord);
-                if (!mockMemoryDestroyed) persistence.delete(composedKeyRecord);
+                persistence.delete(composedKeyRecord);
             }
         }
     }
@@ -96,7 +95,7 @@ final class TwoLayersCache {
     void clearDynamicKey(String key, String dynamicKey) {
         key = key + PREFIX_DYNAMIC_KEY + dynamicKey;
         records.invalidate(key);
-        if (!mockMemoryDestroyed) persistence.delete(key);
+        persistence.delete(key);
     }
 
     void clearAll() {
@@ -106,9 +105,7 @@ final class TwoLayersCache {
 
     @VisibleForTesting
     void mockMemoryDestroyed() {
-        mockMemoryDestroyed = true;
-        clearAll();
-        mockMemoryDestroyed = false;
+        records.invalidateAll();
     }
 
     @VisibleForTesting long maxCacheSizeBytes() {
