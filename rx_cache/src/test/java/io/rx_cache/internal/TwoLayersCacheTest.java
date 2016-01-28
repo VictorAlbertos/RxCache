@@ -179,6 +179,20 @@ public class TwoLayersCacheTest extends BaseTest {
 
         record = twoLayersCacheUT.retrieve(KEY, "1", false, ONE_SECOND_LIFE);
         assertThat(record, is(nullValue()));
+
+        record = twoLayersCacheUT.retrieve(KEY, "1", false, 0);
+        assertThat(record.getData().getMessage(), is(MOCK_VALUE));
+    }
+
+    @Test public void When_Expired_Date_But_Use_ExpiredDataIfLoaderNotAvailable_Then_GetMock() {
+        twoLayersCacheUT.save(KEY, "1", new Mock(MOCK_VALUE));
+        waitTime(MORE_THAN_ONE_SECOND_LIFE);
+
+        Record<Mock> record = twoLayersCacheUT.retrieve(KEY, "1", false, ONE_SECOND_LIFE);
+        assertThat(record, is(nullValue()));
+
+        record = twoLayersCacheUT.retrieve(KEY, "1", true, ONE_SECOND_LIFE);
+        assertThat(record.getData().getMessage(), is(MOCK_VALUE));
     }
 
     @Test public void Check_Policy_Conservative() {
