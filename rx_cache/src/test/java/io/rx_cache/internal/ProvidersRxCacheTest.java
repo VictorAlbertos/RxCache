@@ -42,7 +42,7 @@ import static org.junit.Assert.assertThat;
  * Created by victor on 28/12/15.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ProvidersRxTwoLayersCacheTest {
+public class ProvidersRxCacheTest {
     @ClassRule public static TemporaryFolder temporaryFolder = new TemporaryFolder();
     private ProvidersRxCache providersRxCache;
     private final static int SIZE = 100;
