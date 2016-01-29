@@ -148,11 +148,11 @@ public class ProxyProvidersTest extends BaseTest {
         TestSubscriber subscriberMock = new TestSubscriber<>();
         proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, true);
         Observable<Object> oData = proxyProvidersUT.getMethodImplementation(configProvider);
-        assertThat(twoLayersCacheMock.recordsSize(), is(0l));
+        assertThat(twoLayersCacheMock.retrieveHasBeenCalled(), is(false));
 
         oData.subscribe(subscriberMock);
         subscriberMock.awaitTerminalEvent();
-        assertThat(twoLayersCacheMock.recordsSize(), is(1l));
+        assertThat(twoLayersCacheMock.retrieveHasBeenCalled(), is(true));
     }
 
     enum Loader {

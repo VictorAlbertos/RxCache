@@ -49,6 +49,8 @@ final class TwoLayersCache {
     }
 
     <T> Record<T> retrieve(String key, String dynamicKey, boolean useExpiredDataIfLoaderNotAvailable, long lifeTime) {
+        retrieveHasBeenCalled = true;
+
         key = key + PREFIX_DYNAMIC_KEY + dynamicKey;
 
         Record<T> record = records.getIfPresent(key);
@@ -103,8 +105,7 @@ final class TwoLayersCache {
         persistence.deleteAll();
     }
 
-    @VisibleForTesting
-    void mockMemoryDestroyed() {
+    @VisibleForTesting void mockMemoryDestroyed() {
         records.invalidateAll();
     }
 
@@ -113,7 +114,8 @@ final class TwoLayersCache {
         return (long) (amountMemoryBytes * policyHeapCache.getPercentageReserved());
     }
 
-    @VisibleForTesting long recordsSize() {
-        return records.size();
+    private boolean retrieveHasBeenCalled;
+    @VisibleForTesting boolean retrieveHasBeenCalled() {
+        return retrieveHasBeenCalled;
     }
 }
