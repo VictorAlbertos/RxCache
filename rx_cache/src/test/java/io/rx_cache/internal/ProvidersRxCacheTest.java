@@ -168,7 +168,7 @@ public class ProvidersRxCacheTest {
         providersRxCache.getMocksPaginate(Observable.just(mocksPage2), 2).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
 
-         List<Mock> mocksPage3 = createMocks(SIZE);
+        List<Mock> mocksPage3 = createMocks(SIZE);
         String mockPage3Value = mocksPage3.get(0).getMessage();
 
         subscriber = new TestSubscriber<>();
