@@ -151,7 +151,7 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnNextEvents().get(0).getData().size(), is(SIZE));
     }
 
-    @Test public void _3_Pagination() {
+    @Test public void _4_Pagination() {
         TestSubscriber<List<Mock>> subscriber;
 
         List<Mock> mocksPage1 = createMocks(SIZE);
@@ -191,7 +191,7 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnNextEvents().get(0).get(0).getMessage(), is(mockPage3Value));
     }
 
-    @Test public void _4_Pagination_Invalidate_All() {
+    @Test public void _5_Pagination_Invalidate_All() {
         TestSubscriber<List<Mock>> subscriber;
 
         Invalidator invalidatorFalse = new Invalidator() {
@@ -230,7 +230,7 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnNextEvents().size(), is(0));
     }
 
-    @Test public void _5_Pagination_With_Invalidate_Cache() {
+    @Test public void _6_Pagination_With_Invalidate_Cache() {
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
@@ -295,7 +295,7 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnNextEvents().size(), is(1));
     }
 
-    @Test public void _6_Session_Mock() {
+    @Test public void _7_Session_Mock() {
         TestSubscriber<Mock> subscriber = new TestSubscriber<>();
         Mock mock = createMocks(SIZE).get(0);
 
@@ -327,7 +327,7 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnNextEvents().size(), is(0));
     }
 
-    @Test public void _7_Use_Expired_Data() {
+    @Test public void _8_Use_Expired_Data() {
         ProvidersRxCache providersRxCache = new RxCache.Builder()
                 .useExpiredDataIfLoaderNotAvailable(true)
                 .persistence(temporaryFolder.getRoot())
