@@ -50,7 +50,8 @@ final class ProxyProviders implements InvocationHandler {
 
     @VisibleForTesting Observable<Object> getMethodImplementation(final ProxyTranslator.ConfigProvider configProvider) {
         return Observable.defer(new Func0<Observable<Object>>() {
-            @Override public Observable<Object> call() {
+            @Override
+            public Observable<Object> call() {
                 return getData(configProvider);
             }
         });
@@ -66,9 +67,11 @@ final class ProxyProviders implements InvocationHandler {
                         return getDataFromLoader(configProvider, record);
                     }
                 }).flatMap(new Func1<Observable<Reply>, Observable<Object>>() {
-                    @Override public Observable<Object> call(Observable<Reply> responseObservable) {
+                    @Override
+                    public Observable<Object> call(Observable<Reply> responseObservable) {
                         return responseObservable.map(new Func1<Reply, Object>() {
-                            @Override public Object call(Reply reply) {
+                            @Override
+                            public Object call(Reply reply) {
                                 return getReturnType(configProvider, reply);
                             }
                         });
@@ -78,18 +81,13 @@ final class ProxyProviders implements InvocationHandler {
 
     private Observable<Reply> getDataFromLoader(final ProxyTranslator.ConfigProvider configProvider, final Record record) {
         return configProvider.getLoaderObservable().map(new Func1() {
-            @Override public Reply call(Object data) {
+            @Override
+            public Reply call(Object data) {
                 if (data == null && useExpiredDataIfLoaderNotAvailable && record != null) {
                     return new Reply(record.getData(), record.getSource());
                 }
 
-                if (configProvider.invalidator() instanceof InvalidatorDynamicKey) {
-                    InvalidatorDynamicKey invalidatorDynamicKey = (InvalidatorDynamicKey) configProvider.invalidator();
-                    if (invalidatorDynamicKey.invalidate())
-                        twoLayersCache.clearDynamicKey(configProvider.getKey(), invalidatorDynamicKey.dynamicKey().toString());
-                } else if (configProvider.invalidator().invalidate()) {
-                    twoLayersCache.clear(configProvider.getKey());
-                }
+                clearKeyIfNeeded(configProvider);
 
                 if (data == null)
                     throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getKey());
@@ -99,6 +97,8 @@ final class ProxyProviders implements InvocationHandler {
             }
         }).onErrorReturn(new Func1() {
             @Override public Object call(Object o) {
+                clearKeyIfNeeded(configProvider);
+
                 if (useExpiredDataIfLoaderNotAvailable && record != null) {
                     return new Reply(record.getData(), record.getSource());
                 }
@@ -106,6 +106,16 @@ final class ProxyProviders implements InvocationHandler {
                 throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getKey());
             }
         });
+    }
+
+    private void clearKeyIfNeeded(ProxyTranslator.ConfigProvider configProvider) {
+        if (configProvider.invalidator() instanceof InvalidatorDynamicKey) {
+            InvalidatorDynamicKey invalidatorDynamicKey = (InvalidatorDynamicKey) configProvider.invalidator();
+            if (invalidatorDynamicKey.invalidate())
+                twoLayersCache.clearDynamicKey(configProvider.getKey(), invalidatorDynamicKey.dynamicKey().toString());
+        } else if (configProvider.invalidator().invalidate()) {
+            twoLayersCache.clear(configProvider.getKey());
+        }
     }
 
     private Object getReturnType(ProxyTranslator.ConfigProvider configProvider, Reply reply) {

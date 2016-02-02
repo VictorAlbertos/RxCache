@@ -32,6 +32,7 @@ import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
 import rx.Observable;
+import rx.Subscriber;
 import rx.observers.TestSubscriber;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -191,12 +192,20 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnNextEvents().get(0).get(0).getMessage(), is(mockPage3Value));
     }
 
-    @Test public void _5_Pagination_Invalidate_All() {
+    @Test public void _5_Pagination_Invalidate_All_Using_Null_Value_Observable() {
+        paginationInvalidateAll(false);
+    }
+
+    @Test public void _6_Pagination_Invalidate_All_Using_Error_Observable() {
+        paginationInvalidateAll(true);
+    }
+
+    private void paginationInvalidateAll(boolean usingErrorObservableInsteadOfNull) {
         TestSubscriber<List<Mock>> subscriber;
 
         Invalidator invalidatorFalse = new Invalidator() {
             @Override public boolean invalidate() {
-                return true;
+                return false;
             }
         };
 
@@ -209,13 +218,28 @@ public class ProvidersRxCacheTest {
         subscriber = new TestSubscriber<>();
         providersRxCache.getMocksPaginateInvalidateAll(Observable.just(createMocks(SIZE)), 1, invalidatorFalse).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
+        assertThat(subscriber.getOnErrorEvents().size(), is(0));
+        assertThat(subscriber.getOnNextEvents().size(), is(1));
 
         subscriber = new TestSubscriber<>();
         providersRxCache.getMocksPaginateInvalidateAll(Observable.just(createMocks(SIZE)), 2, invalidatorFalse).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
+        assertThat(subscriber.getOnErrorEvents().size(), is(0));
+        assertThat(subscriber.getOnNextEvents().size(), is(1));
 
-        subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginateInvalidateAll(Observable.<List<Mock>>just(null), 1, invalidatorTrue).subscribe(subscriber);
+        Observable<List<Mock>> oMocks;
+        if (usingErrorObservableInsteadOfNull) {
+            oMocks = Observable.create(new Observable.OnSubscribe<List<Mock>>() {
+                @Override public void call(Subscriber<? super List<Mock>> subscriber) {
+                    subscriber.onError(new RuntimeException("fuck off"));
+                }
+            });
+        } else {
+            oMocks = Observable.just(null);
+        }
+
+       subscriber = new TestSubscriber<>();
+        providersRxCache.getMocksPaginateInvalidateAll(oMocks, 1, invalidatorTrue).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
 
         subscriber = new TestSubscriber<>();
@@ -230,7 +254,8 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnNextEvents().size(), is(0));
     }
 
-    @Test public void _6_Pagination_With_Invalidate_Cache() {
+
+    @Test public void _6_Pagination_With_Invalidate_Cache_By_Page() {
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
@@ -280,13 +305,11 @@ public class ProvidersRxCacheTest {
         //the data associated with key 2 still remains because invalidation dynamic only affect to the key specified
         subscriber = new TestSubscriber<>();
         providersRxCache.getMocksDynamicKeyInvalidateCache(Observable.<List<Mock>>just(null), 2, new InvalidatorDynamicKey() {
-            @Override
-            public Object dynamicKey() {
+            @Override public Object dynamicKey() {
                 return 2;
             }
 
-            @Override
-            public boolean invalidate() {
+            @Override public boolean invalidate() {
                 return false;
             }
         }).subscribe(subscriber);
@@ -303,11 +326,13 @@ public class ProvidersRxCacheTest {
         providersRxCache.getLoggedMock(Observable.<Mock>just(null), invalidatorFalse).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnNextEvents().size(), is(0));
+        assertThat(subscriber.getOnErrorEvents().size(), is(1));
 
         //login mock
         subscriber = new TestSubscriber<>();
         providersRxCache.getLoggedMock(Observable.just(mock), invalidatorTrue).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
+        assertNotNull(subscriber.getOnNextEvents().get(0));
 
         //logged mock
         subscriber = new TestSubscriber<>();
@@ -319,12 +344,14 @@ public class ProvidersRxCacheTest {
         providersRxCache.getLoggedMock(Observable.<Mock>just(null), invalidatorTrue).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnNextEvents().size(), is(0));
+        assertThat(subscriber.getOnErrorEvents().size(), is(1));
 
         //not logged mock
         subscriber = new TestSubscriber<>();
         providersRxCache.getLoggedMock(Observable.<Mock>just(null), invalidatorFalse).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnNextEvents().size(), is(0));
+        assertThat(subscriber.getOnErrorEvents().size(), is(1));
     }
 
     @Test public void _8_Use_Expired_Data() {
@@ -343,9 +370,29 @@ public class ProvidersRxCacheTest {
 
         subscriber = new TestSubscriber<>();
         providersRxCache.getMocksResponseOneSecond(Observable.<List<Mock>>just(null)).subscribe(subscriber);
-
         Reply<List<Mock>> reply = subscriber.getOnNextEvents().get(0);
         assertThat(reply.getData().size(), is(SIZE));
+        assertThat(subscriber.getOnErrorEvents().size(), is(0));
+    }
+
+    @Test public void _9_Not_Use_Expired_Data() {
+        ProvidersRxCache providersRxCache = new RxCache.Builder()
+                .useExpiredDataIfLoaderNotAvailable(false)
+                .persistence(temporaryFolder.getRoot())
+                .using(ProvidersRxCache.class);
+
+        TestSubscriber<Reply<List<Mock>>> subscriber;
+
+        subscriber = new TestSubscriber<>();
+        providersRxCache.getMocksResponseOneSecond(createObservableMocks(SIZE)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
+        waitTime(1100);
+
+        subscriber = new TestSubscriber<>();
+        providersRxCache.getMocksResponseOneSecond(Observable.<List<Mock>>just(null)).subscribe(subscriber);
+        assertThat(subscriber.getOnErrorEvents().size(), is(1));
+        assertThat(subscriber.getOnNextEvents().size(), is(0));
     }
 
 
