@@ -127,7 +127,7 @@ public class ProvidersRxCacheTest {
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksInvalidateCache(createObservableMocks(SIZE), invalidatorFalse).subscribe(subscriber);
+        providersRxCache.getMocksInvalidateCache(createObservableMocks(SIZE), invalidatorTrue).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
 
         Reply<List<Mock>> reply = subscriber.getOnNextEvents().get(0);
@@ -196,7 +196,7 @@ public class ProvidersRxCacheTest {
 
         Invalidator invalidatorFalse = new Invalidator() {
             @Override public boolean invalidate() {
-                return true;
+                return false;
             }
         };
 
@@ -207,16 +207,22 @@ public class ProvidersRxCacheTest {
         };
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginateInvalidateAll(Observable.just(createMocks(SIZE)), 1, invalidatorFalse).subscribe(subscriber);
+        providersRxCache.getMocksPaginateInvalidateAll(Observable.just(createMocks(SIZE)), 1, invalidatorTrue).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
+        assertThat(subscriber.getOnErrorEvents().size(), is(0));
+        assertThat(subscriber.getOnNextEvents().size(), is(1));
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginateInvalidateAll(Observable.just(createMocks(SIZE)), 2, invalidatorFalse).subscribe(subscriber);
+        providersRxCache.getMocksPaginateInvalidateAll(Observable.just(createMocks(SIZE)), 2, invalidatorTrue).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
+        assertThat(subscriber.getOnErrorEvents().size(), is(0));
+        assertThat(subscriber.getOnNextEvents().size(), is(1));
 
         subscriber = new TestSubscriber<>();
         providersRxCache.getMocksPaginateInvalidateAll(Observable.<List<Mock>>just(null), 1, invalidatorTrue).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
+        assertThat(subscriber.getOnErrorEvents().size(), is(1));
+        assertThat(subscriber.getOnNextEvents().size(), is(0));
 
         subscriber = new TestSubscriber<>();
         providersRxCache.getMocksPaginateInvalidateAll(Observable.<List<Mock>>just(null), 1, invalidatorFalse).subscribe(subscriber);
@@ -230,7 +236,7 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnNextEvents().size(), is(0));
     }
 
-    @Test public void _6_Pagination_With_Invalidate_Cache() {
+    @Test public void _6_Pagination_With_Invalidate_By_Page() {
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();

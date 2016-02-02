@@ -28,6 +28,7 @@ import rx.Observable;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Created by victor on 28/12/15.
@@ -48,7 +49,7 @@ public class ProxyTranslatorTest extends BaseTest {
         assertThat(configProvider.getKey(), is("getMocks"));
         assertNotNull(configProvider.getLoaderObservable());
         assertThat(configProvider.getLifeTimeMillis(), is(0l));
-        assertThat(configProvider.invalidator().invalidate(), is(false));
+        assertNull(configProvider.invalidator());
         assertThat(configProvider.requiredDetailedResponse(), is(false));
     }
 

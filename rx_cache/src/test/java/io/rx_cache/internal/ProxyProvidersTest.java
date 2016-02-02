@@ -44,7 +44,7 @@ public class ProxyProvidersTest extends BaseTest {
     }
 
     @Test public void When_First_Retrieve_Then_Source_Retrieved_Is_Cloud() {
-        TestSubscriber subscriberMock = getSubscriberCompleted(false, false, true, Loader.VALID, false);
+        TestSubscriber subscriberMock = getSubscriberCompleted(false, true, true, Loader.VALID, false);
         Reply<Mock> reply = (Reply) subscriberMock.getOnNextEvents().get(0);
         assertThat(reply.getSource(), is(Source.CLOUD));
         assertNotNull(reply.getData());

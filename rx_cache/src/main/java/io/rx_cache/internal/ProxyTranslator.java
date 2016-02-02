@@ -77,11 +77,7 @@ final class ProxyTranslator {
     protected Invalidator invalidator() {
         Invalidator invalidateCache = annotationConverter(InvalidateCache.class, Invalidator.class);
         if (invalidateCache != null) return invalidateCache;
-        else return new Invalidator() {
-            @Override public boolean invalidate() {
-                return false;
-            }
-        };
+        else return null;
     }
 
     protected <T> T annotationConverter(Class candidate, Class<T> expectedCast) {

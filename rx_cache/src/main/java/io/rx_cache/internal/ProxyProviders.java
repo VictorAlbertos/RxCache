@@ -50,7 +50,8 @@ final class ProxyProviders implements InvocationHandler {
 
     @VisibleForTesting Observable<Object> getMethodImplementation(final ProxyTranslator.ConfigProvider configProvider) {
         return Observable.defer(new Func0<Observable<Object>>() {
-            @Override public Observable<Object> call() {
+            @Override
+            public Observable<Object> call() {
                 return getData(configProvider);
             }
         });
@@ -59,16 +60,24 @@ final class ProxyProviders implements InvocationHandler {
     private Observable<Object> getData(final ProxyTranslator.ConfigProvider configProvider) {
         return Observable.just(twoLayersCache.retrieve(configProvider.getKey(), configProvider.getDynamicKey(), useExpiredDataIfLoaderNotAvailable, configProvider.getLifeTimeMillis()))
                 .map(new Func1<Record, Observable<Reply>>() {
-                    @Override public Observable<Reply> call(final Record record) {
-                        if (record != null && !configProvider.invalidator().invalidate())
+                    @Override
+                    public Observable<Reply> call(final Record record) {
+                        if (record != null && (configProvider.invalidator() == null || !configProvider.invalidator().invalidate()))
                             return Observable.just(new Reply(record.getData(), record.getSource()));
 
-                        return getDataFromLoader(configProvider, record);
+                        if (configProvider.invalidator() == null)
+                            return getDataFromLoader(configProvider, record);
+                        else if (configProvider.invalidator().invalidate())
+                            return getDataFromLoader(configProvider, record);
+                        else
+                            throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getKey());
                     }
                 }).flatMap(new Func1<Observable<Reply>, Observable<Object>>() {
-                    @Override public Observable<Object> call(Observable<Reply> responseObservable) {
+                    @Override
+                    public Observable<Object> call(Observable<Reply> responseObservable) {
                         return responseObservable.map(new Func1<Reply, Object>() {
-                            @Override public Object call(Reply reply) {
+                            @Override
+                            public Object call(Reply reply) {
                                 return getReturnType(configProvider, reply);
                             }
                         });
@@ -87,7 +96,7 @@ final class ProxyProviders implements InvocationHandler {
                     InvalidatorDynamicKey invalidatorDynamicKey = (InvalidatorDynamicKey) configProvider.invalidator();
                     if (invalidatorDynamicKey.invalidate())
                         twoLayersCache.clearDynamicKey(configProvider.getKey(), invalidatorDynamicKey.dynamicKey().toString());
-                } else if (configProvider.invalidator().invalidate()) {
+                } else if (configProvider.invalidator() != null && configProvider.invalidator().invalidate()) {
                     twoLayersCache.clear(configProvider.getKey());
                 }
 
