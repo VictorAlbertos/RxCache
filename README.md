@@ -26,9 +26,11 @@ Setup
 
 Add the JitPack repository in your build.gradle (top level module):
 ```gradle
-repositories {
-    jcenter()
-    maven { url "https://jitpack.io" }
+allprojects {
+    repositories {
+        jcenter()
+        maven { url "https://jitpack.io" }
+    }
 }
 ```
 
