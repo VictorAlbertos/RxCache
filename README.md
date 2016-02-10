@@ -238,6 +238,6 @@ Author
 * <https://linkedin.com/in/victoralbertos>
 * <https://github.com/VictorAlbertos>
 
-Another author libraries using RxJava:
+Another author's libraries using RxJava:
 -------------------------------------
 * [RxGcm](https://github.com/VictorAlbertos/RxGcm): A reactive wrapper for Android Google Cloud Messaging to get rid of Service(s) configuration, handling foreground and background notifications depending on application state.
