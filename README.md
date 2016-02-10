@@ -229,3 +229,15 @@ The policy is very simple:
 * If the data requested is in memory, and It has not been expired, get it from memory.
 * Else if the data requested is in persistence layer, and It has not been expired, get it from persistence.
 * Else get it from the loader layer. 
+
+Author
+-------
+**Víctor Albertos**
+
+* <https://twitter.com/_victorAlbertos>
+* <https://linkedin.com/in/victoralbertos>
+* <https://github.com/VictorAlbertos>
+
+Another author libraries using RxJava:
+-------------------------------------
+* [RxGcm](https://github.com/VictorAlbertos/RxGcm): A reactive wrapper for Android Google Cloud Messaging to get rid of Service(s) configuration, handling foreground and background notifications depending on application state.
