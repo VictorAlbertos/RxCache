@@ -17,6 +17,10 @@
 package io.rx_cache.internal;
 
 import org.junit.Test;
+import org.junit.experimental.theories.DataPoint;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
 import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.Record;
@@ -30,17 +34,20 @@ import static org.hamcrest.core.IsNull.nullValue;
 /**
  * Created by victor on 20/12/15.
  */
+@RunWith(Theories.class)
 public class TwoLayersCacheTest extends BaseTest {
     private TwoLayersCache twoLayersCacheUT;
     private static final long ONE_SECOND_LIFE = 1000, THREE_SECOND_LIFE = 3000, MORE_THAN_ONE_SECOND_LIFE = 1250;
     private static final String KEY = "mock_key", PAGE = "", MOCK_VALUE = "mock_value";
 
-    @Override public void setUp() {
-        super.setUp();
-        twoLayersCacheUT = new TwoLayersCache(PolicyHeapCache.CONSERVATIVE, disk);
-    }
+    @DataPoint public static Memory GUAVA_MEMORY = new GuavaMemory(PolicyHeapCache.CONSERVATIVE);
+    @DataPoint public static Memory SIMPLE_MEMORY = new SimpleMemory();
 
-    @Test public void When_Save_And_Object_Not_Expired_And_Memory_Not_Destroyed_Retrieve_It_From_Memory() {
+
+    @Theory
+    @Test public void When_Save_And_Object_Not_Expired_And_Memory_Not_Destroyed_Retrieve_It_From_Memory(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(memory, disk);
+
         twoLayersCacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
 
         Record<Mock> record = twoLayersCacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE + 1000);
@@ -50,7 +57,10 @@ public class TwoLayersCacheTest extends BaseTest {
         assertThat(record.getSource(), is(Source.MEMORY));
     }
 
-    @Test public void When_Save_And_Record_Has_Not_Expired_And_Memory_Destroyed_Retrieve_It_From_Disk() {
+    @Theory
+    @Test public void When_Save_And_Record_Has_Not_Expired_And_Memory_Destroyed_Retrieve_It_From_Disk(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(memory, disk);
+
         twoLayersCacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
         twoLayersCacheUT.mockMemoryDestroyed();
 
@@ -65,7 +75,10 @@ public class TwoLayersCacheTest extends BaseTest {
         assertThat(record.getSource(), is(Source.MEMORY));
     }
 
-    @Test public void When_Save_And_Record_Has_Expired_Get_Null() {
+    @Theory
+    @Test public void When_Save_And_Record_Has_Expired_Get_Null(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(memory, disk);
+
         twoLayersCacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
         Record<Mock> record = twoLayersCacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE);
@@ -73,7 +86,10 @@ public class TwoLayersCacheTest extends BaseTest {
         assertThat(record, is(nullValue()));
     }
 
-    @Test public void When_Save_And_Record_Has_Not_Expired_Date_Do_Not_Get_Null() {
+    @Theory
+    @Test public void When_Save_And_Record_Has_Not_Expired_Date_Do_Not_Get_Null(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(memory, disk);
+
         twoLayersCacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
         Record<Mock> record = twoLayersCacheUT.retrieve(KEY, PAGE, false, 0);
@@ -87,7 +103,10 @@ public class TwoLayersCacheTest extends BaseTest {
         assertThat(record.getSource(), is(Source.PERSISTENCE));
     }
 
-    @Test public void When_Save_And_Clear_Get_Null() {
+    @Theory
+    @Test public void When_Save_And_Clear_Get_Null(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(memory, disk);
+
         twoLayersCacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
         twoLayersCacheUT.clear(KEY);
         Record<Mock> record = twoLayersCacheUT.retrieve(KEY, PAGE, false, ONE_SECOND_LIFE);
@@ -95,7 +114,10 @@ public class TwoLayersCacheTest extends BaseTest {
         assertThat(record, is(nullValue()));
     }
 
-    @Test public void When_Save_And_Clear_All_Get_Null() {
+    @Theory
+    @Test public void When_Save_And_Clear_All_Get_Null(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(memory, disk);
+
         twoLayersCacheUT.save(KEY, PAGE, new Mock(MOCK_VALUE));
         twoLayersCacheUT.save(KEY, PAGE+1, new Mock(MOCK_VALUE));
         twoLayersCacheUT.save(KEY+1, PAGE, new Mock(MOCK_VALUE));
@@ -113,7 +135,10 @@ public class TwoLayersCacheTest extends BaseTest {
         assertThat(record, is(nullValue()));
     }
 
-    @Test public void When_Save_And_Not_Clear_Pages_Get_All() {
+    @Theory
+    @Test public void When_Save_And_Not_Clear_Pages_Get_All(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(memory, disk);
+
         twoLayersCacheUT.save(KEY, "1", new Mock(MOCK_VALUE+1));
         twoLayersCacheUT.save(KEY, "2", new Mock(MOCK_VALUE+2));
         twoLayersCacheUT.save(KEY, "3", new Mock(MOCK_VALUE + 3));
@@ -127,7 +152,10 @@ public class TwoLayersCacheTest extends BaseTest {
         assertThat(record3.getData().getMessage(), is(MOCK_VALUE+3));
     }
 
-    @Test public void When_Save_Page_And_Re_Save_Page_Get_Last_Value() {
+    @Theory
+    @Test public void When_Save_Page_And_Re_Save_Page_Get_Last_Value(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(memory, disk);
+
         twoLayersCacheUT.save(KEY, "1", new Mock(MOCK_VALUE + 1));
         twoLayersCacheUT.save(KEY, "1", new Mock(MOCK_VALUE + 2));
 
@@ -136,7 +164,10 @@ public class TwoLayersCacheTest extends BaseTest {
         assertThat(record.getData().getMessage(), is(MOCK_VALUE+2));
     }
 
-    @Test public void When_Save_And_Clear_Pages_Get_All_Null() {
+    @Theory
+    @Test public void When_Save_And_Clear_Pages_Get_All_Null(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(memory, disk);
+
         twoLayersCacheUT.save(KEY, "9g34ye__w$$crvgwhq$", new Mock(MOCK_VALUE));
         twoLayersCacheUT.save(KEY, "83fgyewbuh", new Mock(MOCK_VALUE));
         twoLayersCacheUT.save(KEY, "3:973h2uewnsaj", new Mock(MOCK_VALUE));
@@ -148,7 +179,10 @@ public class TwoLayersCacheTest extends BaseTest {
         assertThat(twoLayersCacheUT.retrieve(KEY, "3:973h2uewnsaj", false, ONE_SECOND_LIFE), is(nullValue()));
     }
 
-    @Test public void When_Save_And_Clear_One_Page_Get_Others() {
+    @Theory
+    @Test public void When_Save_And_Clear_One_Page_Get_Others(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(memory, disk);
+
         twoLayersCacheUT.save(KEY, "9g34ye__w$$crvgwhq$", new Mock(MOCK_VALUE));
         twoLayersCacheUT.save(KEY, "83fgyewbuh", new Mock(MOCK_VALUE + 1));
         twoLayersCacheUT.save(KEY, "3:973h2uewnsaj", new Mock(MOCK_VALUE + 2));
@@ -164,7 +198,10 @@ public class TwoLayersCacheTest extends BaseTest {
         assertThat(record2.getData().getMessage(), is(MOCK_VALUE + 2));
     }
 
-    @Test public void When_Expiration_Date_Has_Been_Modified_Then_Reflect_This_Change() {
+    @Theory
+    @Test public void When_Expiration_Date_Has_Been_Modified_Then_Reflect_This_Change(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(memory, disk);
+
         twoLayersCacheUT.save(KEY, "1", new Mock(MOCK_VALUE));
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
 
@@ -184,7 +221,10 @@ public class TwoLayersCacheTest extends BaseTest {
         assertThat(record.getData().getMessage(), is(MOCK_VALUE));
     }
 
-    @Test public void When_Expired_Date_But_Use_ExpiredDataIfLoaderNotAvailable_Then_GetMock() {
+    @Theory
+    @Test public void When_Expired_Date_But_Use_ExpiredDataIfLoaderNotAvailable_Then_GetMock(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(memory, disk);
+
         twoLayersCacheUT.save(KEY, "1", new Mock(MOCK_VALUE));
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
 
@@ -194,6 +234,7 @@ public class TwoLayersCacheTest extends BaseTest {
         record = twoLayersCacheUT.retrieve(KEY, "1", true, ONE_SECOND_LIFE);
         assertThat(record.getData().getMessage(), is(MOCK_VALUE));
     }
+
 
     @Test public void Check_Policy_Conservative() {
         checkPolicy(PolicyHeapCache.CONSERVATIVE);
@@ -208,8 +249,10 @@ public class TwoLayersCacheTest extends BaseTest {
     }
 
     private void checkPolicy(PolicyHeapCache policy) {
-        twoLayersCacheUT = new TwoLayersCache(policy, disk);
-        long maxCacheSizeBytes = twoLayersCacheUT.maxCacheSizeBytes();
+        GuavaMemory guavaMemory = new GuavaMemory(policy);
+
+        twoLayersCacheUT = new TwoLayersCache(guavaMemory, disk);
+        long maxCacheSizeBytes = guavaMemory.maxCacheSizeBytes(policy);
 
         long amountMemoryBytes  = Runtime.getRuntime().totalMemory();
         long expectedMemory = (long) (amountMemoryBytes * policy.getPercentageReserved());

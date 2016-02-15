@@ -18,34 +18,23 @@ package io.rx_cache.internal;
 
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import io.rx_cache.Persistence;
-import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.Record;
 import io.rx_cache.Source;
 
 @Singleton
 final class TwoLayersCache {
     private static final String PREFIX_DYNAMIC_KEY = "$_$_$";
-    private final PolicyHeapCache policyHeapCache;
-    private final Cache<String, Record> records;
+    private final Memory memory;
     private final Persistence persistence;
 
-    @Inject public TwoLayersCache(PolicyHeapCache policyHeapCache, Persistence persistence) {
-        this.policyHeapCache = policyHeapCache;
+    @Inject public TwoLayersCache(Memory memory, Persistence persistence) {
         this.persistence = persistence;
-        this.records = initLoadingCache();
-    }
-
-    private Cache<String, Record> initLoadingCache() {
-        return CacheBuilder.<String, Record>newBuilder()
-                .maximumSize(maxCacheSizeBytes())
-                .build();
+        this.memory = memory;
     }
 
     <T> Record<T> retrieve(String key, String dynamicKey, boolean useExpiredDataIfLoaderNotAvailable, long lifeTime) {
@@ -53,7 +42,7 @@ final class TwoLayersCache {
 
         key = key + PREFIX_DYNAMIC_KEY + dynamicKey;
 
-        Record<T> record = records.getIfPresent(key);
+        Record<T> record = memory.getIfPresent(key);
 
         if (record != null) {
             record.setSource(Source.MEMORY);
@@ -61,7 +50,7 @@ final class TwoLayersCache {
             try {
                 record = persistence.retrieveRecord(key);
                 record.setSource(Source.PERSISTENCE);
-                records.put(key, record);
+                memory.put(key, record);
             } catch (Exception ignore) {
                 return null;
             }
@@ -80,15 +69,15 @@ final class TwoLayersCache {
     void save(String key, String dynamicKey, Object data) {
         key = key + PREFIX_DYNAMIC_KEY + dynamicKey;
         Record record = new Record(data);
-        records.put(key, record);
+        memory.put(key, record);
         persistence.saveRecord(key, record);
     }
 
     void clear(final String key) {
-        for (String composedKeyRecord : records.asMap().keySet()) {
+        for (String composedKeyRecord : memory.keySet()) {
             final String keyRecord = composedKeyRecord.substring(0, composedKeyRecord.lastIndexOf(PREFIX_DYNAMIC_KEY));
             if (key.equals(keyRecord)) {
-                records.invalidate(composedKeyRecord);
+                memory.invalidate(composedKeyRecord);
                 persistence.delete(composedKeyRecord);
             }
         }
@@ -96,22 +85,17 @@ final class TwoLayersCache {
 
     void clearDynamicKey(String key, String dynamicKey) {
         key = key + PREFIX_DYNAMIC_KEY + dynamicKey;
-        records.invalidate(key);
+        memory.invalidate(key);
         persistence.delete(key);
     }
 
     void clearAll() {
-        records.invalidateAll();
+        memory.invalidateAll();
         persistence.deleteAll();
     }
 
     @VisibleForTesting void mockMemoryDestroyed() {
-        records.invalidateAll();
-    }
-
-    @VisibleForTesting long maxCacheSizeBytes() {
-        long amountMemoryBytes  = Runtime.getRuntime().totalMemory();
-        return (long) (amountMemoryBytes * policyHeapCache.getPercentageReserved());
+        memory.invalidateAll();
     }
 
     private boolean retrieveHasBeenCalled;

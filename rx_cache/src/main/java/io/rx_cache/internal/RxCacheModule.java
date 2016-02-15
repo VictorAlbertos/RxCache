@@ -60,4 +60,13 @@ public final class RxCacheModule {
     @Singleton @Provides Boolean useExpiredDataIfLoaderNotAvailable() {
         return useExpiredDataIfLoaderNotAvailable;
     }
+
+    @Singleton @Provides Memory provideMemory(PolicyHeapCache policyHeapCache) {
+        try {
+            Class.forName("com.google.common.cache.Cache");
+            return new GuavaMemory(policyHeapCache);
+        } catch( ClassNotFoundException e ) {
+            return new SimpleMemory();
+        }
+    }
 }

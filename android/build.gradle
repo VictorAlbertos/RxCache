@@ -28,3 +28,8 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
 }
+
+
+/*configurations {
+    compile.exclude module: 'guava'
+}*/

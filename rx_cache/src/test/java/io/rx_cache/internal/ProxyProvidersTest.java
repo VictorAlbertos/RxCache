@@ -38,9 +38,10 @@ public class ProxyProvidersTest extends BaseTest {
     private ProxyProviders proxyProvidersUT;
     private TwoLayersCache twoLayersCacheMock;
 
+
     @Override public void setUp() {
         super.setUp();
-        twoLayersCacheMock = new TwoLayersCache(PolicyHeapCache.MODERATE, disk);
+        twoLayersCacheMock = new TwoLayersCache(new GuavaMemory(PolicyHeapCache.MODERATE), disk);
     }
 
     @Test public void When_First_Retrieve_Then_Source_Retrieved_Is_Cloud() {

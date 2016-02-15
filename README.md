@@ -37,10 +37,23 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos:RxCache:0.4.8"
+    compile "com.github.VictorAlbertos:RxCache:0.4.9"
     compile "io.reactivex:rxjava:1.1.0"
 }
 ```
+
+**Important:** RxCache by default uses Guava in order to be able to evict cached objects automatically before the application reaches its max heap memory. But most apps will not be benefit from this feature because, due to its mount of data, they will never reach the max heap memory limit. In that case, it is possible to exclude Guava dependency from RxCache cache, doing as follow:
+
+```gradle
+dependencies {
+    compile ("com.github.VictorAlbertos:RxCache:0.4.9") {
+        exclude module: 'guava'
+    }
+    compile "io.reactivex:rxjava:1.1.0"
+}
+``` 
+
+Doing this you will reduce the number of methods of your apk in more than 13.000, helping this way to stay away from the annoying [65K Reference Limit](http://developer.android.com/intl/es/tools/building/multidex.html).
 
 Usage
 =======
@@ -141,6 +154,8 @@ RxCache allows to set certain parameters when building the providers instance:
 
 PolicyHeapCache
 ---------------
+**Important:** This configuration will not have any effect if you exclude Guava dependency, as it is already explained at the Setup section.
+
 PolicyHeapCache sets the percentage to be used for the the in memory cache layer, based on the total heap memory available.
 
 ```java
