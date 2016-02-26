@@ -116,7 +116,7 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnNextEvents().get(0).getData().size(), is(SIZE));
     }
 
-    @Test public void _3_Invalidating_Cache() {
+    @Test public void _3_Evicting_Cache() {
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
@@ -184,15 +184,15 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnNextEvents().get(0).get(0).getMessage(), is(mockPage3Value));
     }
 
-    @Test public void _5_Pagination_Invalidate_All_Using_Null_Value_Observable() {
-        paginationInvalidateAll(false);
+    @Test public void _5_Pagination_Evict_All_Using_Null_Value_Observable() {
+        paginationEvictAll(false);
     }
 
-    @Test public void _6_Pagination_Invalidate_All_Using_Error_Observable() {
-        paginationInvalidateAll(true);
+    @Test public void _6_Pagination_Evict_All_Using_Error_Observable() {
+        paginationEvictAll(true);
     }
 
-    private void paginationInvalidateAll(boolean usingErrorObservableInsteadOfNull) {
+    private void paginationEvictAll(boolean usingErrorObservableInsteadOfNull) {
         TestSubscriber<List<Mock>> subscriber;
 
         EvictProvider evictProviderFalse = new EvictProvider(false);
@@ -238,7 +238,7 @@ public class ProvidersRxCacheTest {
     }
 
 
-    @Test public void _6_Pagination_With_Invalidate_Cache_By_Page() {
+    @Test public void _6_Pagination_With_Evict_Cache_By_Page() {
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();

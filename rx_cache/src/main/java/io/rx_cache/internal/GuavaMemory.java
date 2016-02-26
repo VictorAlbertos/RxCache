@@ -51,11 +51,11 @@ public class GuavaMemory implements Memory {
         return records.asMap().keySet();
     }
 
-    @Override public void invalidate(String key) {
+    @Override public void evict(String key) {
         records.invalidate(key);
     }
 
-    @Override public void invalidateAll() {
+    @Override public void evictAll() {
         records.invalidateAll();
     }
 }

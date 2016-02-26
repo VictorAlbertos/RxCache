@@ -77,7 +77,7 @@ final class TwoLayersCache {
         for (String composedKeyRecord : memory.keySet()) {
             final String keyRecord = composedKeyRecord.substring(0, composedKeyRecord.lastIndexOf(PREFIX_DYNAMIC_KEY));
             if (key.equals(keyRecord)) {
-                memory.invalidate(composedKeyRecord);
+                memory.evict(composedKeyRecord);
                 persistence.delete(composedKeyRecord);
             }
         }
@@ -85,17 +85,17 @@ final class TwoLayersCache {
 
     void clearDynamicKey(String key, String dynamicKey) {
         key = key + PREFIX_DYNAMIC_KEY + dynamicKey;
-        memory.invalidate(key);
+        memory.evict(key);
         persistence.delete(key);
     }
 
     void clearAll() {
-        memory.invalidateAll();
+        memory.evictAll();
         persistence.deleteAll();
     }
 
     @VisibleForTesting void mockMemoryDestroyed() {
-        memory.invalidateAll();
+        memory.evictAll();
     }
 
     private boolean retrieveHasBeenCalled;

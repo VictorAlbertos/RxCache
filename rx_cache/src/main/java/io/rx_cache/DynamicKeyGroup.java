@@ -1,7 +1,26 @@
+/*
+ * Copyright 2016 Victor Albertos
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.rx_cache;
 
+
 /**
- * Created by victor on 26/02/16.
+ * Wrapper around the key for those providers which need to handle multiple records in sections,
+ * so they need to provide multiple keys organized in groups, such us end points with filtering and pagination
+ * requirements
  */
 public class DynamicKeyGroup extends DynamicKey {
     private final Object group;

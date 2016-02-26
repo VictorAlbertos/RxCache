@@ -16,14 +16,19 @@
 
 package io.rx_cache;
 
-public class EvictProvider {
-    private final boolean invalidate;
+/**
+ * For those providers which will need to evict all the records
+ * @see EvictDynamicKeyGroup
+ */
 
-    public EvictProvider(boolean invalidate) {
-        this.invalidate = invalidate;
+public class EvictProvider {
+    private final boolean evict;
+
+    public EvictProvider(boolean evict) {
+        this.evict = evict;
     }
 
-    public boolean invalidate() {
-        return invalidate;
+    public boolean evict() {
+        return evict;
     }
 }

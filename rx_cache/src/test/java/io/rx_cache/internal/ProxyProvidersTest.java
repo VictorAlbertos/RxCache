@@ -51,14 +51,14 @@ public class ProxyProvidersTest extends BaseTest {
         assertNotNull(reply.getData());
     }
 
-    @Test public void When_Invalidate_Cache_Then_Source_Retrieved_Is_Cloud() {
+    @Test public void When_Evict_Cache_Then_Source_Retrieved_Is_Cloud() {
         TestSubscriber subscriberMock = getSubscriberCompleted(true, true, true, Loader.VALID, false);
         Reply<Mock> reply = (Reply) subscriberMock.getOnNextEvents().get(0);
         assertThat(reply.getSource(), is(Source.CLOUD));
         assertNotNull(reply.getData());
     }
 
-    @Test public void When_No_Invalidate_Cache_Then_Source_Retrieved_Is_Not_Cloud() {
+    @Test public void When_No_Evict_Cache_Then_Source_Retrieved_Is_Not_Cloud() {
         TestSubscriber subscriberMock = getSubscriberCompleted(true, false, true, Loader.VALID, false);
         Reply<Mock> reply = (Reply) subscriberMock.getOnNextEvents().get(0);
         assertThat(reply.getSource(), is(not(Source.CLOUD)));
@@ -105,7 +105,7 @@ public class ProxyProvidersTest extends BaseTest {
         assertThat(subscriberMock.getOnNextEvents().size(), is(1));
     }
 
-    private TestSubscriber getSubscriberCompleted(boolean hasCache, final boolean invalidateCache, boolean detailResponse, Loader loader, boolean useExpiredDataIfLoaderNotAvailable) {
+    private TestSubscriber getSubscriberCompleted(boolean hasCache, final boolean evictCache, boolean detailResponse, Loader loader, boolean useExpiredDataIfLoaderNotAvailable) {
         Observable observable;
         switch (loader) {
             case VALID:
@@ -123,7 +123,7 @@ public class ProxyProvidersTest extends BaseTest {
                 break;
         }
 
-        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", observable, 0, detailResponse, new EvictProvider(invalidateCache));
+        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", observable, 0, detailResponse, new EvictProvider(evictCache));
 
         if (hasCache) twoLayersCacheMock.save("mockKey", "", new Mock("message"));
 

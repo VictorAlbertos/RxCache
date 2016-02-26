@@ -24,6 +24,6 @@ public interface Memory {
     <T> Record<T> getIfPresent(String key);
     <T> void put(String key, Record<T> record);
     Set<String> keySet();
-    void invalidate(String key);
-    void invalidateAll();
+    void evict(String key);
+    void evictAll();
 }

@@ -50,7 +50,7 @@ public class ProxyTranslatorTest extends BaseTest {
         assertThat(configProvider.getKey(), is("getMocks"));
         assertNotNull(configProvider.getLoaderObservable());
         assertThat(configProvider.getLifeTimeMillis(), is(0l));
-        assertThat(configProvider.invalidator().invalidate(), is(false));
+        assertThat(configProvider.evictProvider().evict(), is(false));
         assertThat(configProvider.requiredDetailedResponse(), is(false));
     }
 
@@ -80,37 +80,37 @@ public class ProxyTranslatorTest extends BaseTest {
         proxyTranslatorUT.processMethod(mockMethod, dataMethod);
     }
 
-    @Test public void When_Invalidate_Cache_Invalidate() throws NoSuchMethodException {
+    @Test public void When_Evict_Cache_Evict() throws NoSuchMethodException {
         Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksEvictProvider", Observable.class, EvictProvider.class);
 
-        Object[] dataMethodInvalidate = {Observable.just(null), new EvictProvider(true)};
+        Object[] dataMethodEvict = {Observable.just(null), new EvictProvider(true)};
 
-        ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodInvalidate);
-        assertThat(configProvider.invalidator().invalidate(), is(true));
+        ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodEvict);
+        assertThat(configProvider.evictProvider().evict(), is(true));
 
-        Object[] dataMethodNoInvalidate = {Observable.just(null), new EvictProvider(false)};
-        configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodNoInvalidate);
-        assertThat(configProvider.invalidator().invalidate(), is(false));
+        Object[] dataMethodNoEvict = {Observable.just(null), new EvictProvider(false)};
+        configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodNoEvict);
+        assertThat(configProvider.evictProvider().evict(), is(false));
     }
 
-    @Test public void When_Invalidate_Cache_Dynamic_Key_Invalidate() throws NoSuchMethodException {
+    @Test public void When_Evict_Cache_Dynamic_Key_Evict() throws NoSuchMethodException {
         final String dynamicKey = "aDynamicKey";
 
         Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksDynamicKeyEvictPage", Observable.class, DynamicKey.class, EvictDynamicKey.class);
 
-        Object[] dataMethodInvalidate = {Observable.just(null), new DynamicKey(dynamicKey), new EvictDynamicKey(true)};
+        Object[] dataMethodEvict = {Observable.just(null), new DynamicKey(dynamicKey), new EvictDynamicKey(true)};
 
-        ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodInvalidate);
-        EvictDynamicKey invalidatorDynamicKey = (EvictDynamicKey) configProvider.invalidator();
+        ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodEvict);
+        EvictDynamicKey evictDynamicKey = (EvictDynamicKey) configProvider.evictProvider();
         assertThat(configProvider.getDynamicKey(), is(dynamicKey));
-        assertThat(invalidatorDynamicKey.invalidate(), is(true));
+        assertThat(evictDynamicKey.evict(), is(true));
 
-        Object[] dataMethodNoInvalidate = {Observable.just(null), new DynamicKey(dynamicKey), new EvictDynamicKey(false)};
+        Object[] dataMethodNoEvict = {Observable.just(null), new DynamicKey(dynamicKey), new EvictDynamicKey(false)};
 
-        configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodNoInvalidate);
-        invalidatorDynamicKey = (EvictDynamicKey) configProvider.invalidator();
+        configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodNoEvict);
+        evictDynamicKey = (EvictDynamicKey) configProvider.evictProvider();
         assertThat(configProvider.getDynamicKey(), is(dynamicKey));
-        assertThat(invalidatorDynamicKey.invalidate(), is(false));
+        assertThat(evictDynamicKey.evict(), is(false));
     }
 
     @Test public void When_Get_Page_Get_Pages() throws NoSuchMethodException {

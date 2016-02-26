@@ -41,11 +41,11 @@ public class SimpleMemory implements Memory {
         return concurrentMap.keySet();
     }
 
-    @Override public void invalidate(String key) {
+    @Override public void evict(String key) {
         concurrentMap.remove(key);
     }
 
-    @Override public void invalidateAll() {
+    @Override public void evictAll() {
         for (String key : keySet()) {
             concurrentMap.remove(key);
         }

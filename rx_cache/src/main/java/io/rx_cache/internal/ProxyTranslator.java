@@ -40,7 +40,7 @@ final class ProxyTranslator {
         this.objectsMethod = objectsMethod;
 
         ConfigProvider configProvider = new ConfigProvider(getKey(), getDynamicKey(), getGroup(), getLoaderObservable(),
-                getLifeTimeCache(), requiredDetailResponse(), invalidator());
+                getLifeTimeCache(), requiredDetailResponse(), evictProvider());
         checkIntegrityConfiguration(configProvider);
 
         return configProvider;
@@ -83,9 +83,9 @@ final class ProxyTranslator {
         return method.getGenericReturnType().toString().contains(Reply.class.getName());
     }
 
-    protected EvictProvider invalidator() {
-        EvictProvider invalidateCache = getObjectFromMethodParam(EvictProvider.class);
-        if (invalidateCache != null) return invalidateCache;
+    protected EvictProvider evictProvider() {
+        EvictProvider evictProvider = getObjectFromMethodParam(EvictProvider.class);
+        if (evictProvider != null) return evictProvider;
         else return new EvictProvider(false);
     }
 
@@ -109,13 +109,13 @@ final class ProxyTranslator {
     }
 
     private void checkIntegrityConfiguration(ConfigProvider configProvider) {
-        if (configProvider.invalidator() instanceof EvictDynamicKeyGroup
+        if (configProvider.evictProvider() instanceof EvictDynamicKeyGroup
                 && configProvider.getGroup().isEmpty()) {
             String errorMessage = method.getName() + Locale.EVICT_DYNAMIC_KEY_GROUP_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY_PROVIDER;
             throw new IllegalArgumentException(errorMessage);
         }
 
-        if (configProvider.invalidator() instanceof EvictDynamicKey
+        if (configProvider.evictProvider() instanceof EvictDynamicKey
                 && configProvider.getDynamicKey().isEmpty()) {
             String errorMessage = method.getName() + Locale.EVICT_DYNAMIC_KEY_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY;
             throw new IllegalArgumentException(errorMessage);
@@ -163,7 +163,7 @@ final class ProxyTranslator {
             return loaderObservable;
         }
 
-        public EvictProvider invalidator() {
+        public EvictProvider evictProvider() {
             return evictProvider;
         }
     }

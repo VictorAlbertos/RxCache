@@ -61,7 +61,7 @@ final class ProxyProviders implements InvocationHandler {
         return Observable.just(twoLayersCache.retrieve(configProvider.getKey(), configProvider.getDynamicKey(), useExpiredDataIfLoaderNotAvailable, configProvider.getLifeTimeMillis()))
                 .map(new Func1<Record, Observable<Reply>>() {
                     @Override public Observable<Reply> call(final Record record) {
-                        if (record != null && !configProvider.invalidator().invalidate())
+                        if (record != null && !configProvider.evictProvider().evict())
                             return Observable.just(new Reply(record.getData(), record.getSource()));
 
                         return getDataFromLoader(configProvider, record);
@@ -109,11 +109,11 @@ final class ProxyProviders implements InvocationHandler {
     }
 
     private void clearKeyIfNeeded(ProxyTranslator.ConfigProvider configProvider) {
-        if (configProvider.invalidator() instanceof EvictDynamicKey) {
-            EvictDynamicKey invalidatorDynamicKey = (EvictDynamicKey) configProvider.invalidator();
-            if (invalidatorDynamicKey.invalidate())
+        if (configProvider.evictProvider() instanceof EvictDynamicKey) {
+            EvictDynamicKey evictDynamicKey = (EvictDynamicKey) configProvider.evictProvider();
+            if (evictDynamicKey.evict())
                 twoLayersCache.clearDynamicKey(configProvider.getKey(), configProvider.getDynamicKey().toString());
-        } else if (configProvider.invalidator().invalidate()) {
+        } else if (configProvider.evictProvider().evict()) {
             twoLayersCache.clear(configProvider.getKey());
         }
     }

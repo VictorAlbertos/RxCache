@@ -16,8 +16,13 @@
 
 package io.rx_cache;
 
+
+/**
+ * For those providers which will need to evict the records of an specific DynamicKey.
+ * @see DynamicKey
+ */
 public class EvictDynamicKey extends EvictProvider {
-    public EvictDynamicKey(boolean invalidate) {
-        super(invalidate);
+    public EvictDynamicKey(boolean evict) {
+        super(evict);
     }
 }
