@@ -26,8 +26,9 @@ import org.junit.runners.MethodSorters;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.rx_cache.Invalidator;
-import io.rx_cache.InvalidatorDynamicKey;
+import io.rx_cache.DynamicKey;
+import io.rx_cache.EvictDynamicKey;
+import io.rx_cache.EvictProvider;
 import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
@@ -47,17 +48,8 @@ public class ProvidersRxCacheTest {
     @ClassRule public static TemporaryFolder temporaryFolder = new TemporaryFolder();
     private ProvidersRxCache providersRxCache;
     private final static int SIZE = 100;
-    private final Invalidator invalidatorFalse = new Invalidator() {
-        @Override public boolean invalidate() {
-            return false;
-        }
-    };
-
-    private final Invalidator invalidatorTrue = new Invalidator() {
-        @Override public boolean invalidate() {
-            return true;
-        }
-    };
+    private final EvictProvider evictProviderFalse = new EvictProvider(false);
+    private final EvictProvider evictProviderTrue = new EvictProvider(true);
 
     @Before public void setUp() {
         providersRxCache = new RxCache.Builder()
@@ -128,7 +120,7 @@ public class ProvidersRxCacheTest {
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksInvalidateCache(createObservableMocks(SIZE), invalidatorFalse).subscribe(subscriber);
+        providersRxCache.getMocksEvictProvider(createObservableMocks(SIZE), evictProviderFalse).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
 
         Reply<List<Mock>> reply = subscriber.getOnNextEvents().get(0);
@@ -136,7 +128,7 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnNextEvents().get(0).getData().size(), is(SIZE));
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksInvalidateCache(createObservableMocks(SIZE), invalidatorFalse).subscribe(subscriber);
+        providersRxCache.getMocksEvictProvider(createObservableMocks(SIZE), evictProviderFalse).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
 
         reply = subscriber.getOnNextEvents().get(0);
@@ -144,7 +136,7 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnNextEvents().get(0).getData().size(), is(SIZE));
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksInvalidateCache(createObservableMocks(SIZE), invalidatorTrue).subscribe(subscriber);
+        providersRxCache.getMocksEvictProvider(createObservableMocks(SIZE), evictProviderTrue).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
 
         reply = subscriber.getOnNextEvents().get(0);
@@ -159,35 +151,35 @@ public class ProvidersRxCacheTest {
         String mockPage1Value = mocksPage1.get(0).getMessage();
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginate(Observable.just(mocksPage1), 1).subscribe(subscriber);
+        providersRxCache.getMocksPaginate(Observable.just(mocksPage1), new DynamicKey(1)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
 
         List<Mock> mocksPage2 = createMocks(SIZE);
         String mockPage2Value = mocksPage2.get(0).getMessage();
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginate(Observable.just(mocksPage2), 2).subscribe(subscriber);
+        providersRxCache.getMocksPaginate(Observable.just(mocksPage2), new DynamicKey(2)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
 
         List<Mock> mocksPage3 = createMocks(SIZE);
         String mockPage3Value = mocksPage3.get(0).getMessage();
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginate(Observable.just(mocksPage3), 3).subscribe(subscriber);
+        providersRxCache.getMocksPaginate(Observable.just(mocksPage3), new DynamicKey(3)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginate(Observable.<List<Mock>>just(null), 1).subscribe(subscriber);
+        providersRxCache.getMocksPaginate(Observable.<List<Mock>>just(null), new DynamicKey(1)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnNextEvents().get(0).get(0).getMessage(), is(mockPage1Value));
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginate(Observable.<List<Mock>>just(null), 2).subscribe(subscriber);
+        providersRxCache.getMocksPaginate(Observable.<List<Mock>>just(null), new DynamicKey(2)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnNextEvents().get(0).get(0).getMessage(), is(mockPage2Value));
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginate(Observable.<List<Mock>>just(null), 3).subscribe(subscriber);
+        providersRxCache.getMocksPaginate(Observable.<List<Mock>>just(null), new DynamicKey(3)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnNextEvents().get(0).get(0).getMessage(), is(mockPage3Value));
     }
@@ -203,26 +195,17 @@ public class ProvidersRxCacheTest {
     private void paginationInvalidateAll(boolean usingErrorObservableInsteadOfNull) {
         TestSubscriber<List<Mock>> subscriber;
 
-        Invalidator invalidatorFalse = new Invalidator() {
-            @Override public boolean invalidate() {
-                return false;
-            }
-        };
-
-        Invalidator invalidatorTrue = new Invalidator() {
-            @Override public boolean invalidate() {
-                return true;
-            }
-        };
+        EvictProvider evictProviderFalse = new EvictProvider(false);
+        EvictProvider evictProviderTrue = new EvictProvider(true);
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginateInvalidateAll(Observable.just(createMocks(SIZE)), 1, invalidatorFalse).subscribe(subscriber);
+        providersRxCache.getMocksPaginateEvictProvider(Observable.just(createMocks(SIZE)), new DynamicKey(1), evictProviderFalse).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnErrorEvents().size(), is(0));
         assertThat(subscriber.getOnNextEvents().size(), is(1));
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginateInvalidateAll(Observable.just(createMocks(SIZE)), 2, invalidatorFalse).subscribe(subscriber);
+        providersRxCache.getMocksPaginateEvictProvider(Observable.just(createMocks(SIZE)), new DynamicKey(2), evictProviderFalse).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnErrorEvents().size(), is(0));
         assertThat(subscriber.getOnNextEvents().size(), is(1));
@@ -239,17 +222,17 @@ public class ProvidersRxCacheTest {
         }
 
        subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginateInvalidateAll(oMocks, 1, invalidatorTrue).subscribe(subscriber);
+        providersRxCache.getMocksPaginateEvictProvider(oMocks, new DynamicKey(1), evictProviderTrue).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginateInvalidateAll(Observable.<List<Mock>>just(null), 1, invalidatorFalse).subscribe(subscriber);
+        providersRxCache.getMocksPaginateEvictProvider(Observable.<List<Mock>>just(null), new DynamicKey(1), evictProviderFalse).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnErrorEvents().size(), is(1));
         assertThat(subscriber.getOnNextEvents().size(), is(0));
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksPaginateInvalidateAll(Observable.<List<Mock>>just(null), 2, invalidatorFalse).subscribe(subscriber);
+        providersRxCache.getMocksPaginateEvictProvider(Observable.<List<Mock>>just(null), new DynamicKey(2), evictProviderFalse).subscribe(subscriber);
         assertThat(subscriber.getOnErrorEvents().size(), is(1));
         assertThat(subscriber.getOnNextEvents().size(), is(0));
     }
@@ -259,60 +242,23 @@ public class ProvidersRxCacheTest {
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksDynamicKeyInvalidateCache(Observable.just(createMocks(SIZE)), 1, new InvalidatorDynamicKey() {
-            @Override
-            public Object dynamicKey() {
-                return 1;
-            }
-
-            @Override
-            public boolean invalidate() {
-                return true;
-            }
-        }).subscribe(subscriber);
+        providersRxCache.getMocksDynamicKeyEvictPage(Observable.just(createMocks(SIZE)), new DynamicKey(1), new EvictDynamicKey(true)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksDynamicKeyInvalidateCache(Observable.just(createMocks(SIZE)), 2, new InvalidatorDynamicKey() {
-            @Override
-            public Object dynamicKey() {
-                return 2;
-            }
-
-            @Override
-            public boolean invalidate() {
-                return true;
-            }
-        }).subscribe(subscriber);
+        providersRxCache.getMocksDynamicKeyEvictPage(Observable.just(createMocks(SIZE)), new DynamicKey(2), new EvictDynamicKey(true)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksDynamicKeyInvalidateCache(Observable.<List<Mock>>just(null), 1, new InvalidatorDynamicKey() {
-            @Override
-            public Object dynamicKey() {
-                return 1;
-            }
-
-            @Override
-            public boolean invalidate() {
-                return true;
-            }
-        }).subscribe(subscriber);
+        providersRxCache.getMocksDynamicKeyEvictPage(Observable.<List<Mock>>just(null), new DynamicKey(1), new EvictDynamicKey(true)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnErrorEvents().size(), is(1));
         assertThat(subscriber.getOnNextEvents().size(), is(0));
 
         //the data associated with key 2 still remains because invalidation dynamic only affect to the key specified
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksDynamicKeyInvalidateCache(Observable.<List<Mock>>just(null), 2, new InvalidatorDynamicKey() {
-            @Override public Object dynamicKey() {
-                return 2;
-            }
-
-            @Override public boolean invalidate() {
-                return false;
-            }
-        }).subscribe(subscriber);
+        providersRxCache.getMocksDynamicKeyEvictPage(Observable.<List<Mock>>just(null), new DynamicKey(2), new EvictDynamicKey(false))
+                .subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnErrorEvents().size(), is(0));
         assertThat(subscriber.getOnNextEvents().size(), is(1));
@@ -323,32 +269,32 @@ public class ProvidersRxCacheTest {
         Mock mock = createMocks(SIZE).get(0);
 
         //not logged mock
-        providersRxCache.getLoggedMock(Observable.<Mock>just(null), invalidatorFalse).subscribe(subscriber);
+        providersRxCache.getLoggedMock(Observable.<Mock>just(null), evictProviderFalse).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnNextEvents().size(), is(0));
         assertThat(subscriber.getOnErrorEvents().size(), is(1));
 
         //login mock
         subscriber = new TestSubscriber<>();
-        providersRxCache.getLoggedMock(Observable.just(mock), invalidatorTrue).subscribe(subscriber);
+        providersRxCache.getLoggedMock(Observable.just(mock), evictProviderTrue).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertNotNull(subscriber.getOnNextEvents().get(0));
 
         //logged mock
         subscriber = new TestSubscriber<>();
-        providersRxCache.getLoggedMock(Observable.<Mock>just(null), invalidatorFalse).subscribe(subscriber);
+        providersRxCache.getLoggedMock(Observable.<Mock>just(null), evictProviderFalse).subscribe(subscriber);
         assertNotNull(subscriber.getOnNextEvents().get(0));
 
         //logout mock
         subscriber = new TestSubscriber<>();
-        providersRxCache.getLoggedMock(Observable.<Mock>just(null), invalidatorTrue).subscribe(subscriber);
+        providersRxCache.getLoggedMock(Observable.<Mock>just(null), evictProviderTrue).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnNextEvents().size(), is(0));
         assertThat(subscriber.getOnErrorEvents().size(), is(1));
 
         //not logged mock
         subscriber = new TestSubscriber<>();
-        providersRxCache.getLoggedMock(Observable.<Mock>just(null), invalidatorFalse).subscribe(subscriber);
+        providersRxCache.getLoggedMock(Observable.<Mock>just(null), evictProviderFalse).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnNextEvents().size(), is(0));
         assertThat(subscriber.getOnErrorEvents().size(), is(1));

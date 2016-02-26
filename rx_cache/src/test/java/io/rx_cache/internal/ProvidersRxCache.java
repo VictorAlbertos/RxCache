@@ -19,12 +19,11 @@ package io.rx_cache.internal;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import io.rx_cache.Invalidator;
-import io.rx_cache.InvalidatorDynamicKey;
 import io.rx_cache.DynamicKey;
-import io.rx_cache.InvalidateCache;
+import io.rx_cache.EvictDynamicKeyGroup;
+import io.rx_cache.EvictProvider;
+import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.LifeCache;
-import io.rx_cache.Loader;
 import io.rx_cache.Reply;
 import rx.Observable;
 
@@ -32,36 +31,48 @@ import rx.Observable;
  * Provided to test as an integration test the library RxCache
  */
 interface ProvidersRxCache {
-    Observable<List<Mock>> getMocks(@Loader Observable<List<Mock>> mocks);
+    Observable<List<Mock>> getMocks(Observable<List<Mock>> mocks);
 
-    Observable<Reply<List<Mock>>> getMocksWithDetailResponse(@Loader Observable<List<Mock>> mocks);
+    Observable<Reply<List<Mock>>> getMocksWithDetailResponse(Observable<List<Mock>> mocks);
 
     @LifeCache(duration = 1, timeUnit = TimeUnit.SECONDS)
-    Observable<Reply<List<Mock>>> getMocksResponseOneSecond(@Loader Observable<List<Mock>> mocks);
+    Observable<Reply<List<Mock>>> getMocksResponseOneSecond(Observable<List<Mock>> mocks);
 
     @LifeCache(duration = 1, timeUnit = TimeUnit.MINUTES)
-    Observable<List<Mock>> getMocksLifeTimeMinutes(@Loader Observable<List<Mock>> mocks);
+    Observable<List<Mock>> getMocksLifeTimeMinutes(Observable<List<Mock>> mocks);
 
     @LifeCache(duration = 1, timeUnit = TimeUnit.SECONDS)
-    Observable<List<Mock>> getMocksLifeTimeSeconds(@Loader Observable<List<Mock>> mocks);
+    Observable<List<Mock>> getMocksLifeTimeSeconds(Observable<List<Mock>> mocks);
 
     @LifeCache(duration = 65000, timeUnit = TimeUnit.MILLISECONDS)
-    Observable<List<Mock>> getMocksLifeTimeMillis(@Loader Observable<List<Mock>> mocks);
+    Observable<List<Mock>> getMocksLifeTimeMillis(Observable<List<Mock>> mocks);
 
-    Observable<List<Mock>> getMocksWithoutLoaderAnnotation(Observable<List<Mock>> mocks);
+    Observable<List<Mock>> getMocksPaginate(Observable<List<Mock>> mocks, DynamicKey page);
 
-    Observable<List<Mock>> getMocksPaginate(@Loader Observable<List<Mock>> mocks, @DynamicKey int page);
+    Observable<List<Mock>> getMocksPaginateEvictProvider(Observable<List<Mock>> mocks, DynamicKey page, EvictProvider evictProvider);
 
-    Observable<List<Mock>> getMocksPaginateInvalidateAll(@Loader Observable<List<Mock>> mocks, @DynamicKey int page,
-                                                         @InvalidateCache Invalidator invalidator);
+    Reply<List<Mock>> getMocksBadReturnType(Observable<List<Mock>> mocks);
 
-    Reply<List<Mock>> getMocksBadReturnType(@Loader Observable<List<Mock>> mocks);
+    Observable<Reply<List<Mock>>> getMocksEvictProvider(Observable<List<Mock>> mocks, EvictProvider evictProvider);
 
-    Observable<Reply<List<Mock>>> getMocksInvalidateCache(@Loader Observable<List<Mock>> mocks, @InvalidateCache Invalidator invalidator);
+    Observable<Reply<List<Mock>>> getMocksDynamicKeyEvictPage(Observable<List<Mock>> mocks, DynamicKey page, EvictDynamicKey evictPage);
 
-    Observable<Reply<List<Mock>>> getMocksDynamicKeyInvalidateCache(@Loader Observable<List<Mock>> mocks, @DynamicKey int page,
-                                                                    @InvalidateCache InvalidatorDynamicKey invalidatorDynamicKey);
+    Observable<Mock> getLoggedMock(Observable<Mock> mock, EvictProvider evictProvider);
 
-    Observable<Mock> getLoggedMock(@Loader Observable<Mock> mock, @InvalidateCache Invalidator invalidator);
+
+
+    Observable<Mock> getMockWithoutLoaderObservable();
+
+    int getMockWithoutReturnObservable();
+
+    Observable<Mock> getMockMultipleObservables(Observable<Mock> mock, Observable<Mock> mock2);
+
+    Observable<Mock> getMockMultipleEvicts(Observable<Mock> mock, EvictProvider evictProvider, EvictProvider evictProvider2);
+
+    Observable<Mock> getMockMultipleDynamicKeys(Observable<Mock> mock, DynamicKey dynamicKey, DynamicKey dynamicKey2);
+
+    Observable<Mock> getMockEvictDynamicKeyWithoutProvidingDynamicKey(Observable<Mock> mock, EvictDynamicKey evictDynamicKey);
+
+    Observable<Mock> getMockEvictDynamicKeyGroupWithoutProvidingDynamicKeyGroup(Observable<Mock> mock, EvictDynamicKeyGroup evictDynamicKeyGroup);
 }
 

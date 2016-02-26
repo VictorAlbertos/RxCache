@@ -16,16 +16,16 @@
 
 package io.rx_cache.internal;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import javax.inject.Inject;
 
 import io.rx_cache.DynamicKey;
-import io.rx_cache.InvalidateCache;
-import io.rx_cache.Invalidator;
+import io.rx_cache.DynamicKeyGroup;
+import io.rx_cache.EvictDynamicKey;
+import io.rx_cache.EvictDynamicKeyGroup;
+import io.rx_cache.EvictProvider;
 import io.rx_cache.LifeCache;
-import io.rx_cache.Loader;
 import io.rx_cache.Reply;
 import rx.Observable;
 
@@ -38,8 +38,12 @@ final class ProxyTranslator {
     ConfigProvider processMethod(Method method, Object[] objectsMethod) {
         this.method = method;
         this.objectsMethod = objectsMethod;
-        return new ConfigProvider(getKey(), getDynamicKey(), getLoaderObservable(),
+
+        ConfigProvider configProvider = new ConfigProvider(getKey(), getDynamicKey(), getGroup(), getLoaderObservable(),
                 getLifeTimeCache(), requiredDetailResponse(), invalidator());
+        checkIntegrityConfiguration(configProvider);
+
+        return configProvider;
     }
 
     protected String getKey() {
@@ -47,12 +51,17 @@ final class ProxyTranslator {
     }
 
     protected String getDynamicKey() {
-        Object page = annotationConverter(DynamicKey.class, Object.class);
-        return page != null ? page.toString() : "";
+        DynamicKey dynamicKey = getObjectFromMethodParam(DynamicKey.class);
+        return dynamicKey != null ? dynamicKey.getKey().toString() : "";
+    }
+
+    protected String getGroup() {
+        DynamicKeyGroup group = getObjectFromMethodParam(DynamicKeyGroup.class);
+        return group != null ? group.getGroup().toString() : "";
     }
 
     protected Observable getLoaderObservable() {
-        Observable observable = annotationConverter(Loader.class, Observable.class);
+        Observable observable = getObjectFromMethodParam(Observable.class);
         if (observable != null) return observable;
 
         String errorMessage = method.getName() + Locale.NOT_OBSERVABLE_LOADER_FOUND;
@@ -74,49 +83,59 @@ final class ProxyTranslator {
         return method.getGenericReturnType().toString().contains(Reply.class.getName());
     }
 
-    protected Invalidator invalidator() {
-        Invalidator invalidateCache = annotationConverter(InvalidateCache.class, Invalidator.class);
+    protected EvictProvider invalidator() {
+        EvictProvider invalidateCache = getObjectFromMethodParam(EvictProvider.class);
         if (invalidateCache != null) return invalidateCache;
-        else return new Invalidator() {
-            @Override public boolean invalidate() {
-                return false;
-            }
-        };
+        else return new EvictProvider(false);
     }
 
-    protected <T> T annotationConverter(Class candidate, Class<T> expectedCast) {
-        int indexObjectForAnnotation = -1;
-        Annotation[][] annotations = method.getParameterAnnotations();
+    protected <T> T getObjectFromMethodParam(Class<T> expectedClass) {
+        int countSameObjectsType = 0;
+        T expectedObject = null;
 
-        for (int i = 0; i < annotations.length; i++) {
-            Annotation[] annotation = annotations[i];
-            if (annotation.length == 0) continue;
-            if (annotation[0].annotationType() != candidate) continue;
-
-            if (indexObjectForAnnotation != -1) throw new IllegalArgumentException(Locale.NOT_MORE_THAN_ONE_ANNOTATION_TYPE + candidate.getName());
-            else indexObjectForAnnotation = i;
+        for (Object objectParam: objectsMethod) {
+            if (expectedClass.isAssignableFrom(objectParam.getClass())) {
+                expectedObject = (T) objectParam;
+                countSameObjectsType++;
+            }
         }
 
-        try {
-            return expectedCast.cast(objectsMethod[indexObjectForAnnotation]);
-        } catch (Exception ignore) {
-            return null;
+        if (countSameObjectsType > 1) {
+            String errorMessage = method.getName() + Locale.JUST_ONE_INSTANCE + expectedObject.getClass().getSimpleName();
+            throw new IllegalArgumentException(errorMessage);
+        }
+
+        return expectedObject;
+    }
+
+    private void checkIntegrityConfiguration(ConfigProvider configProvider) {
+        if (configProvider.invalidator() instanceof EvictDynamicKeyGroup
+                && configProvider.getGroup().isEmpty()) {
+            String errorMessage = method.getName() + Locale.EVICT_DYNAMIC_KEY_GROUP_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY_PROVIDER;
+            throw new IllegalArgumentException(errorMessage);
+        }
+
+        if (configProvider.invalidator() instanceof EvictDynamicKey
+                && configProvider.getDynamicKey().isEmpty()) {
+            String errorMessage = method.getName() + Locale.EVICT_DYNAMIC_KEY_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY;
+            throw new IllegalArgumentException(errorMessage);
         }
     }
 
     final static class ConfigProvider {
-        private final String key, dynamicKey;
+        private final String key, dynamicKey, group;
         private final Observable loaderObservable;
         private final long lifeTime;
         private final boolean requiredDetailedResponse;
-        private final Invalidator invalidator;
+        private final EvictProvider evictProvider;
 
-        ConfigProvider(String key, String dynamicKey, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, Invalidator invalidator) {
+        ConfigProvider(String key, String dynamicKey, String group, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider) {
             this.key = key;
             this.dynamicKey = dynamicKey;
+            this.group = group;
             this.loaderObservable = loaderObservable;
             this.lifeTime = lifeTime;
-            this.invalidator = invalidator;
+            this.evictProvider = evictProvider;
             this.requiredDetailedResponse = requiredDetailedResponse;
         }
 
@@ -126,6 +145,10 @@ final class ProxyTranslator {
 
         public String getDynamicKey() {
             return dynamicKey;
+        }
+
+        public String getGroup() {
+            return group;
         }
 
         long getLifeTimeMillis() {
@@ -140,8 +163,8 @@ final class ProxyTranslator {
             return loaderObservable;
         }
 
-        public Invalidator invalidator() {
-            return invalidator;
+        public EvictProvider invalidator() {
+            return evictProvider;
         }
     }
 }

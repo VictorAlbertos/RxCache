@@ -20,8 +20,10 @@ import org.junit.Test;
 
 import java.lang.reflect.Method;
 
-import io.rx_cache.Invalidator;
-import io.rx_cache.InvalidatorDynamicKey;
+import io.rx_cache.DynamicKey;
+import io.rx_cache.EvictDynamicKeyGroup;
+import io.rx_cache.EvictProvider;
+import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.internal.common.BaseTest;
 import rx.Observable;
 
@@ -66,11 +68,6 @@ public class ProxyTranslatorTest extends BaseTest {
         assertThat(configProvider.getLifeTimeMillis(), is(65000l));
     }
 
-    @Test(expected=IllegalArgumentException.class) public void When_Not_Loader_Defined_Throw_Exception() throws NoSuchMethodException {
-        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksWithoutLoaderAnnotation", Observable.class);
-        proxyTranslatorUT.processMethod(mockMethod, dataMethod);
-    }
-
     @Test public void When_Return_Response_Then_Required_Detail_Response_Is_True() throws NoSuchMethodException {
         Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksWithDetailResponse", Observable.class);
         ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
@@ -84,22 +81,14 @@ public class ProxyTranslatorTest extends BaseTest {
     }
 
     @Test public void When_Invalidate_Cache_Invalidate() throws NoSuchMethodException {
-        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksInvalidateCache", Observable.class, Invalidator.class);
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksEvictProvider", Observable.class, EvictProvider.class);
 
-        Object[] dataMethodInvalidate = {Observable.just(null), new Invalidator() {
-            @Override public boolean invalidate() {
-                return true;
-            }
-        }};
+        Object[] dataMethodInvalidate = {Observable.just(null), new EvictProvider(true)};
 
         ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodInvalidate);
         assertThat(configProvider.invalidator().invalidate(), is(true));
 
-        Object[] dataMethodNoInvalidate = {Observable.just(null), new Invalidator() {
-            @Override public boolean invalidate() {
-                return false;
-            }
-        }};
+        Object[] dataMethodNoInvalidate = {Observable.just(null), new EvictProvider(false)};
         configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodNoInvalidate);
         assertThat(configProvider.invalidator().invalidate(), is(false));
     }
@@ -107,46 +96,70 @@ public class ProxyTranslatorTest extends BaseTest {
     @Test public void When_Invalidate_Cache_Dynamic_Key_Invalidate() throws NoSuchMethodException {
         final String dynamicKey = "aDynamicKey";
 
-        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksDynamicKeyInvalidateCache", Observable.class, int.class, InvalidatorDynamicKey.class);
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksDynamicKeyEvictPage", Observable.class, DynamicKey.class, EvictDynamicKey.class);
 
-        Object[] dataMethodInvalidate = {Observable.just(null), 1, new InvalidatorDynamicKey() {
-            @Override public Object dynamicKey() {
-                return dynamicKey;
-            }
-
-            @Override public boolean invalidate() {
-                return true;
-            }
-        }};
+        Object[] dataMethodInvalidate = {Observable.just(null), new DynamicKey(dynamicKey), new EvictDynamicKey(true)};
 
         ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodInvalidate);
-        InvalidatorDynamicKey invalidatorDynamicKey = (InvalidatorDynamicKey) configProvider.invalidator();
-        assertThat(invalidatorDynamicKey.dynamicKey().toString(), is(dynamicKey));
+        EvictDynamicKey invalidatorDynamicKey = (EvictDynamicKey) configProvider.invalidator();
+        assertThat(configProvider.getDynamicKey(), is(dynamicKey));
         assertThat(invalidatorDynamicKey.invalidate(), is(true));
 
-        Object[] dataMethodNoInvalidate = {Observable.just(null), 1, new InvalidatorDynamicKey() {
-            @Override public Object dynamicKey() {
-                return dynamicKey;
-            }
-
-            @Override public boolean invalidate() {
-                return false;
-            }
-        }};
+        Object[] dataMethodNoInvalidate = {Observable.just(null), new DynamicKey(dynamicKey), new EvictDynamicKey(false)};
 
         configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodNoInvalidate);
-        invalidatorDynamicKey = (InvalidatorDynamicKey) configProvider.invalidator();
-        assertThat(invalidatorDynamicKey.dynamicKey().toString(), is(dynamicKey));
+        invalidatorDynamicKey = (EvictDynamicKey) configProvider.invalidator();
+        assertThat(configProvider.getDynamicKey(), is(dynamicKey));
         assertThat(invalidatorDynamicKey.invalidate(), is(false));
     }
 
     @Test public void When_Get_Page_Get_Pages() throws NoSuchMethodException {
-        Object[] dataMethodPaginate = {Observable.just(null), 1};
+        Object[] dataMethodPaginate = {Observable.just(null), new DynamicKey(1)};
 
-        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksPaginate", Observable.class, int.class);
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksPaginate", Observable.class, DynamicKey.class);
         ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodPaginate);
 
         assertThat(configProvider.getDynamicKey(), is("1"));
     }
 
+    @Test(expected=IllegalArgumentException.class) public void When_Not_Loader_Provided_Throw_Exception() throws NoSuchMethodException {
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMockWithoutLoaderObservable");
+        Object[] emptyDataMethod = {};
+        proxyTranslatorUT.processMethod(mockMethod, emptyDataMethod);
+    }
+
+    @Test(expected=IllegalArgumentException.class) public void When_Not_Return_Observable_Throw_Exception() throws NoSuchMethodException {
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMockWithoutReturnObservable");
+        proxyTranslatorUT.processMethod(mockMethod, dataMethod);
+    }
+
+    @Test(expected=IllegalArgumentException.class) public void When_Multiple_Observable_Throw_Exception() throws NoSuchMethodException {
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMockMultipleObservables", Observable.class, Observable.class);
+        Object[] data = {Observable.just(null), Observable.just(null)};
+        proxyTranslatorUT.processMethod(mockMethod, data);
+    }
+
+    @Test(expected=IllegalArgumentException.class) public void When_Multiple_Evict_Throw_Exception() throws NoSuchMethodException {
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMockMultipleEvicts", Observable.class, EvictProvider.class, EvictProvider.class);
+        Object[] data = {Observable.just(null), new EvictProvider(true), new EvictProvider(true)};
+        proxyTranslatorUT.processMethod(mockMethod, data);
+    }
+
+    @Test(expected=IllegalArgumentException.class) public void When_Multiple_Dynamic_Keys_Throw_Exception() throws NoSuchMethodException {
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMockMultipleDynamicKeys", Observable.class, DynamicKey.class, DynamicKey.class);
+        Object[] data = {Observable.just(null), new DynamicKey(1), new DynamicKey(1)};
+        proxyTranslatorUT.processMethod(mockMethod, data);
+    }
+
+    @Test(expected=IllegalArgumentException.class) public void When_Use_Evict_Dynamic_Key_Without_Providing_Dynamic_Key_Throw_Exception() throws NoSuchMethodException {
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMockEvictDynamicKeyWithoutProvidingDynamicKey", Observable.class, EvictDynamicKey.class);
+        Object[] data = {Observable.just(null), new EvictDynamicKey(true)};
+        proxyTranslatorUT.processMethod(mockMethod, data);
+    }
+
+    @Test(expected=IllegalArgumentException.class) public void When_Use_Evict_Dynamic_Key_Group_Without_Providing_Dynamic_Key_Group_Throw_Exception() throws NoSuchMethodException {
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMockEvictDynamicKeyGroupWithoutProvidingDynamicKeyGroup", Observable.class, EvictDynamicKeyGroup.class);
+        Object[] data = {Observable.just(null), new EvictDynamicKeyGroup(true)};
+        proxyTranslatorUT.processMethod(mockMethod, data);
+    }
 }

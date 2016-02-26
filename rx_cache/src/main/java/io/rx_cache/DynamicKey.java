@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Victor Albertos
+ * Copyright 2016 Victor Albertos
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,14 @@
 
 package io.rx_cache;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+public class DynamicKey {
+    private final Object key;
 
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+    public DynamicKey(Object key) {
+        this.key = key;
+    }
 
-/**
- * Identifies the string key for those methods which can handle multiple results,
- * so they need to provide multiple keys, such us end points with pagination,
- * order or filters properties
- */
-@Target(PARAMETER)
-@Retention(RUNTIME)
-public @interface DynamicKey {
+    public Object getKey() {
+        return key;
+    }
 }

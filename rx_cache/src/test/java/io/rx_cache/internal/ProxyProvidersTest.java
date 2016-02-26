@@ -18,7 +18,7 @@ package io.rx_cache.internal;
 
 import org.junit.Test;
 
-import io.rx_cache.Invalidator;
+import io.rx_cache.EvictProvider;
 import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
@@ -123,11 +123,7 @@ public class ProxyProvidersTest extends BaseTest {
                 break;
         }
 
-        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", observable, 0, detailResponse, new Invalidator() {
-            @Override public boolean invalidate() {
-                return invalidateCache;
-            }
-        });
+        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", observable, 0, detailResponse, new EvictProvider(invalidateCache));
 
         if (hasCache) twoLayersCacheMock.save("mockKey", "", new Mock("message"));
 
@@ -140,11 +136,7 @@ public class ProxyProvidersTest extends BaseTest {
     }
 
     @Test public void When_Get_Method_Implementation_Is_Called_Retrieve_Operation_Is_Deferred_Until_Subscription() {
-        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", Observable.just(new Mock("message")), 0, false, new Invalidator() {
-            @Override public boolean invalidate() {
-                return false;
-            }
-        });
+        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", Observable.just(new Mock("message")), 0, false, new EvictProvider(false));
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
         proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, true);

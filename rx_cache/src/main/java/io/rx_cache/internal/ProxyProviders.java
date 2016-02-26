@@ -24,7 +24,7 @@ import java.lang.reflect.Method;
 
 import javax.inject.Inject;
 
-import io.rx_cache.InvalidatorDynamicKey;
+import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.Record;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
@@ -109,10 +109,10 @@ final class ProxyProviders implements InvocationHandler {
     }
 
     private void clearKeyIfNeeded(ProxyTranslator.ConfigProvider configProvider) {
-        if (configProvider.invalidator() instanceof InvalidatorDynamicKey) {
-            InvalidatorDynamicKey invalidatorDynamicKey = (InvalidatorDynamicKey) configProvider.invalidator();
+        if (configProvider.invalidator() instanceof EvictDynamicKey) {
+            EvictDynamicKey invalidatorDynamicKey = (EvictDynamicKey) configProvider.invalidator();
             if (invalidatorDynamicKey.invalidate())
-                twoLayersCache.clearDynamicKey(configProvider.getKey(), invalidatorDynamicKey.dynamicKey().toString());
+                twoLayersCache.clearDynamicKey(configProvider.getKey(), configProvider.getDynamicKey().toString());
         } else if (configProvider.invalidator().invalidate()) {
             twoLayersCache.clear(configProvider.getKey());
         }

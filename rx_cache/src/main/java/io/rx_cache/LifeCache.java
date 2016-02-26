@@ -26,8 +26,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /**
  * If set, it determines the period of time during which the associated cache will be exists.
  * If not set, the cache will not be cleared, as long as it has not been explicitly required
- * using InvalidateCache
- * @see InvalidateCache
+ * using Invalidator
+ * @see EvictProvider
  */
 @Target(METHOD)
 @Retention(RUNTIME)
