@@ -22,6 +22,10 @@ import io.rx_cache.EvictProvider;
 import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
+import io.rx_cache.internal.cache.EvictRecord;
+import io.rx_cache.internal.cache.RetrieveRecord;
+import io.rx_cache.internal.cache.SaveRecord;
+import io.rx_cache.internal.cache.TwoLayersCache;
 import io.rx_cache.internal.common.BaseTest;
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -41,7 +45,13 @@ public class ProxyProvidersTest extends BaseTest {
 
     @Override public void setUp() {
         super.setUp();
-        twoLayersCacheMock = new TwoLayersCache(new GuavaMemory(PolicyHeapCache.MODERATE), disk);
+
+        Memory memory = new GuavaMemory(PolicyHeapCache.MODERATE);
+        EvictRecord evictRecord =  new EvictRecord(memory,disk);
+        SaveRecord saveRecord = new SaveRecord(memory,disk);
+        RetrieveRecord retrieveRecord = new RetrieveRecord(memory,disk, evictRecord);
+
+        twoLayersCacheMock = new TwoLayersCache(evictRecord, retrieveRecord, saveRecord);
     }
 
     @Test public void When_First_Retrieve_Then_Source_Retrieved_Is_Cloud() {
@@ -125,7 +135,7 @@ public class ProxyProvidersTest extends BaseTest {
 
         ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", observable, 0, detailResponse, new EvictProvider(evictCache));
 
-        if (hasCache) twoLayersCacheMock.save("mockKey", "", new Mock("message"));
+        if (hasCache) twoLayersCacheMock.save("mockKey", "", "", new Mock("message"));
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
         proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, useExpiredDataIfLoaderNotAvailable);

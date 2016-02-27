@@ -25,9 +25,11 @@ import java.lang.reflect.Method;
 import javax.inject.Inject;
 
 import io.rx_cache.EvictDynamicKey;
+import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.Record;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
+import io.rx_cache.internal.cache.TwoLayersCache;
 import rx.Observable;
 import rx.functions.Func0;
 import rx.functions.Func1;
@@ -58,7 +60,7 @@ final class ProxyProviders implements InvocationHandler {
     }
 
     private Observable<Object> getData(final ProxyTranslator.ConfigProvider configProvider) {
-        return Observable.just(twoLayersCache.retrieve(configProvider.getKey(), configProvider.getDynamicKey(), useExpiredDataIfLoaderNotAvailable, configProvider.getLifeTimeMillis()))
+        return Observable.just(twoLayersCache.retrieve(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), useExpiredDataIfLoaderNotAvailable, configProvider.getLifeTimeMillis()))
                 .map(new Func1<Record, Observable<Reply>>() {
                     @Override public Observable<Reply> call(final Record record) {
                         if (record != null && !configProvider.evictProvider().evict())
@@ -90,9 +92,9 @@ final class ProxyProviders implements InvocationHandler {
                 clearKeyIfNeeded(configProvider);
 
                 if (data == null)
-                    throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getKey());
+                    throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey());
 
-                twoLayersCache.save(configProvider.getKey(), configProvider.getDynamicKey(), data);
+                twoLayersCache.save(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), data);
                 return new Reply(data, Source.CLOUD);
             }
         }).onErrorReturn(new Func1() {
@@ -103,18 +105,22 @@ final class ProxyProviders implements InvocationHandler {
                     return new Reply(record.getData(), record.getSource());
                 }
 
-                throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getKey());
+                throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey());
             }
         });
     }
 
     private void clearKeyIfNeeded(ProxyTranslator.ConfigProvider configProvider) {
-        if (configProvider.evictProvider() instanceof EvictDynamicKey) {
+        if (configProvider.evictProvider() instanceof EvictDynamicKeyGroup) {
+            EvictDynamicKeyGroup evictDynamicKeyGroup = (EvictDynamicKeyGroup) configProvider.evictProvider();
+            if (evictDynamicKeyGroup.evict())
+                twoLayersCache.evictDynamicKeyGroup(configProvider.getProviderKey(), configProvider.getDynamicKey().toString(), configProvider.getDynamicKeyGroup().toString());
+        } else if (configProvider.evictProvider() instanceof EvictDynamicKey) {
             EvictDynamicKey evictDynamicKey = (EvictDynamicKey) configProvider.evictProvider();
             if (evictDynamicKey.evict())
-                twoLayersCache.clearDynamicKey(configProvider.getKey(), configProvider.getDynamicKey().toString());
+                twoLayersCache.evictDynamicKey(configProvider.getProviderKey(), configProvider.getDynamicKey().toString());
         } else if (configProvider.evictProvider().evict()) {
-            twoLayersCache.clear(configProvider.getKey());
+            twoLayersCache.evictProviderKey(configProvider.getProviderKey());
         }
     }
 

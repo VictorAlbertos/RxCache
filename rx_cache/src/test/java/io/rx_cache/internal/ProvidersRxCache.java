@@ -20,9 +20,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.rx_cache.DynamicKey;
+import io.rx_cache.DynamicKeyGroup;
+import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
-import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.LifeCache;
 import io.rx_cache.Reply;
 import rx.Observable;
@@ -59,6 +60,7 @@ interface ProvidersRxCache {
 
     Observable<Mock> getLoggedMock(Observable<Mock> mock, EvictProvider evictProvider);
 
+    Observable<List<Mock>> getMocksFilteredPaginateEvict(Observable<List<Mock>> oMocks, DynamicKeyGroup dynamicKeyGroup, EvictProvider evictDynamicKey);
 
 
     Observable<Mock> getMockWithoutLoaderObservable();

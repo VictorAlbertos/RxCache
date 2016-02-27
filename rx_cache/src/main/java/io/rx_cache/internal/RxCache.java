@@ -22,6 +22,7 @@ import java.security.InvalidParameterException;
 
 import io.rx_cache.Persistence;
 import io.rx_cache.PolicyHeapCache;
+import io.rx_cache.internal.cache.TwoLayersCache;
 
 public final class RxCache {
     private final ProxyProviders proxyProviders;

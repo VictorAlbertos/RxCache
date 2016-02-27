@@ -22,12 +22,17 @@ package io.rx_cache;
  * so they need to provide multiple keys organized in groups, such us end points with filtering AND pagination
  * requirements
  */
-public class DynamicKeyGroup extends DynamicKey {
+public class DynamicKeyGroup {
+    private final Object dynamicKey;
     private final Object group;
 
-    public DynamicKeyGroup(Object key, Object group) {
-        super(key);
+    public DynamicKeyGroup(Object dynamicKey, Object group) {
+        this.dynamicKey = dynamicKey;
         this.group = group;
+    }
+
+    public Object getDynamicKey() {
+        return dynamicKey;
     }
 
     public Object getGroup() {

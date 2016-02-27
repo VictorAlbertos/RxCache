@@ -39,25 +39,30 @@ final class ProxyTranslator {
         this.method = method;
         this.objectsMethod = objectsMethod;
 
-        ConfigProvider configProvider = new ConfigProvider(getKey(), getDynamicKey(), getGroup(), getLoaderObservable(),
+        ConfigProvider configProvider = new ConfigProvider(getProviderKey(), getDynamicKey(), getDynamicKeyGroup(), getLoaderObservable(),
                 getLifeTimeCache(), requiredDetailResponse(), evictProvider());
         checkIntegrityConfiguration(configProvider);
 
         return configProvider;
     }
 
-    protected String getKey() {
+    protected String getProviderKey() {
         return method.getName();
     }
 
     protected String getDynamicKey() {
         DynamicKey dynamicKey = getObjectFromMethodParam(DynamicKey.class);
-        return dynamicKey != null ? dynamicKey.getKey().toString() : "";
+        if (dynamicKey != null) return dynamicKey.getDynamicKey().toString();
+
+        DynamicKeyGroup dynamicKeyGroup = getObjectFromMethodParam(DynamicKeyGroup.class);
+        if (dynamicKeyGroup != null) return dynamicKeyGroup.getDynamicKey().toString();
+
+        return "";
     }
 
-    protected String getGroup() {
-        DynamicKeyGroup group = getObjectFromMethodParam(DynamicKeyGroup.class);
-        return group != null ? group.getGroup().toString() : "";
+    protected String getDynamicKeyGroup() {
+        DynamicKeyGroup dynamicKeyGroup = getObjectFromMethodParam(DynamicKeyGroup.class);
+        return dynamicKeyGroup != null ? dynamicKeyGroup.getGroup().toString() : "";
     }
 
     protected Observable getLoaderObservable() {
@@ -110,7 +115,7 @@ final class ProxyTranslator {
 
     private void checkIntegrityConfiguration(ConfigProvider configProvider) {
         if (configProvider.evictProvider() instanceof EvictDynamicKeyGroup
-                && configProvider.getGroup().isEmpty()) {
+                && configProvider.getDynamicKeyGroup().isEmpty()) {
             String errorMessage = method.getName() + Locale.EVICT_DYNAMIC_KEY_GROUP_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY_PROVIDER;
             throw new IllegalArgumentException(errorMessage);
         }
@@ -123,32 +128,32 @@ final class ProxyTranslator {
     }
 
     final static class ConfigProvider {
-        private final String key, dynamicKey, group;
+        private final String providerKey, dynamicKey, dynamicKeyGroup;
         private final Observable loaderObservable;
         private final long lifeTime;
         private final boolean requiredDetailedResponse;
         private final EvictProvider evictProvider;
 
-        ConfigProvider(String key, String dynamicKey, String group, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider) {
-            this.key = key;
+        ConfigProvider(String providerKey, String dynamicKey, String group, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider) {
+            this.providerKey = providerKey;
             this.dynamicKey = dynamicKey;
-            this.group = group;
+            this.dynamicKeyGroup = group;
             this.loaderObservable = loaderObservable;
             this.lifeTime = lifeTime;
             this.evictProvider = evictProvider;
             this.requiredDetailedResponse = requiredDetailedResponse;
         }
 
-        String getKey() {
-            return key;
+        String getProviderKey() {
+            return providerKey;
         }
 
         public String getDynamicKey() {
             return dynamicKey;
         }
 
-        public String getGroup() {
-            return group;
+        public String getDynamicKeyGroup() {
+            return dynamicKeyGroup;
         }
 
         long getLifeTimeMillis() {

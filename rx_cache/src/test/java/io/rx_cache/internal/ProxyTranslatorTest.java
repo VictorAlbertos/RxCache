@@ -47,7 +47,7 @@ public class ProxyTranslatorTest extends BaseTest {
         Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocks", Observable.class);
         ProxyTranslator.ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
 
-        assertThat(configProvider.getKey(), is("getMocks"));
+        assertThat(configProvider.getProviderKey(), is("getMocks"));
         assertNotNull(configProvider.getLoaderObservable());
         assertThat(configProvider.getLifeTimeMillis(), is(0l));
         assertThat(configProvider.evictProvider().evict(), is(false));

@@ -17,18 +17,18 @@
 package io.rx_cache;
 
 /**
- * Wrapper around the key for those providers which need to handle multiple records,
+ * Wrapper around the dynamicKey for those providers which need to handle multiple records,
  * so they need to provide multiple keys, such us end points with pagination,
  * ordering or filtering requirements
  */
 public class DynamicKey {
-    private final Object key;
+    private final Object dynamicKey;
 
-    public DynamicKey(Object key) {
-        this.key = key;
+    public DynamicKey(Object dynamicKey) {
+        this.dynamicKey = dynamicKey;
     }
 
-    public Object getKey() {
-        return key;
+    public Object getDynamicKey() {
+        return dynamicKey;
     }
 }

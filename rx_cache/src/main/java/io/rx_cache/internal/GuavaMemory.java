@@ -34,7 +34,7 @@ public class GuavaMemory implements Memory {
                 .build();;
     }
 
-    @VisibleForTesting long maxCacheSizeBytes(PolicyHeapCache policyHeapCache) {
+    public @VisibleForTesting long maxCacheSizeBytes(PolicyHeapCache policyHeapCache) {
         long amountMemoryBytes  = Runtime.getRuntime().totalMemory();
         return (long) (amountMemoryBytes * policyHeapCache.getPercentageReserved());
     }
