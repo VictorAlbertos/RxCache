@@ -18,7 +18,7 @@ to subscribe to it or instead fetch the data previously cached. This decision is
 So, when supplying an observable you get your observable cached back, and next time you will retrieve it without the time cost associated with its underlying task. 
  
 ```java
-Observable<List<Mock>> getMocks(@Loader Observable<List<Mock>> mocks);
+Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
 ```
 
 Setup
@@ -71,12 +71,12 @@ interface Providers {
     
         Observable<List<Mock>> getMocksPaginate(Observable<List<Mock>> oMocks, DynamicKey page);
     
-        Observable<List<Mock>> getMocksPaginateEvictCachePerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
+        Observable<List<Mock>> getMocksPaginateEvictPerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
 }
 ```
 
 
-RxCache accepts as argument a set of classes to indicate how the provider will be handled the cached data:
+RxCache accepts as argument a set of classes to indicate how the provider need to handle the cached data:
 
 * Observable is the only object required to create a provider. Observable type must be equal to the one specified by the returning value of the provider. 
 * [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/LifeCache.java) sets the amount of time before the data would be evicted. If @LifeCache is not supplied, the data will be never evicted unless it is required explicitly using [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) .
@@ -84,7 +84,7 @@ RxCache accepts as argument a set of classes to indicate how the provider will b
 * [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) allows to explicitly evict the data of an specific [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java).
 * [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) allows to explicitly evict the data of an specific [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java).
 * [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java) is a wrapper around the key object for those providers which need to handle multiple records, so they need to provide multiple keys, such us end points with pagination, ordering or filtering requirements. To evict the data associated with one particular key use EvictDynamicKey.  
-* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java) is a wrapper around the key and the group for those providers which need to handle multiple records in sections, so they need to provide multiple keys organized in groups, such us end points with filtering AND pagination requirements. To evict the data associated with the group of one particular, use EvictDynamicKey. 
+* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java) is a wrapper around the key and the group for those providers which need to handle multiple records in sections, so they need to provide multiple keys organized in groups, such us end points with filtering AND pagination requirements. To evict the data associated with the key of one particular group, use EvictDynamicKeyGroup. 
 
 
 Build an instance of Providers and use it
@@ -104,7 +104,7 @@ Putting It All Together
 interface Providers {        
     Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, EvictProvider evictProvider);
         
-    Observable<List<Mock>> getMocksPaginateEvictCachePerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
+    Observable<List<Mock>> getMocksPaginateEvictPerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
 }
 ```
 
@@ -123,7 +123,7 @@ public class Repository {
     }
 
     public Observable<List<Mock>> getMocksPaginate(final int page, final boolean update) {
-        return providers.getMocksPaginateEvictCachePerPage(getExpensiveMocks(), new DynamicKey(page), new EvictDynamicKey(update));
+        return providers.getMocksPaginateEvictPerPage(getExpensiveMocks(), new DynamicKey(page), new EvictDynamicKey(update));
     }
 
     //In a real use case, here is when you build your observable with the expensive operation.
@@ -178,7 +178,7 @@ Observable<List<Mock>> getMocksFilteredEvict(Observable<List<Mock>> oMocks, Dyna
 
 ```java
 //Evict all mocks
-getMocksFilteredEvict(oMocks, new DynamicKey(“actives”), new EvictProvider(true))
+getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictProvider(true))
 
 //Evict mocks of one filter
 getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictDynamicKey(true))
@@ -197,20 +197,20 @@ Observable<List<Mock>> getMocksFilteredPaginate(Observable<List<Mock>> oMocks, D
 
 Mock List paginated with filters evicting:
 ```java
-Observable<List<Mock>> getMocksFilteredPaginateEvict(Observable<List<Mock>> oMocks, DynamicKeyGroup filterAndPage, EvictDynamicKeyGroup evictFilterPage);
+Observable<List<Mock>> getMocksFilteredPaginateEvict(Observable<List<Mock>> oMocks, DynamicKeyGroup filterAndPage, EvictDynamicKeyGroup evictOnePageOfAFilter);
 ```
 
 > Runtime usage:
 
 ```java
 //Evict all mocks
-getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives”, “page1”), new EvictProvider(true))
+getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictProvider(true))
 
 //Evict all pages mocks of one filter
-getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives”, “page1”), new EvictDynamicKey(true))
+getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictDynamicKey(true))
 
 //Evict one page mocks of one filter
-getMocksFilteredPaginateInvalidate(oMocks, new DynamicKeyGroup("actives”, “page1”), new EvictDynamicKeyGroup(true))
+getMocksFilteredPaginateInvalidate(oMocks, new DynamicKeyGroup("actives”, "page1"), new EvictDynamicKeyGroup(true))
 ```		
 
 As you may already notice, the whole point of using DynamicKey or DynamicKeyGroup along with Evict classes is to play with several scopes when evicting objects. 
