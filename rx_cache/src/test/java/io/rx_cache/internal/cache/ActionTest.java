@@ -51,7 +51,6 @@ public class ActionTest extends BaseTest {
         assertThat(keysMatchingProviderKey.get(2), is(filter2Page2));
         assertThat(keysMatchingProviderKey.get(3), is(filter2Page1));
         assertThat(keysMatchingProviderKey.size(), is(4));
-
     }
 
     @Test public void Check_Keys_Matching_Dynamic_Key()  {
