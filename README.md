@@ -37,7 +37,7 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos:RxCache:0.4.9"
+    compile "com.github.VictorAlbertos:RxCache:1.0.0"
     compile "io.reactivex:rxjava:1.1.0"
 }
 ```
@@ -46,7 +46,7 @@ dependencies {
 
 ```gradle
 dependencies {
-    compile ("com.github.VictorAlbertos:RxCache:0.4.9") {
+    compile ("com.github.VictorAlbertos:RxCache:1.0.0") {
         exclude module: 'guava'
     }
     compile "io.reactivex:rxjava:1.1.0"
@@ -85,8 +85,8 @@ RxCache accepts as argument a set of classes to indicate how the provider need t
 * [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java) allows to explicitly evict all the data associated with the provider. 
 * [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) allows to explicitly evict the data of an specific [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java).
 * [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) allows to explicitly evict the data of an specific [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java).
-* [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java) is a wrapper around the key object for those providers which need to handle multiple records, so they need to provide multiple keys, such us end points with pagination, ordering or filtering requirements. To evict the data associated with one particular key use EvictDynamicKey.  
-* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java) is a wrapper around the key and the group for those providers which need to handle multiple records in sections, so they need to provide multiple keys organized in groups, such us end points with filtering AND pagination requirements. To evict the data associated with the key of one particular group, use EvictDynamicKeyGroup. 
+* [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java) is a wrapper around the key object for those providers which need to handle multiple records, so they need to provide multiple keys, such us endpoints with pagination, ordering or filtering requirements. To evict the data associated with one particular key use EvictDynamicKey.  
+* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java) is a wrapper around the key and the group for those providers which need to handle multiple records grouped, so they need to provide multiple keys organized in groups, such us endpoints with filtering AND pagination requirements. To evict the data associated with the key of one particular group, use EvictDynamicKeyGroup. 
 
 
 Build an instance of Providers and use it
@@ -162,7 +162,7 @@ Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, Evic
 > Runtime usage:
 
 ```java
-//Evict all mocks 
+//Hit observable evicting all mocks 
 getMocksEvictProvider(oMocks, new EvictProvider(true))
 
 //This line throws an IllegalArgumentException: "EvictDynamicKey was provided but not was provided any DynamicKey"
@@ -225,7 +225,7 @@ As you may already notice, the whole point of using DynamicKey or DynamicKeyGrou
 
 The above examples declare providers which their method signature accepts EvictProvider in order to be able to concrete more specifics types of EvictProvider at runtime.
 
-But I have done that for demonstration purposes, you always should narrow the Evict class in your method signature to the type which you really need. For the last example, I would use EvictDynamicKey in production code, because this way I would be able to paginate the filtered mocks and evict them per filter, triggered by a pull to refresh for example.
+But I have done that for demonstration purposes, you always should narrow the evicting classes in your method signature to the type which you really need. For the last example, I would use EvictDynamicKey in production code, because this way I would be able to paginate the filtered mocks and evict them per its filter, triggered by a pull to refresh for example.
 		
 Nevertheless, there are complete examples for [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).
 
