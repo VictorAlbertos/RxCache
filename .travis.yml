@@ -1,5 +1,5 @@
 language: android
-script: "./gradlew build"
+script: "./gradlew build --stacktrace"
 android:
   components:
     # The BuildTools version used by your project
