@@ -210,7 +210,7 @@ getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives", "page1"), n
 getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictDynamicKey(true))
 
 //Evict one page mocks of one filter
-getMocksFilteredPaginateInvalidate(oMocks, new DynamicKeyGroup("actives”, "page1"), new EvictDynamicKeyGroup(true))
+getMocksFilteredPaginateInvalidate(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictDynamicKeyGroup(true))
 ```		
 
 As you may already notice, the whole point of using DynamicKey or DynamicKeyGroup along with Evict classes is to play with several scopes when evicting objects. 
