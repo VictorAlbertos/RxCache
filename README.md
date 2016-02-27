@@ -71,7 +71,9 @@ interface Providers {
     
         Observable<List<Mock>> getMocksPaginate(Observable<List<Mock>> oMocks, DynamicKey page);
     
-        Observable<List<Mock>> getMocksPaginateEvictPerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
+        Observable<List<Mock>> getMocksPaginateEvictingPerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
+        
+        Observable<List<Mock>> getMocksPaginateWithFiltersEvictingPerFilter(Observable<List<Mock>> oMocks, DynamicKeyGroup filterPage, EvictDynamicKey evictFilter);
 }
 ```
 
@@ -104,7 +106,9 @@ Putting It All Together
 interface Providers {        
     Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, EvictProvider evictProvider);
         
-    Observable<List<Mock>> getMocksPaginateEvictPerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
+    Observable<List<Mock>> getMocksPaginateEvictingPerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
+    
+    Observable<List<Mock>> getMocksPaginateWithFiltersEvictingPerFilter(Observable<List<Mock>> oMocks, DynamicKeyGroup filterPage, EvictDynamicKey evictFilter);
 }
 ```
 
@@ -126,10 +130,14 @@ public class Repository {
         return providers.getMocksPaginateEvictPerPage(getExpensiveMocks(), new DynamicKey(page), new EvictDynamicKey(update));
     }
 
+    public Observable<List<Mock>> getMocksWithFiltersPaginate(final String filter, final int page, final boolean updateFilter) {
+        return providers.getMocksPaginateWithFiltersEvictingPerFilter(getExpensiveMocks(), new DynamicKeyGroup(filter, page), new EvictDynamicKey(updateFilter));
+    }
+
     //In a real use case, here is when you build your observable with the expensive operation.
     //Or if you are making http calls you can use Retrofit to get it out of the box.
     private Observable<List<Mock>> getExpensiveMocks() {
-        return Observable.just(Arrays.asList(new Mock()));
+        return Observable.just(Arrays.asList(new Mock("")));
     }
 }
 ```
@@ -154,7 +162,7 @@ Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, Evic
 > Runtime usage:
 
 ```java
-//Evict all mocks
+//Evict all mocks 
 getMocksEvictProvider(oMocks, new EvictProvider(true))
 
 //This line throws an IllegalArgumentException: "EvictDynamicKey was provided but not was provided any DynamicKey"
@@ -171,16 +179,16 @@ Observable<List<Mock>> getMocksFiltered(Observable<List<Mock>> oMocks, DynamicKe
 
 Mock List filtering evicting:
 ```java
-Observable<List<Mock>> getMocksFilteredEvict(Observable<List<Mock>> oMocks, DynamicKey filter, EvictDynamicKey invalidator);
+Observable<List<Mock>> getMocksFilteredEvict(Observable<List<Mock>> oMocks, DynamicKey filter, EvictProvider evictDynamicKey);
 ```
 
 > Runtime usage:
 
 ```java
-//Evict all mocks
+//Hit observable evicting all mocks using EvictProvider
 getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictProvider(true))
 
-//Evict mocks of one filter
+//Hit observable evicting mocks of one filter using EvictDynamicKey
 getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictDynamicKey(true))
 
 //This line throws an IllegalArgumentException: "EvictDynamicKeyGroup was provided but not was provided any Group"
@@ -197,23 +205,27 @@ Observable<List<Mock>> getMocksFilteredPaginate(Observable<List<Mock>> oMocks, D
 
 Mock List paginated with filters evicting:
 ```java
-Observable<List<Mock>> getMocksFilteredPaginateEvict(Observable<List<Mock>> oMocks, DynamicKeyGroup filterAndPage, EvictDynamicKeyGroup evictOnePageOfAFilter);
+Observable<List<Mock>> getMocksFilteredPaginateEvict(Observable<List<Mock>> oMocks, DynamicKeyGroup filterAndPage, EvictProvider evictProvider);
 ```
 
 > Runtime usage:
 
 ```java
-//Evict all mocks
+//Hit observable evicting all mocks using EvictProvider
 getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictProvider(true))
 
-//Evict all pages mocks of one filter
+//Hit observable evicting all mocks pages of one filter using EvictDynamicKey
 getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictDynamicKey(true))
 
-//Evict one page mocks of one filter
+//Hit observable evicting one page mocks of one filter using EvictDynamicKeyGroup
 getMocksFilteredPaginateInvalidate(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictDynamicKeyGroup(true))
 ```		
 
-As you may already notice, the whole point of using DynamicKey or DynamicKeyGroup along with Evict classes is to play with several scopes when evicting objects. 
+As you may already notice, the whole point of using DynamicKey or DynamicKeyGroup along with Evict classes is to play with several scopes when evicting objects.
+
+The above examples declare providers which their method signature accepts EvictProvider in order to be able to concrete more specifics types of EvictProvider at runtime.
+
+But I have done that for demonstration purposes, you always should narrow the Evict class in your method signature to the type which you really need. For the last example, I would use EvictDynamicKey in production code, because this way I would be able to paginate the filtered mocks and evict them per filter, triggered by a pull to refresh for example.
 		
 Nevertheless, there are complete examples for [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).
 
