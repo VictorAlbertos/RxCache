@@ -56,38 +56,39 @@ dependencies {
 Doing this you will reduce the number of methods of your apk in more than 13.000, helping this way to stay away from the annoying [65K Reference Limit](http://developer.android.com/intl/es/tools/building/multidex.html).
 
 Usage
-=======
+=====
 
 Define an interface with as much methods as needed to create the caching providers:
 
 ```java
 interface Providers {
-    Observable<List<Mock>> getMocks(@Loader Observable<List<Mock>> mocks);
+        Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
     
-    @LifeCache(duration = 5, timeUnit = TimeUnit.MINUTES)
-    Observable<List<Mock>> getMocksWith5MinutesLifeTime(@Loader Observable<List<Mock>> mocks);
+        @LifeCache(duration = 5, timeUnit = TimeUnit.MINUTES)
+        Observable<List<Mock>> getMocksWith5MinutesLifeTime(Observable<List<Mock>> oMocks);
     
-    Observable<List<Mock>> getMocksInvalidateCache(@Loader Observable<List<Mock>> mocks, @InvalidateCache Invalidator invalidator);
+        Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, EvictProvider evictProvider);
     
-    Observable<List<Mock>> getMocksPaginate(@Loader Observable<List<Mock>> mocks, @DynamicKey int page);
+        Observable<List<Mock>> getMocksPaginate(Observable<List<Mock>> oMocks, DynamicKey page);
     
-    Observable<List<Mock>> getMocksPaginateInvalidateCachePerPage(@Loader Observable<List<Mock>> mocks, @DynamicKey int page,
-                                                                        @InvalidateCache InvalidatorDynamicKey invalidatorPerPage);
+        Observable<List<Mock>> getMocksPaginateEvictCachePerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
 }
 ```
 
 
-RxCache provides a set of annotations to indicate how a provider will be handled:
+RxCache accepts as argument a set of classes to indicate how the provider will be handled the cached data:
 
-* [@Loader](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Loader.java) is the only annotation required to create a provider. The associated object must be an observable which parameterized type must be equal to the one specified by the returning value of the provider. 
-* [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/LifeCache.java) sets the amount of time before the data would be evicted. If @LifeCache is not supplied, the data will be never evicted unless it is required explicitly using an [Invalidator](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Invalidator.java).
-* [@InvalidateCache](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/InvalidateCache.java) allows to explicitly evict the data passing an implementation of Invalidator interface. 
-* [@DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java) provides a runtime possibility to generate multiple variants for the same provider, allowing to support pagination or filtering. 
-    If you need to invalidate the data associated with one particular key, use @InvalidateCache, but instead of providing an Invalidator, you must provide an implementation of [InvalidatorDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/InvalidatorDynamicKey.java), which requires to be specified the key of the data to be evicted.
+* Observable is the only object required to create a provider. Observable type must be equal to the one specified by the returning value of the provider. 
+* [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/LifeCache.java) sets the amount of time before the data would be evicted. If @LifeCache is not supplied, the data will be never evicted unless it is required explicitly using [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) .
+* [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java) allows to explicitly evict all the data associated with the provider. 
+* [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) allows to explicitly evict the data of an specific [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java).
+* [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) allows to explicitly evict the data of an specific [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java).
+* [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java) is a wrapper around the key object for those providers which need to handle multiple records, so they need to provide multiple keys, such us end points with pagination, ordering or filtering requirements. To evict the data associated with one particular key use EvictDynamicKey.  
+* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java) is a wrapper around the key and the group for those providers which need to handle multiple records in sections, so they need to provide multiple keys organized in groups, such us end points with filtering AND pagination requirements. To evict the data associated with the group of one particular, use EvictDynamicKey. 
 
 
 Build an instance of Providers and use it
------------
+-----------------------------------------
 Finally, instantiate the Providers interface using RxCache.Builder and supplying a valid file system which allows RxCache writes on disk. 
 
 ```java
@@ -101,51 +102,119 @@ Putting It All Together
 -----------
 ```java
 interface Providers {        
-    Observable<List<Mock>> getMocksInvalidateCache(@Loader Observable<List<Mock>> mocks, @InvalidateCache Invalidator invalidator);
+    Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, EvictProvider evictProvider);
         
-    Observable<List<Mock>> getMocksPaginateInvalidateCachePerPage(@Loader Observable<List<Mock>> mocks, @DynamicKey int page,
-                                                                        @InvalidateCache InvalidatorDynamicKey invalidatorPerPage);
+    Observable<List<Mock>> getMocksPaginateEvictCachePerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
 }
 ```
 
 ```java
-    public class Repository {
-        private final Providers providers;
+public class Repository {
+    private final Providers providers;
 
-        public Repository(File cacheDir) {
-            providers = new RxCache.Builder()
-                    .persistence(cacheDir)
-                    .using(Providers.class);
-        }
-
-        public Observable<List<Mock>> getMocks(final boolean update) {
-            return providers.getMocksInvalidateCache(getExpensiveMocks(), new Invalidator() {
-                @Override public boolean invalidate() {
-                    return update;
-                }
-            });
-        }
-
-        public Observable<List<Mock>> getMocksPaginate(final int page, final boolean update) {
-            return providers.getMocksPaginateInvalidateCachePerPage(getExpensiveMocks(), page, new InvalidatorDynamicKey() {
-                @Override public Object dynamicKey() {
-                    return page;
-                }
-
-                @Override public boolean invalidate() {
-                    return update;
-                }
-            });
-        }
-
-        //In a real use case, here is when you build your observable with the expensive operation.
-        //Or if you are making http calls you can use Retrofit to get it out of the box.
-        private Observable<List<Mock>> getExpensiveMocks() {
-            return Observable.just(new Arrays.asList(new Mock()));
-        }
+    public Repository(File cacheDir) {
+        providers = new RxCache.Builder()
+                .persistence(cacheDir)
+                .using(Providers.class);
     }
+
+    public Observable<List<Mock>> getMocks(final boolean update) {
+        return providers.getMocksEvictProvider(getExpensiveMocks(), new EvictProvider(update));
+    }
+
+    public Observable<List<Mock>> getMocksPaginate(final int page, final boolean update) {
+        return providers.getMocksPaginateEvictCachePerPage(getExpensiveMocks(), new DynamicKey(page), new EvictDynamicKey(update));
+    }
+
+    //In a real use case, here is when you build your observable with the expensive operation.
+    //Or if you are making http calls you can use Retrofit to get it out of the box.
+    private Observable<List<Mock>> getExpensiveMocks() {
+        return Observable.just(Arrays.asList(new Mock()));
+    }
+}
 ```
 
+
+Use cases
+=========
+Following use cases illustrate some common scenarios which will help to understand the usage of DynamicKey and DynamicKeyGroup classes along with evicting scopes. 
+
+Mock List
+---------
+Mock List without evicting:
+```java
+Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
+```
+
+Mock List evicting:
+```java
+Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, EvictProvider evictProvider);
+```
+
+> Runtime usage:
+
+```java
+//Evict all mocks
+getMocksEvictProvider(oMocks, new EvictProvider(true))
+
+//This line throws an IllegalArgumentException: "EvictDynamicKey was provided but not was provided any DynamicKey"
+getMocksEvictProvider(oMocks, new EvictDynamicKey(true))
+```
+
+Mock List Filtering
+-------------------
+Mock List filtering without evicting:
+```java
+Observable<List<Mock>> getMocksFiltered(Observable<List<Mock>> oMocks, DynamicKey filter);
+```
+
+
+Mock List filtering evicting:
+```java
+Observable<List<Mock>> getMocksFilteredEvict(Observable<List<Mock>> oMocks, DynamicKey filter, EvictDynamicKey invalidator);
+```
+
+> Runtime usage:
+
+```java
+//Evict all mocks
+getMocksFilteredEvict(oMocks, new DynamicKey(“actives”), new EvictProvider(true))
+
+//Evict mocks of one filter
+getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictDynamicKey(true))
+
+//This line throws an IllegalArgumentException: "EvictDynamicKeyGroup was provided but not was provided any Group"
+getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictDynamicKeyGroup(true))
+```		
+		
+Mock List Paginated with filters
+--------------------------------
+Mock List paginated with filters without evicting:
+```java
+Observable<List<Mock>> getMocksFilteredPaginate(Observable<List<Mock>> oMocks, DynamicKey filterAndPage);
+```
+
+
+Mock List paginated with filters evicting:
+```java
+Observable<List<Mock>> getMocksFilteredPaginateEvict(Observable<List<Mock>> oMocks, DynamicKeyGroup filterAndPage, EvictDynamicKeyGroup evictFilterPage);
+```
+
+> Runtime usage:
+
+```java
+//Evict all mocks
+getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives”, “page1”), new EvictProvider(true))
+
+//Evict all pages mocks of one filter
+getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives”, “page1”), new EvictDynamicKey(true))
+
+//Evict one page mocks of one filter
+getMocksFilteredPaginateInvalidate(oMocks, new DynamicKeyGroup("actives”, “page1”), new EvictDynamicKeyGroup(true))
+```		
+
+As you may already notice, the whole point of using DynamicKey or DynamicKeyGroup along with Evict classes is to play with several scopes when evicting objects. 
+		
 Nevertheless, there are complete examples for [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).
 
 Configure general behaviour

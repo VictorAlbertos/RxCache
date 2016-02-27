@@ -18,8 +18,8 @@ package io.rx_cache;
 
 
 /**
- * Wrapper around the key for those providers which need to handle multiple records in sections,
- * so they need to provide multiple keys organized in groups, such us end points with filtering and pagination
+ * Wrapper around the key and the group for those providers which need to handle multiple records in sections,
+ * so they need to provide multiple keys organized in groups, such us end points with filtering AND pagination
  * requirements
  */
 public class DynamicKeyGroup extends DynamicKey {
