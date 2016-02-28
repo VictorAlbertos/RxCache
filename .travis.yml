@@ -1,5 +1,5 @@
 language: android
-script: "./gradlew build --debug"
+script: "./gradlew build"
 android:
   components:
     # The BuildTools version used by your project

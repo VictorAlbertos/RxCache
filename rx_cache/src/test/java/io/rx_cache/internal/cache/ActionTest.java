@@ -18,12 +18,13 @@ package io.rx_cache.internal.cache;
 
 import org.junit.Test;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 import io.rx_cache.Record;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Mock;
-import io.rx_cache.internal.SimpleMemory;
 import io.rx_cache.internal.common.BaseTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,17 +40,17 @@ public class ActionTest extends BaseTest {
 
     @Override public void setUp() {
         super.setUp();
-        memory = new SimpleMemory();
+
+        memory = new MockMemory();
         actionUT = new Action(memory, disk) {};
-        populateMemory();
     }
 
     @Test public void Check_Keys_Matching_Provider_Key()  {
         List<String> keysMatchingProviderKey = actionUT.getKeysMatchingProviderKey(PROVIDER_KEY);
         assertThat(keysMatchingProviderKey.get(0), is(filter1Page1));
         assertThat(keysMatchingProviderKey.get(1), is(filter1Page2));
-        assertThat(keysMatchingProviderKey.get(2), is(filter2Page2));
-        assertThat(keysMatchingProviderKey.get(3), is(filter2Page1));
+        assertThat(keysMatchingProviderKey.get(2), is(filter2Page1));
+        assertThat(keysMatchingProviderKey.get(3), is(filter2Page2));
         assertThat(keysMatchingProviderKey.size(), is(4));
     }
 
@@ -60,8 +61,8 @@ public class ActionTest extends BaseTest {
         assertThat(keysMatchingDynamicKey1.size(), is(2));
 
         List<String> keysMatchingDynamicKey2 = actionUT.getKeysMatchingDynamicKey(PROVIDER_KEY, DYNAMIC_KEY_2);
-        assertThat(keysMatchingDynamicKey2.get(0), is(filter2Page2));
-        assertThat(keysMatchingDynamicKey2.get(1), is(filter2Page1));
+        assertThat(keysMatchingDynamicKey2.get(0), is(filter2Page1));
+        assertThat(keysMatchingDynamicKey2.get(1), is(filter2Page2));
         assertThat(keysMatchingDynamicKey2.size(), is(2));
     }
 
@@ -79,24 +80,44 @@ public class ActionTest extends BaseTest {
         assertThat(keyMatchingDynamicKey2DynamicKeyGroup2, is(filter2Page2));
     }
 
-    private String filter1Page1, filter1Page2, filter2Page1, filter2Page2;
+    private static String filter1Page1, filter1Page2, filter2Page1, filter2Page2;
 
-    private void populateMemory() {
-        filter1Page1 = actionUT.composeKey(PROVIDER_KEY, DYNAMIC_KEY_1, DYNAMIC_KEY_GROUP_1);
-        memory.put(filter1Page1, mock(filter1Page1));
+    private static class MockMemory implements Memory {
+        private final LinkedHashMap<String, Record> mockCache;
 
-        filter1Page2 = actionUT.composeKey(PROVIDER_KEY, DYNAMIC_KEY_1, DYNAMIC_KEY_GROUP_2);
-        memory.put(filter1Page2, mock(filter1Page2));
+        public MockMemory() {
+            mockCache = new LinkedHashMap();
 
-        filter2Page1 = actionUT.composeKey(PROVIDER_KEY, DYNAMIC_KEY_2, DYNAMIC_KEY_GROUP_1);
-        memory.put(filter2Page1, mock(filter2Page1));
+            Action action = new Action(null, null) {};
+            filter1Page1 = action.composeKey(PROVIDER_KEY, DYNAMIC_KEY_1, DYNAMIC_KEY_GROUP_1);
+            mockCache.put(filter1Page1, mock(filter1Page1));
 
-        filter2Page2 = actionUT.composeKey(PROVIDER_KEY, DYNAMIC_KEY_2, DYNAMIC_KEY_GROUP_2);
-        memory.put(filter2Page2, mock(filter2Page2));
-    }
+            filter1Page2 = action.composeKey(PROVIDER_KEY, DYNAMIC_KEY_1, DYNAMIC_KEY_GROUP_2);
+            mockCache.put(filter1Page2, mock(filter1Page2));
 
+            filter2Page1 = action.composeKey(PROVIDER_KEY, DYNAMIC_KEY_2, DYNAMIC_KEY_GROUP_1);
+            mockCache.put(filter2Page1, mock(filter2Page1));
 
-    private Record<Mock> mock(String value) {
-        return new Record(new Mock(value));
+            filter2Page2 = action.composeKey(PROVIDER_KEY, DYNAMIC_KEY_2, DYNAMIC_KEY_GROUP_2);
+            mockCache.put(filter2Page2, mock(filter2Page2));
+        }
+
+        @Override public <T> Record<T> getIfPresent(String key) {
+            return null;
+        }
+
+        @Override public <T> void put(String key, Record<T> record) {}
+
+        @Override public Set<String> keySet() {
+            return mockCache.keySet();
+        }
+
+        @Override public void evict(String key) {}
+
+        @Override public void evictAll() {}
+
+        private Record<Mock> mock(String value) {
+            return new Record(new Mock(value));
+        }
     }
 }
