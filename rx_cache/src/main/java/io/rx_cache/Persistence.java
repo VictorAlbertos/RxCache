@@ -34,12 +34,12 @@ public interface Persistence {
      * Delete the data associated with its particular key
      * @param key The key associated with the object to be deleted from persistence
      */
-    void delete(String key);
+    void evict(String key);
 
     /**
      * Delete all the data
      */
-    void deleteAll();
+    void evictAll();
 
     /**
      * Retrieve the record associated with its particular key

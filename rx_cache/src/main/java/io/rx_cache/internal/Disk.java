@@ -34,7 +34,7 @@ import io.rx_cache.Persistence;
 import io.rx_cache.Record;
 
 /**
- * Save objects in disk and delete them too. It uses Gson as json parser.
+ * Save objects in disk and evict them too. It uses Gson as json parser.
  */
 public final class Disk implements Persistence {
     private final File cacheDirectory;
@@ -44,7 +44,7 @@ public final class Disk implements Persistence {
     }
 
     /** Save in disk the Record passed.
-     * @param key the key whereby the Record could be retrieved/deleted later. @see delete and @see retrieve.
+     * @param key the key whereby the Record could be retrieved/deleted later. @see evict and @see retrieve.
      * @param record the record to be persisted.
      * */
     @Override public void saveRecord(String key, Record record) {
@@ -52,7 +52,7 @@ public final class Disk implements Persistence {
     }
 
     /** Save in disk the object passed.
-     * @param key the key whereby the object could be retrieved/deleted later. @see delete and @see retrieve.
+     * @param key the key whereby the object could be retrieved/deleted later. @see evict and @see retrieve.
      * @param data the object to be persisted.
      * */
     public void save(String key, Object data) {
@@ -72,14 +72,14 @@ public final class Disk implements Persistence {
     /** Delete the object previously saved.
      * @param key the key whereby the object could be deleted.
      * */
-    @Override public void delete(String key) {
+    @Override public void evict(String key) {
         File file = new File(cacheDirectory, key);
         file.delete();
     }
 
     /** Delete all objects previously saved.
      * */
-    @Override public void deleteAll() {
+    @Override public void evictAll() {
         for(File file: cacheDirectory.listFiles()) {
             file.delete();
         }

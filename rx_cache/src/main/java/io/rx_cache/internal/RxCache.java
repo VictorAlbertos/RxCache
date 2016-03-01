@@ -47,7 +47,7 @@ public final class RxCache {
         private boolean useExpiredDataIfLoaderNotAvailable;
 
         /**
-         * If true RxCache will serve Records already expired, instead of delete them and throw an exception
+         * If true RxCache will serve Records already expired, instead of evict them and throw an exception
          * If not supplied, false will be the default option
          * @return BuilderRxCache The builder of RxCache
          */

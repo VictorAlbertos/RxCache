@@ -67,7 +67,7 @@ abstract class Action {
         return keysMatchingDynamicKey;
     }
 
-    protected String getKeyMatchingDynamicKeyGroup(String keyProvider, String dynamicKey, String dynamicKeyGroup) {
-        return keyProvider + PREFIX_DYNAMIC_KEY + dynamicKey + PREFIX_DYNAMIC_KEY_GROUP + dynamicKeyGroup;
+    protected String getKeyMatchingDynamicKeyGroup(String providerKey, String dynamicKey, String dynamicKeyGroup) {
+        return composeKey(providerKey, dynamicKey, dynamicKeyGroup);
     }
 }

@@ -36,7 +36,7 @@ public final class EvictRecord extends Action {
 
         for (String keyMatchingKeyProvider : keysMatchingKeyProvider) {
             memory.evict(keyMatchingKeyProvider);
-            persistence.delete(keyMatchingKeyProvider);
+            persistence.evict(keyMatchingKeyProvider);
         }
     }
 
@@ -45,7 +45,7 @@ public final class EvictRecord extends Action {
 
         for (String keyMatchingDynamicKey : keysMatchingDynamicKey) {
             memory.evict(keyMatchingDynamicKey);
-            persistence.delete(keyMatchingDynamicKey);
+            persistence.evict(keyMatchingDynamicKey);
         }
     }
 
@@ -53,7 +53,7 @@ public final class EvictRecord extends Action {
         String composedKey = getKeyMatchingDynamicKeyGroup(providerKey, dynamicKey, dynamicKeyGroup);
 
         memory.evict(composedKey);
-        persistence.delete(composedKey);
+        persistence.evict(composedKey);
     }
 
     @VisibleForTesting void mockMemoryDestroyed() {
@@ -62,6 +62,6 @@ public final class EvictRecord extends Action {
 
     void evictAll() {
         memory.evictAll();
-        persistence.deleteAll();
+        persistence.evictAll();
     }
 }
