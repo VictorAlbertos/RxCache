@@ -54,7 +54,7 @@ public final class TwoLayersCache {
     }
 
     public void evictDynamicKeyGroup(String key, String dynamicKey, String dynamicKeyGroup) {
-        evictRecord.evictRecordDynamicKeyGroup(key, dynamicKey, dynamicKeyGroup);
+        evictRecord.evictRecordMatchingDynamicKeyGroup(key, dynamicKey, dynamicKeyGroup);
     }
 
     public void evictAll() {

@@ -116,7 +116,7 @@ final class ProxyTranslator {
     private void checkIntegrityConfiguration(ConfigProvider configProvider) {
         if (configProvider.evictProvider() instanceof EvictDynamicKeyGroup
                 && configProvider.getDynamicKeyGroup().isEmpty()) {
-            String errorMessage = method.getName() + Locale.EVICT_DYNAMIC_KEY_GROUP_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY_PROVIDER;
+            String errorMessage = method.getName() + Locale.EVICT_DYNAMIC_KEY_GROUP_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY_GROUP;
             throw new IllegalArgumentException(errorMessage);
         }
 

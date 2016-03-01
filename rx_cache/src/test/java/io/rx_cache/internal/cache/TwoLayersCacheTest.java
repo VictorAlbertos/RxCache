@@ -31,6 +31,7 @@ import io.rx_cache.internal.Mock;
 import io.rx_cache.internal.SimpleMemory;
 import io.rx_cache.internal.common.BaseTest;
 
+import static junit.framework.TestCase.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -79,14 +80,60 @@ public class TwoLayersCacheTest extends BaseTest {
     }
 
     @Theory
-    @Test public void When_Save_And_Record_Has_Expired_Get_Null(Memory memory) {
+    @Test public void When_Save_And_Provider_Record_Has_Expired_Get_Null(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
         twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE));
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
         Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "", "", false, ONE_SECOND_LIFE);
-
         assertThat(record, is(nullValue()));
+
+        record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "", "", false, THREE_SECOND_LIFE);
+        assertThat(record, is(nullValue()));
+    }
+
+    @Theory
+    @Test public void When_Save_And_Dynamic_Key_Record_Has_Expired_Only_Get_Null_For_Dynamic_Key(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
+
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "2", "", new Mock(MOCK_VALUE));
+
+        waitTime(MORE_THAN_ONE_SECOND_LIFE);
+        Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, ONE_SECOND_LIFE);
+        assertThat(record, is(nullValue()));
+
+        record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, THREE_SECOND_LIFE);
+        assertThat(record, is(nullValue()));
+
+        record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "2", "", false, THREE_SECOND_LIFE);
+        assertNotNull(record);
+    }
+
+    @Theory
+    @Test public void When_Save_And_Dynamic_Key_Group_Record_Has_Expired_Only_Get_Null_For_Dynamic_Key(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
+
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "1", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "2", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "2", "1", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "2", "2", new Mock(MOCK_VALUE));
+
+        waitTime(MORE_THAN_ONE_SECOND_LIFE);
+        Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "1", false, ONE_SECOND_LIFE);
+        assertThat(record, is(nullValue()));
+
+        record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "1", false, THREE_SECOND_LIFE);
+        assertThat(record, is(nullValue()));
+
+        record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "2", false, THREE_SECOND_LIFE);
+        assertNotNull(record);
+
+        record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "2", "1", false, THREE_SECOND_LIFE);
+        assertNotNull(record);
+
+        record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "2", "2", false, THREE_SECOND_LIFE);
+        assertNotNull(record);
     }
 
     @Theory
@@ -229,14 +276,31 @@ public class TwoLayersCacheTest extends BaseTest {
         record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, ONE_SECOND_LIFE);
         assertThat(record, is(nullValue()));
 
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE));
+        waitTime(MORE_THAN_ONE_SECOND_LIFE);
+
         record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, THREE_SECOND_LIFE);
         assertThat(record.getData().getMessage(), is(MOCK_VALUE));
 
         record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, ONE_SECOND_LIFE);
         assertThat(record, is(nullValue()));
 
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE));
+        waitTime(MORE_THAN_ONE_SECOND_LIFE);
+
         record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, 0);
         assertThat(record.getData().getMessage(), is(MOCK_VALUE));
+    }
+
+    @Theory
+    @Test public void When_Expired_Date_And_Not_Use_ExpiredDataIfLoaderNotAvailable_Then_Get_Null(Memory memory) {
+        twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
+
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE));
+        waitTime(MORE_THAN_ONE_SECOND_LIFE);
+
+        Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, ONE_SECOND_LIFE);
+        assertThat(record, is(nullValue()));
     }
 
     @Theory
@@ -246,13 +310,9 @@ public class TwoLayersCacheTest extends BaseTest {
         twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE));
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
 
-        Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, ONE_SECOND_LIFE);
-        assertThat(record, is(nullValue()));
-
-        record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", true, ONE_SECOND_LIFE);
+        Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", true, ONE_SECOND_LIFE);
         assertThat(record.getData().getMessage(), is(MOCK_VALUE));
     }
-
 
     @Test public void Check_Policy_Conservative() {
         checkPolicy(PolicyHeapCache.CONSERVATIVE);

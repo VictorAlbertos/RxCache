@@ -24,6 +24,6 @@ interface Locale {
     String NOT_OBSERVABLE_LOADER_FOUND = " requires an instance of type observable";
     String JUST_ONE_INSTANCE = " requires just one instance of type ";
     String EVICT_DYNAMIC_KEY_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY = " EvictDynamicKey was provided but not was provided any DynamicKey";
-    String EVICT_DYNAMIC_KEY_GROUP_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY_PROVIDER = " EvictDynamicKeyGroup was provided but not was provided any Group";
+    String EVICT_DYNAMIC_KEY_GROUP_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY_GROUP = " EvictDynamicKeyGroup was provided but not was provided any Group";
 
 }

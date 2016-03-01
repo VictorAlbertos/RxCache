@@ -49,7 +49,7 @@ public final class EvictRecord extends Action {
         }
     }
 
-    void evictRecordDynamicKeyGroup(String providerKey, String dynamicKey, String dynamicKeyGroup) {
+    void evictRecordMatchingDynamicKeyGroup(String providerKey, String dynamicKey, String dynamicKeyGroup) {
         String composedKey = getKeyMatchingDynamicKeyGroup(providerKey, dynamicKey, dynamicKeyGroup);
 
         memory.evict(composedKey);

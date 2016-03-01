@@ -50,8 +50,12 @@ public final class RetrieveRecord extends Action {
 
         long now = System.currentTimeMillis();
         long expirationDate = record.getTimeAtWhichWasPersisted() + lifeTime;
+
         if (lifeTime != 0 && now > expirationDate) {
-            evictRecord.evictRecordsMatchingProviderKey(composedKey);
+            if (!dynamicKeyGroup.isEmpty()) evictRecord.evictRecordMatchingDynamicKeyGroup(providerKey, dynamicKey, dynamicKeyGroup);
+            else if (!dynamicKey.isEmpty()) evictRecord.evictRecordsMatchingDynamicKey(providerKey, dynamicKey);
+            else evictRecord.evictRecordsMatchingProviderKey(providerKey);
+
             return useExpiredDataIfLoaderNotAvailable ? record : null;
         }
 
