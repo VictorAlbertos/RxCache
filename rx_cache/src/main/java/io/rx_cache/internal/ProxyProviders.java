@@ -111,15 +111,13 @@ final class ProxyProviders implements InvocationHandler {
     }
 
     private void clearKeyIfNeeded(ProxyTranslator.ConfigProvider configProvider) {
+        if (!configProvider.evictProvider().evict()) return;
+
         if (configProvider.evictProvider() instanceof EvictDynamicKeyGroup) {
-            EvictDynamicKeyGroup evictDynamicKeyGroup = (EvictDynamicKeyGroup) configProvider.evictProvider();
-            if (evictDynamicKeyGroup.evict())
-                twoLayersCache.evictDynamicKeyGroup(configProvider.getProviderKey(), configProvider.getDynamicKey().toString(), configProvider.getDynamicKeyGroup().toString());
+            twoLayersCache.evictDynamicKeyGroup(configProvider.getProviderKey(), configProvider.getDynamicKey().toString(), configProvider.getDynamicKeyGroup().toString());
         } else if (configProvider.evictProvider() instanceof EvictDynamicKey) {
-            EvictDynamicKey evictDynamicKey = (EvictDynamicKey) configProvider.evictProvider();
-            if (evictDynamicKey.evict())
-                twoLayersCache.evictDynamicKey(configProvider.getProviderKey(), configProvider.getDynamicKey().toString());
-        } else if (configProvider.evictProvider().evict()) {
+            twoLayersCache.evictDynamicKey(configProvider.getProviderKey(), configProvider.getDynamicKey().toString());
+        } else  {
             twoLayersCache.evictProviderKey(configProvider.getProviderKey());
         }
     }
