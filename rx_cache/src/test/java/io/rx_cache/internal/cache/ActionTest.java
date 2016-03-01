@@ -24,7 +24,6 @@ import java.util.Set;
 
 import io.rx_cache.Record;
 import io.rx_cache.internal.Memory;
-import io.rx_cache.internal.Mock;
 import io.rx_cache.internal.common.BaseTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -116,8 +115,8 @@ public class ActionTest extends BaseTest {
 
         @Override public void evictAll() {}
 
-        private Record<Mock> mock(String value) {
-            return new Record(new Mock(value));
+        private Record<String> mock(String value) {
+            return new Record(value);
         }
     }
 }
