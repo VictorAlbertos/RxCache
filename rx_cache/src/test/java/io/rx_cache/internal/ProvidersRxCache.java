@@ -73,8 +73,10 @@ interface ProvidersRxCache {
 
     Observable<Mock> getMockMultipleDynamicKeys(Observable<Mock> mock, DynamicKey dynamicKey, DynamicKey dynamicKey2);
 
+    Observable<Mock> getMockEvictDynamicKeyProvidingDynamicKey(Observable<Mock> mock, DynamicKey dynamicKey, EvictDynamicKey evictDynamicKey);
     Observable<Mock> getMockEvictDynamicKeyWithoutProvidingDynamicKey(Observable<Mock> mock, EvictDynamicKey evictDynamicKey);
 
+    Observable<Mock> getMockEvictDynamicKeyGroupProvidingDynamicKeyGroup(Observable<Mock> mock, DynamicKeyGroup dynamicKeyGroup, EvictDynamicKeyGroup evictDynamicKeyGroup);
     Observable<Mock> getMockEvictDynamicKeyGroupWithoutProvidingDynamicKeyGroup(Observable<Mock> mock, EvictDynamicKeyGroup evictDynamicKeyGroup);
 }
 

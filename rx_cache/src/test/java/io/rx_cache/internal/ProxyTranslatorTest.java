@@ -21,6 +21,7 @@ import org.junit.Test;
 import java.lang.reflect.Method;
 
 import io.rx_cache.DynamicKey;
+import io.rx_cache.DynamicKeyGroup;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
 import io.rx_cache.EvictDynamicKey;
@@ -151,9 +152,21 @@ public class ProxyTranslatorTest extends BaseTest {
         proxyTranslatorUT.processMethod(mockMethod, data);
     }
 
+    @Test public void When_Use_Evict_Dynamic_Key_Providing_Dynamic_Key_Not_Throw_Exception() throws NoSuchMethodException {
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMockEvictDynamicKeyProvidingDynamicKey", Observable.class, DynamicKey.class, EvictDynamicKey.class);
+        Object[] data = {Observable.just(null), new DynamicKey("1"), new EvictDynamicKey(true)};
+        proxyTranslatorUT.processMethod(mockMethod, data);
+    }
+
     @Test(expected=IllegalArgumentException.class) public void When_Use_Evict_Dynamic_Key_Without_Providing_Dynamic_Key_Throw_Exception() throws NoSuchMethodException {
         Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMockEvictDynamicKeyWithoutProvidingDynamicKey", Observable.class, EvictDynamicKey.class);
         Object[] data = {Observable.just(null), new EvictDynamicKey(true)};
+        proxyTranslatorUT.processMethod(mockMethod, data);
+    }
+
+    @Test public void When_Use_Evict_Dynamic_Key_Group_Providing_Dynamic_Key_Group_Not_Throw_Exception() throws NoSuchMethodException {
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMockEvictDynamicKeyGroupProvidingDynamicKeyGroup", Observable.class, DynamicKeyGroup.class, EvictDynamicKeyGroup.class);
+        Object[] data = {Observable.just(null), new DynamicKeyGroup("1", "1"), new EvictDynamicKeyGroup(true)};
         proxyTranslatorUT.processMethod(mockMethod, data);
     }
 
