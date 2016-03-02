@@ -42,7 +42,9 @@ import static org.junit.Assert.assertThat;
 public class ProvidersDynamicsKeysRxCacheTest {
     @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
     private ProvidersRxCache providersRxCache;
-    private final static int SIZE = 100;
+    private static final int SIZE = 100;
+    private static final String filter1page1 = "filer1_page1", filter1Page2 = "filer1_page2", filter1Page3 = "filer1_page3",
+            filter2Page1 = "filer2_page1", filter2Page2 = "filer2_page2", filter2Page3 = "filer2_page3";
 
     @Before public void setUp() {
         providersRxCache = new RxCache.Builder()
@@ -170,32 +172,11 @@ public class ProvidersDynamicsKeysRxCacheTest {
         assertThat(subscriber.getOnNextEvents().size(), is(1));
     }
 
+    @Test public void Pagination_Filtering_Evicting_DynamicKeyGroup() {
+        populateAndCheckRetrieved();
 
-    @Test public void pagination_Filtering() {
-        String filter1Page1 = "filer1_page1";
-        String filter1Page2 = "filer1_page2";
-        String filter1Page3 = "filer1_page3";
-        String filter2Page1 = "filer2_page1";
-        String filter2Page2 = "filer2_page2";
-        String filter2Page3 = "filer2_page3";
-
-        populateFilterPage(filter1Page1);
-        populateFilterPage(filter1Page2);
-        populateFilterPage(filter1Page3);
-        populateFilterPage(filter2Page1);
-        populateFilterPage(filter2Page2);
-        populateFilterPage(filter2Page3);
-
-        retrieveAndCheckFilterPageValue(filter1Page1, false);
-        retrieveAndCheckFilterPageValue(filter1Page2, false);
-        retrieveAndCheckFilterPageValue(filter1Page3, false);
-        retrieveAndCheckFilterPageValue(filter2Page1, false);
-        retrieveAndCheckFilterPageValue(filter2Page2, false);
-        retrieveAndCheckFilterPageValue(filter2Page3, false);
-
-        //evict DynamicKeyGroup
-        evictDynamicKeyGroup(filter1Page1);
-        retrieveAndCheckFilterPageValue(filter1Page1, true);
+        evictDynamicKeyGroup(filter1page1);
+        retrieveAndCheckFilterPageValue(filter1page1, true);
         retrieveAndCheckFilterPageValue(filter1Page2, false);
         retrieveAndCheckFilterPageValue(filter1Page3, false);
         retrieveAndCheckFilterPageValue(filter2Page1, false);
@@ -221,23 +202,14 @@ public class ProvidersDynamicsKeysRxCacheTest {
         evictDynamicKeyGroup(filter2Page3);
         retrieveAndCheckFilterPageValue(filter2Page3, true);
 
-        populateFilterPage(filter1Page1);
-        populateFilterPage(filter1Page2);
-        populateFilterPage(filter1Page3);
-        populateFilterPage(filter2Page1);
-        populateFilterPage(filter2Page2);
-        populateFilterPage(filter2Page3);
+        populateAndCheckRetrieved();
+    }
 
-        retrieveAndCheckFilterPageValue(filter1Page1, false);
-        retrieveAndCheckFilterPageValue(filter1Page2, false);
-        retrieveAndCheckFilterPageValue(filter1Page3, false);
-        retrieveAndCheckFilterPageValue(filter2Page1, false);
-        retrieveAndCheckFilterPageValue(filter2Page2, false);
-        retrieveAndCheckFilterPageValue(filter2Page3, false);
+    @Test public void Pagination_Filtering_Evicting_DynamicKey() {
+        populateAndCheckRetrieved();
 
-        //evict DynamicKey
         evictDynamicKey(filter1Page2);
-        retrieveAndCheckFilterPageValue(filter1Page1, true);
+        retrieveAndCheckFilterPageValue(filter1page1, true);
         retrieveAndCheckFilterPageValue(filter1Page2, true);
         retrieveAndCheckFilterPageValue(filter1Page3, true);
         retrieveAndCheckFilterPageValue(filter2Page1, false);
@@ -247,27 +219,37 @@ public class ProvidersDynamicsKeysRxCacheTest {
         retrieveAndCheckFilterPageValue(filter2Page2, true);
         retrieveAndCheckFilterPageValue(filter2Page3, true);
 
-        populateFilterPage(filter1Page1);
+        populateAndCheckRetrieved();
+    }
+
+    @Test public void Pagination_Filtering_Evicting_ProviderKey() {
+        populateAndCheckRetrieved();
+
+        evictProviderKey(filter1Page2);
+        retrieveAndCheckFilterPageValue(filter1page1, true);
+        retrieveAndCheckFilterPageValue(filter1Page2, true);
+        retrieveAndCheckFilterPageValue(filter1Page3, true);
+        retrieveAndCheckFilterPageValue(filter2Page1, true);
+        retrieveAndCheckFilterPageValue(filter2Page2, true);
+        retrieveAndCheckFilterPageValue(filter2Page3, true);
+
+        populateAndCheckRetrieved();
+    }
+
+    private void populateAndCheckRetrieved() {
+        populateFilterPage(filter1page1);
         populateFilterPage(filter1Page2);
         populateFilterPage(filter1Page3);
         populateFilterPage(filter2Page1);
         populateFilterPage(filter2Page2);
         populateFilterPage(filter2Page3);
 
-        retrieveAndCheckFilterPageValue(filter1Page1, false);
+        retrieveAndCheckFilterPageValue(filter1page1, false);
         retrieveAndCheckFilterPageValue(filter1Page2, false);
         retrieveAndCheckFilterPageValue(filter1Page3, false);
         retrieveAndCheckFilterPageValue(filter2Page1, false);
         retrieveAndCheckFilterPageValue(filter2Page2, false);
         retrieveAndCheckFilterPageValue(filter2Page3, false);
-
-        evictProviderKey(filter1Page2);
-        retrieveAndCheckFilterPageValue(filter1Page1, true);
-        retrieveAndCheckFilterPageValue(filter1Page2, true);
-        retrieveAndCheckFilterPageValue(filter1Page3, true);
-        retrieveAndCheckFilterPageValue(filter2Page1, true);
-        retrieveAndCheckFilterPageValue(filter2Page2, true);
-        retrieveAndCheckFilterPageValue(filter2Page3, true);
     }
 
     private void populateFilterPage(String filter_page) {
