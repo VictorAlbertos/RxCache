@@ -25,8 +25,12 @@ public class Record<T> {
     private final T data;
     private final long timeAtWhichWasPersisted;
 
-    public Record(T data) {
+    //LifeTime requires to be stored to be evicted by EvictExpiredRecordsTask when no life time is available without a config provider
+    private long lifeTime;
+
+    public Record(T data, long lifeTime) {
         this.data = data;
+        this.lifeTime = lifeTime;
         this.timeAtWhichWasPersisted = System.currentTimeMillis();
         this.source = Source.MEMORY;
     }
@@ -45,5 +49,13 @@ public class Record<T> {
 
     public long getTimeAtWhichWasPersisted() {
         return timeAtWhichWasPersisted;
+    }
+
+    public long getLifeTime() {
+        return lifeTime;
+    }
+
+    public void setLifeTime(long lifeTime) {
+        this.lifeTime = lifeTime;
     }
 }

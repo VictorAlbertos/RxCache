@@ -94,7 +94,7 @@ final class ProxyProviders implements InvocationHandler {
                 if (data == null)
                     throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey());
 
-                twoLayersCache.save(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), data);
+                twoLayersCache.save(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), data, configProvider.getLifeTimeMillis());
                 return new Reply(data, Source.CLOUD);
             }
         }).onErrorReturn(new Func1() {

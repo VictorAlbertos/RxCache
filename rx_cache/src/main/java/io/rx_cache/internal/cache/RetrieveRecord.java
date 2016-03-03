@@ -25,10 +25,12 @@ import io.rx_cache.internal.Memory;
 
 public final class RetrieveRecord extends Action {
     private final EvictRecord evictRecord;
+    private final HasRecordExpired hasRecordExpired;
 
-    @Inject public RetrieveRecord(Memory memory, Persistence persistence, EvictRecord evictRecord) {
+    @Inject public RetrieveRecord(Memory memory, Persistence persistence, EvictRecord evictRecord, HasRecordExpired hasRecordExpired) {
         super(memory, persistence);
         this.evictRecord = evictRecord;
+        this.hasRecordExpired = hasRecordExpired;
     }
 
     <T> Record<T> retrieveRecord(String providerKey, String dynamicKey, String dynamicKeyGroup, boolean useExpiredDataIfLoaderNotAvailable, long lifeTime) {
@@ -48,10 +50,9 @@ public final class RetrieveRecord extends Action {
             }
         }
 
-        long now = System.currentTimeMillis();
-        long expirationDate = record.getTimeAtWhichWasPersisted() + lifeTime;
-
-        if (lifeTime != 0 && now > expirationDate) {
+        record.setLifeTime(lifeTime)
+        ;
+        if (hasRecordExpired.hasRecordExpired(record)) {
             if (!dynamicKeyGroup.isEmpty()) evictRecord.evictRecordMatchingDynamicKeyGroup(providerKey, dynamicKey, dynamicKeyGroup);
             else if (!dynamicKey.isEmpty()) evictRecord.evictRecordsMatchingDynamicKey(providerKey, dynamicKey);
             else evictRecord.evictRecordsMatchingProviderKey(providerKey);

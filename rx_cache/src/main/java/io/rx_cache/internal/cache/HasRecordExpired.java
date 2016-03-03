@@ -16,24 +16,17 @@
 
 package io.rx_cache.internal.cache;
 
-
 import javax.inject.Inject;
 
-import io.rx_cache.Persistence;
 import io.rx_cache.Record;
-import io.rx_cache.internal.Memory;
 
-public final class SaveRecord extends Action {
+public class HasRecordExpired {
 
-    @Inject public SaveRecord(Memory memory, Persistence persistence) {
-        super(memory, persistence);
-    }
+    public @Inject HasRecordExpired() {}
 
-    void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data, long lifeTime) {
-        String composedKey = composeKey(providerKey, dynamicKey, dynamicKeyGroup);
-
-        Record record = new Record(data, lifeTime);
-        memory.put(composedKey, record);
-        persistence.saveRecord(composedKey, record);
+    public boolean hasRecordExpired(Record record) {
+        long now = System.currentTimeMillis();
+        long expirationDate = record.getTimeAtWhichWasPersisted() + record.getLifeTime();
+        return record.getLifeTime() != 0 && now > expirationDate;
     }
 }

@@ -16,6 +16,8 @@
 
 package io.rx_cache.internal;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +31,8 @@ final class DiskRecord<T> extends Record<T> {
         this(record.getData());
     }
 
-    DiskRecord(T data) {
-        super(data);
+    @VisibleForTesting DiskRecord(T data) {
+        super(data, 0);
 
         boolean isList = Collection.class.isAssignableFrom(data.getClass());
         boolean isArray = data.getClass().isArray();

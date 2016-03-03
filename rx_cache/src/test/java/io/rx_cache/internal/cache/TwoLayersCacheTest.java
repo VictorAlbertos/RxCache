@@ -42,9 +42,8 @@ import static org.hamcrest.core.IsNull.nullValue;
 @RunWith(Theories.class)
 public class TwoLayersCacheTest extends BaseTest {
     private TwoLayersCache twoLayersCacheUT;
-    private static final long ONE_SECOND_LIFE = 1000, THREE_SECOND_LIFE = 3000, MORE_THAN_ONE_SECOND_LIFE = 1250;
+    private static final long ONE_SECOND_LIFE = 1000, THREE_SECOND_LIFE = 3000, MORE_THAN_ONE_SECOND_LIFE = 1250, DUMMY_LIFE_TIME = -1;
     private static final String PROVIDER_KEY = "get_mocks",  MOCK_VALUE = "mock_value";
-
     @DataPoint public static Memory GUAVA_MEMORY = new GuavaMemory(PolicyHeapCache.CONSERVATIVE);
     @DataPoint public static Memory SIMPLE_MEMORY = new SimpleMemory();
 
@@ -52,7 +51,7 @@ public class TwoLayersCacheTest extends BaseTest {
     @Theory @Test public void When_Save_And_Object_Not_Expired_And_Memory_Not_Destroyed_Retrieve_It_From_Memory(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
 
         Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "", "", false, ONE_SECOND_LIFE + 1000);
         Mock mock = record.getData();
@@ -65,7 +64,7 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Save_And_Record_Has_Not_Expired_And_Memory_Destroyed_Retrieve_It_From_Disk(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
         twoLayersCacheUT.mockMemoryDestroyed();
 
         Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "", "", false, ONE_SECOND_LIFE);
@@ -83,7 +82,7 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Save_And_Provider_Record_Has_Expired_Get_Null(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
         Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "", "", false, ONE_SECOND_LIFE);
         assertThat(record, is(nullValue()));
@@ -96,8 +95,8 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Save_And_Dynamic_Key_Record_Has_Expired_Only_Get_Null_For_Dynamic_Key(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE));
-        twoLayersCacheUT.save(PROVIDER_KEY, "2", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE), ONE_SECOND_LIFE);
+        twoLayersCacheUT.save(PROVIDER_KEY, "2", "", new Mock(MOCK_VALUE), ONE_SECOND_LIFE);
 
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
         Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, ONE_SECOND_LIFE);
@@ -114,10 +113,10 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Save_And_Dynamic_Key_Group_Record_Has_Expired_Only_Get_Null_For_Dynamic_Key(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "1", "1", new Mock(MOCK_VALUE));
-        twoLayersCacheUT.save(PROVIDER_KEY, "1", "2", new Mock(MOCK_VALUE));
-        twoLayersCacheUT.save(PROVIDER_KEY, "2", "1", new Mock(MOCK_VALUE));
-        twoLayersCacheUT.save(PROVIDER_KEY, "2", "2", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "1", new Mock(MOCK_VALUE), ONE_SECOND_LIFE);
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "2", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY, "2", "1", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY, "2", "2", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
 
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
         Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "1", false, ONE_SECOND_LIFE);
@@ -140,7 +139,7 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Save_And_Record_Has_Not_Expired_Date_Do_Not_Get_Null(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
         Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "", "", false, 0);
 
@@ -157,7 +156,7 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Save_And_Evict_Get_Null(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
         twoLayersCacheUT.evictProviderKey(PROVIDER_KEY);
         Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "", "", false, ONE_SECOND_LIFE);
 
@@ -168,10 +167,10 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Save_And_Evict_All_Get_Null(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE));
-        twoLayersCacheUT.save(PROVIDER_KEY, "" +1, "", new Mock(MOCK_VALUE));
-        twoLayersCacheUT.save(PROVIDER_KEY +1, "", "", new Mock(MOCK_VALUE));
-        twoLayersCacheUT.save(PROVIDER_KEY +1, "" +1, "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY, "" +1, "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY +1, "", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY +1, "" +1, "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
 
         twoLayersCacheUT.evictAll();
 
@@ -189,9 +188,9 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Save_And_Not_Evict_Dynamic_Keys_Get_All(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "filter_1", "", new Mock(MOCK_VALUE+1));
-        twoLayersCacheUT.save(PROVIDER_KEY, "filter_2", "", new Mock(MOCK_VALUE + 2));
-        twoLayersCacheUT.save(PROVIDER_KEY, "filter_3", "", new Mock(MOCK_VALUE + 3));
+        twoLayersCacheUT.save(PROVIDER_KEY, "filter_1", "", new Mock(MOCK_VALUE+1), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY, "filter_2", "", new Mock(MOCK_VALUE + 2), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY, "filter_3", "", new Mock(MOCK_VALUE + 3), DUMMY_LIFE_TIME);
 
         Record<Mock> record1 = twoLayersCacheUT.retrieve(PROVIDER_KEY, "filter_1", "", false, ONE_SECOND_LIFE);
         Record<Mock> record2 = twoLayersCacheUT.retrieve(PROVIDER_KEY, "filter_2", "", false, ONE_SECOND_LIFE);
@@ -206,8 +205,8 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Save_Dynamic_Key_And_Re_Save_Dynamic_Key_Get_Last_Value(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE + 1));
-        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE + 2));
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE + 1), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE + 2), DUMMY_LIFE_TIME);
 
         Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, ONE_SECOND_LIFE);
 
@@ -218,9 +217,9 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Save_Dynamic_Keys_And_Evict_Provider_Key_Get_All_Null(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "filer_1", "", new Mock(MOCK_VALUE));
-        twoLayersCacheUT.save(PROVIDER_KEY, "filer_2", "", new Mock(MOCK_VALUE));
-        twoLayersCacheUT.save(PROVIDER_KEY, "filer_3", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "filer_1", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY, "filer_2", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY, "filer_3", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
 
         twoLayersCacheUT.evictProviderKey(PROVIDER_KEY);
 
@@ -233,9 +232,9 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Save_Dynamic_Key_And_Evict_One_Dynamic_Key_Get_Others(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "filer_1", "", new Mock(MOCK_VALUE));
-        twoLayersCacheUT.save(PROVIDER_KEY, "filer_2", "", new Mock(MOCK_VALUE + 1));
-        twoLayersCacheUT.save(PROVIDER_KEY, "filer_3", "", new Mock(MOCK_VALUE + 2));
+        twoLayersCacheUT.save(PROVIDER_KEY, "filer_1", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY, "filer_2", "", new Mock(MOCK_VALUE + 1), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY, "filer_3", "", new Mock(MOCK_VALUE + 2), DUMMY_LIFE_TIME);
 
         twoLayersCacheUT.evictDynamicKey(PROVIDER_KEY, "filer_1");
 
@@ -252,8 +251,8 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Save_Dynamic_Key_Group_And_Evict_One_Dynamic_Key_Group_Get_Others(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "filer_1", "page_1", new Mock(MOCK_VALUE));
-        twoLayersCacheUT.save(PROVIDER_KEY, "filer_1", "page_2", new Mock(MOCK_VALUE + 1));
+        twoLayersCacheUT.save(PROVIDER_KEY, "filer_1", "page_1", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
+        twoLayersCacheUT.save(PROVIDER_KEY, "filer_1", "page_2", new Mock(MOCK_VALUE + 1), DUMMY_LIFE_TIME);
 
         twoLayersCacheUT.evictDynamicKeyGroup(PROVIDER_KEY, "filer_1", "page_2");
 
@@ -267,7 +266,7 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Expiration_Date_Has_Been_Modified_Then_Reflect_This_Change(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
 
         Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, THREE_SECOND_LIFE);
@@ -276,7 +275,7 @@ public class TwoLayersCacheTest extends BaseTest {
         record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, ONE_SECOND_LIFE);
         assertThat(record, is(nullValue()));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
 
         record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, THREE_SECOND_LIFE);
@@ -285,7 +284,7 @@ public class TwoLayersCacheTest extends BaseTest {
         record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, ONE_SECOND_LIFE);
         assertThat(record, is(nullValue()));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
 
         record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, 0);
@@ -296,7 +295,7 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Expired_Date_And_Not_Use_ExpiredDataIfLoaderNotAvailable_Then_Get_Null(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
 
         Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, ONE_SECOND_LIFE);
@@ -307,7 +306,7 @@ public class TwoLayersCacheTest extends BaseTest {
     @Test public void When_Expired_Date_But_Use_ExpiredDataIfLoaderNotAvailable_Then_GetMock(Memory memory) {
         twoLayersCacheUT = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
 
-        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE));
+        twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME);
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
 
         Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", true, ONE_SECOND_LIFE);
@@ -346,6 +345,6 @@ public class TwoLayersCacheTest extends BaseTest {
     }
 
     protected RetrieveRecord retrieveRecord(Memory memory) {
-        return new RetrieveRecord(memory, disk, new EvictRecord(memory, disk));
+        return new RetrieveRecord(memory, disk, new EvictRecord(memory, disk), new HasRecordExpired());
     }
 }

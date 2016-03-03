@@ -16,6 +16,8 @@
 
 package io.rx_cache;
 
+import java.util.List;
+
 /**
  * Provides the persistence layer for the cache
  * A default implementation which store the objects in disk is supplied:
@@ -40,6 +42,11 @@ public interface Persistence {
      * Delete all the data
      */
     void evictAll();
+
+    /**
+     * Retrieve the keys from all records persisted
+     */
+    List<String> allKeys();
 
     /**
      * Retrieve the record associated with its particular key

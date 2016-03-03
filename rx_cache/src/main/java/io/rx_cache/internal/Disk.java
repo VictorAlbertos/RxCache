@@ -25,7 +25,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -49,6 +51,23 @@ public final class Disk implements Persistence {
      * */
     @Override public void saveRecord(String key, Record record) {
         save(key, new DiskRecord(record));
+    }
+
+    /**
+     * Retrieve the names from all files in dir
+     */
+    @Override public List<String> allKeys() {
+        List<String> nameFiles = new ArrayList<>();
+
+        File[] files = cacheDirectory.listFiles();
+
+        for (File file : files) {
+            if (file.isFile()) {
+                nameFiles.add(file.getName());
+            }
+        }
+
+        return nameFiles;
     }
 
     /** Save in disk the object passed.

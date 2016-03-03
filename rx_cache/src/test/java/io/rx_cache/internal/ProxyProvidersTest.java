@@ -23,6 +23,7 @@ import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
 import io.rx_cache.internal.cache.EvictRecord;
+import io.rx_cache.internal.cache.HasRecordExpired;
 import io.rx_cache.internal.cache.RetrieveRecord;
 import io.rx_cache.internal.cache.SaveRecord;
 import io.rx_cache.internal.cache.TwoLayersCache;
@@ -41,15 +42,18 @@ import static org.junit.Assert.assertThat;
 public class ProxyProvidersTest extends BaseTest {
     private ProxyProviders proxyProvidersUT;
     private TwoLayersCache twoLayersCacheMock;
+    private HasRecordExpired hasRecordExpired;
 
 
     @Override public void setUp() {
         super.setUp();
 
+        hasRecordExpired = new HasRecordExpired();
+
         Memory memory = new GuavaMemory(PolicyHeapCache.MODERATE);
         EvictRecord evictRecord =  new EvictRecord(memory,disk);
         SaveRecord saveRecord = new SaveRecord(memory,disk);
-        RetrieveRecord retrieveRecord = new RetrieveRecord(memory,disk, evictRecord);
+        RetrieveRecord retrieveRecord = new RetrieveRecord(memory,disk, evictRecord, hasRecordExpired);
 
         twoLayersCacheMock = new TwoLayersCache(evictRecord, retrieveRecord, saveRecord);
     }
@@ -135,7 +139,7 @@ public class ProxyProvidersTest extends BaseTest {
 
         ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", observable, 0, detailResponse, new EvictProvider(evictCache));
 
-        if (hasCache) twoLayersCacheMock.save("mockKey", "", "", new Mock("message"));
+        if (hasCache) twoLayersCacheMock.save("mockKey", "", "", new Mock("message"), configProvider.getLifeTimeMillis());
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
         proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, useExpiredDataIfLoaderNotAvailable);
