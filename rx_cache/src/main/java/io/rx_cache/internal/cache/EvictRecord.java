@@ -32,7 +32,7 @@ public final class EvictRecord extends Action {
     }
 
     void evictRecordsMatchingProviderKey(String providerKey) {
-        List<String> keysMatchingKeyProvider = getKeysMatchingProviderKey(providerKey);
+        List<String> keysMatchingKeyProvider = getKeysOnMemoryMatchingProviderKey(providerKey);
 
         for (String keyMatchingKeyProvider : keysMatchingKeyProvider) {
             memory.evict(keyMatchingKeyProvider);
@@ -41,7 +41,7 @@ public final class EvictRecord extends Action {
     }
 
     void evictRecordsMatchingDynamicKey(String providerKey, String dynamicKey) {
-        List<String> keysMatchingDynamicKey = getKeysMatchingDynamicKey(providerKey, dynamicKey);
+        List<String> keysMatchingDynamicKey = getKeysOnMemoryMatchingDynamicKey(providerKey, dynamicKey);
 
         for (String keyMatchingDynamicKey : keysMatchingDynamicKey) {
             memory.evict(keyMatchingDynamicKey);
@@ -50,7 +50,7 @@ public final class EvictRecord extends Action {
     }
 
     void evictRecordMatchingDynamicKeyGroup(String providerKey, String dynamicKey, String dynamicKeyGroup) {
-        String composedKey = getKeyMatchingDynamicKeyGroup(providerKey, dynamicKey, dynamicKeyGroup);
+        String composedKey = getKeyOnMemoryMatchingDynamicKeyGroup(providerKey, dynamicKey, dynamicKeyGroup);
 
         memory.evict(composedKey);
         persistence.evict(composedKey);

@@ -28,11 +28,15 @@ final class DiskRecord<T> extends Record<T> {
     private final String dataClassName, dataCollectionClassName, dataKeyMapClassName;
 
     DiskRecord(Record<T> record) {
-        this(record.getData());
+        this(record.getData(), record.getLifeTime());
     }
 
     @VisibleForTesting DiskRecord(T data) {
-        super(data, 0);
+        this(data, 0);
+    }
+
+    private DiskRecord(T data, long lifeTime) {
+        super(data, lifeTime);
 
         boolean isList = Collection.class.isAssignableFrom(data.getClass());
         boolean isArray = data.getClass().isArray();

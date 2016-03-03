@@ -62,6 +62,8 @@ interface ProvidersRxCache {
 
     Observable<List<Mock>> getMocksFilteredPaginateEvict(Observable<List<Mock>> oMocks, DynamicKeyGroup dynamicKeyGroup, EvictProvider evictDynamicKey);
 
+    @LifeCache(duration = 1, timeUnit = TimeUnit.MILLISECONDS)
+    Observable<List<Mock>> getEphemeralMocksPaginate(Observable<List<Mock>> mocks, DynamicKey page);
 
     Observable<Mock> getMockWithoutLoaderObservable();
 

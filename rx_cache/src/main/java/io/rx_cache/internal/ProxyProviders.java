@@ -29,6 +29,7 @@ import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.Record;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
+import io.rx_cache.internal.cache.EvictExpiredRecordsPersistenceTask;
 import io.rx_cache.internal.cache.TwoLayersCache;
 import rx.Observable;
 import rx.functions.Func0;
@@ -39,10 +40,11 @@ final class ProxyProviders implements InvocationHandler {
     private final TwoLayersCache twoLayersCache;
     private final Boolean useExpiredDataIfLoaderNotAvailable;
 
-    @Inject public ProxyProviders(ProxyTranslator proxyTranslator, TwoLayersCache twoLayersCache, Boolean useExpiredDataIfLoaderNotAvailable) {
+    @Inject public ProxyProviders(ProxyTranslator proxyTranslator, TwoLayersCache twoLayersCache, Boolean useExpiredDataIfLoaderNotAvailable, EvictExpiredRecordsPersistenceTask evictExpiredRecordsPersistenceTask) {
         this.proxyTranslator = proxyTranslator;
         this.twoLayersCache = twoLayersCache;
         this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
+        evictExpiredRecordsPersistenceTask.startEvictingExpiredRecords().subscribe();
     }
 
     @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {

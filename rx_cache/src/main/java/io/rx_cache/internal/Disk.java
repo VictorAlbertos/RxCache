@@ -60,6 +60,7 @@ public final class Disk implements Persistence {
         List<String> nameFiles = new ArrayList<>();
 
         File[] files = cacheDirectory.listFiles();
+        if(files == null) return nameFiles;
 
         for (File file : files) {
             if (file.isFile()) {

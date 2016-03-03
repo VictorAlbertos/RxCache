@@ -36,6 +36,7 @@ public class ActionTest extends BaseTest {
     private static final String PROVIDER_KEY = "get_mocks";
     private static final String DYNAMIC_KEY_1 = "filter_1", DYNAMIC_KEY_2 = "filter_2";
     private static final String DYNAMIC_KEY_GROUP_1 = "page_1", DYNAMIC_KEY_GROUP_2 = "page_2";
+    private static final long LIFE_TIME_KEY = System.currentTimeMillis();
 
     @Override public void setUp() {
         super.setUp();
@@ -45,7 +46,7 @@ public class ActionTest extends BaseTest {
     }
 
     @Test public void Check_Keys_Matching_Provider_Key()  {
-        List<String> keysMatchingProviderKey = actionUT.getKeysMatchingProviderKey(PROVIDER_KEY);
+        List<String> keysMatchingProviderKey = actionUT.getKeysOnMemoryMatchingProviderKey(PROVIDER_KEY);
         assertThat(keysMatchingProviderKey.get(0), is(filter1Page1));
         assertThat(keysMatchingProviderKey.get(1), is(filter1Page2));
         assertThat(keysMatchingProviderKey.get(2), is(filter2Page1));
@@ -54,28 +55,28 @@ public class ActionTest extends BaseTest {
     }
 
     @Test public void Check_Keys_Matching_Dynamic_Key()  {
-        List<String> keysMatchingDynamicKey1 = actionUT.getKeysMatchingDynamicKey(PROVIDER_KEY, DYNAMIC_KEY_1);
+        List<String> keysMatchingDynamicKey1 = actionUT.getKeysOnMemoryMatchingDynamicKey(PROVIDER_KEY, DYNAMIC_KEY_1);
         assertThat(keysMatchingDynamicKey1.get(0), is(filter1Page1));
         assertThat(keysMatchingDynamicKey1.get(1), is(filter1Page2));
         assertThat(keysMatchingDynamicKey1.size(), is(2));
 
-        List<String> keysMatchingDynamicKey2 = actionUT.getKeysMatchingDynamicKey(PROVIDER_KEY, DYNAMIC_KEY_2);
+        List<String> keysMatchingDynamicKey2 = actionUT.getKeysOnMemoryMatchingDynamicKey(PROVIDER_KEY, DYNAMIC_KEY_2);
         assertThat(keysMatchingDynamicKey2.get(0), is(filter2Page1));
         assertThat(keysMatchingDynamicKey2.get(1), is(filter2Page2));
         assertThat(keysMatchingDynamicKey2.size(), is(2));
     }
 
     @Test public void Check_Keys_Matching_Dynamic_Key_Group()  {
-        String keyMatchingDynamicKey1DynamicKeyGroup1 = actionUT.getKeyMatchingDynamicKeyGroup(PROVIDER_KEY, DYNAMIC_KEY_1, DYNAMIC_KEY_GROUP_1);
+        String keyMatchingDynamicKey1DynamicKeyGroup1 = actionUT.getKeyOnMemoryMatchingDynamicKeyGroup(PROVIDER_KEY, DYNAMIC_KEY_1, DYNAMIC_KEY_GROUP_1);
         assertThat(keyMatchingDynamicKey1DynamicKeyGroup1, is(filter1Page1));
 
-        String keyMatchingDynamicKey1DynamicKeyGroup2 = actionUT.getKeyMatchingDynamicKeyGroup(PROVIDER_KEY, DYNAMIC_KEY_1, DYNAMIC_KEY_GROUP_2);
+        String keyMatchingDynamicKey1DynamicKeyGroup2 = actionUT.getKeyOnMemoryMatchingDynamicKeyGroup(PROVIDER_KEY, DYNAMIC_KEY_1, DYNAMIC_KEY_GROUP_2);
         assertThat(keyMatchingDynamicKey1DynamicKeyGroup2, is(filter1Page2));
 
-        String keyMatchingDynamicKey2DynamicKeyGroup1 = actionUT.getKeyMatchingDynamicKeyGroup(PROVIDER_KEY, DYNAMIC_KEY_2, DYNAMIC_KEY_GROUP_1);
+        String keyMatchingDynamicKey2DynamicKeyGroup1 = actionUT.getKeyOnMemoryMatchingDynamicKeyGroup(PROVIDER_KEY, DYNAMIC_KEY_2, DYNAMIC_KEY_GROUP_1);
         assertThat(keyMatchingDynamicKey2DynamicKeyGroup1, is(filter2Page1));
 
-        String keyMatchingDynamicKey2DynamicKeyGroup2 = actionUT.getKeyMatchingDynamicKeyGroup(PROVIDER_KEY, DYNAMIC_KEY_2, DYNAMIC_KEY_GROUP_2);
+        String keyMatchingDynamicKey2DynamicKeyGroup2 = actionUT.getKeyOnMemoryMatchingDynamicKeyGroup(PROVIDER_KEY, DYNAMIC_KEY_2, DYNAMIC_KEY_GROUP_2);
         assertThat(keyMatchingDynamicKey2DynamicKeyGroup2, is(filter2Page2));
     }
 

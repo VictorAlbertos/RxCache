@@ -34,11 +34,11 @@ abstract class Action {
         this.persistence = persistence;
     }
 
-    protected String composeKey(String keyProvider, String dynamicKey, String dynamicKeyGroup) {
-        return keyProvider + PREFIX_DYNAMIC_KEY + dynamicKey + PREFIX_DYNAMIC_KEY_GROUP + dynamicKeyGroup;
+    protected String composeKey(String providerKey, String dynamicKey, String dynamicKeyGroup) {
+        return providerKey + PREFIX_DYNAMIC_KEY + dynamicKey + PREFIX_DYNAMIC_KEY_GROUP + dynamicKeyGroup;
     }
 
-    protected List<String> getKeysMatchingProviderKey(String providerKey) {
+    protected List<String> getKeysOnMemoryMatchingProviderKey(String providerKey) {
         List<String> keysMatchingProviderKey = new ArrayList<>();
 
         for (String composedKeyMemory : memory.keySet()) {
@@ -51,7 +51,7 @@ abstract class Action {
         return keysMatchingProviderKey;
     }
 
-    protected List<String> getKeysMatchingDynamicKey(String providerKey, String dynamicKey) {
+    protected List<String> getKeysOnMemoryMatchingDynamicKey(String providerKey, String dynamicKey) {
         List<String> keysMatchingDynamicKey = new ArrayList<>();
 
         String composedProviderKeyAndDynamicKey = providerKey + PREFIX_DYNAMIC_KEY + dynamicKey;
@@ -67,7 +67,7 @@ abstract class Action {
         return keysMatchingDynamicKey;
     }
 
-    protected String getKeyMatchingDynamicKeyGroup(String providerKey, String dynamicKey, String dynamicKeyGroup) {
+    protected String getKeyOnMemoryMatchingDynamicKeyGroup(String providerKey, String dynamicKey, String dynamicKeyGroup) {
         return composeKey(providerKey, dynamicKey, dynamicKeyGroup);
     }
 }
