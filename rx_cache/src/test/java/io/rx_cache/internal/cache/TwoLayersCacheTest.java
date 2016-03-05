@@ -337,7 +337,7 @@ public class TwoLayersCacheTest extends BaseTest {
     }
 
     protected SaveRecord saveRecord(Memory memory) {
-        return new SaveRecord(memory, disk);
+        return new SaveRecord(memory, disk, 100);
     }
 
     protected EvictRecord evictRecord(Memory memory) {

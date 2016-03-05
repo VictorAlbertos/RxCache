@@ -36,7 +36,6 @@ public class ActionTest extends BaseTest {
     private static final String PROVIDER_KEY = "get_mocks";
     private static final String DYNAMIC_KEY_1 = "filter_1", DYNAMIC_KEY_2 = "filter_2";
     private static final String DYNAMIC_KEY_GROUP_1 = "page_1", DYNAMIC_KEY_GROUP_2 = "page_2";
-    private static final long LIFE_TIME_KEY = System.currentTimeMillis();
 
     @Override public void setUp() {
         super.setUp();

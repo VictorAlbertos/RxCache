@@ -49,6 +49,11 @@ public interface Persistence {
     List<String> allKeys();
 
     /**
+     * Retrieve records accumulated memory in megabyte
+     */
+    int storedMB();
+
+    /**
      * Retrieve the record associated with its particular key
      * @param <T> The actual data to be persisted encapsulated inside a Record object
      * @param key The key associated with the Record to be retrieved from persistence

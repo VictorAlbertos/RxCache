@@ -63,7 +63,7 @@ public class EvictExpiredRecordsPersistenceTaskTest extends BaseTest {
         }
     }
 
-    @Test public void Call_On_Complete_With_No_Records_To_Evict() {
+    @Test public void Call_On_Complete_When_No_Records_To_Evict() {
         TestSubscriber testSubscriber = new TestSubscriber();
         evictExpiredRecordsPersistenceTaskUT.startEvictingExpiredRecords().subscribe(testSubscriber);
         testSubscriber.awaitTerminalEvent();
@@ -74,7 +74,7 @@ public class EvictExpiredRecordsPersistenceTaskTest extends BaseTest {
     }
 
     private SaveRecord saveRecord(Memory memory) {
-        return new SaveRecord(memory, disk);
+        return new SaveRecord(memory, disk, 100);
     }
 
     private EvictRecord evictRecord(Memory memory) {

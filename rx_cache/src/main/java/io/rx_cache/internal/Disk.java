@@ -71,6 +71,22 @@ public final class Disk implements Persistence {
         return nameFiles;
     }
 
+
+    /**
+     * Retrieve records accumulated memory in megabyte
+     */
+    @Override public int storedMB() {
+        long bytes = 0;
+
+        final File[] files = cacheDirectory.listFiles();
+        for (File file: files) {
+            bytes += file.length();
+        }
+
+        double megabytes = Math.ceil((double)bytes/1024/1024);
+        return (int) megabytes;
+    }
+
     /** Save in disk the object passed.
      * @param key the key whereby the object could be retrieved/deleted later. @see evict and @see retrieve.
      * @param data the object to be persisted.

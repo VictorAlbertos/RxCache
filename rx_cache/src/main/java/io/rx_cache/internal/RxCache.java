@@ -26,7 +26,6 @@ import io.rx_cache.internal.cache.TwoLayersCache;
 
 public final class RxCache {
     private final ProxyProviders proxyProviders;
-
     private RxCache(ProxyProviders proxyProviders) {
         this.proxyProviders = proxyProviders;
     }
@@ -45,7 +44,7 @@ public final class RxCache {
     public static class Builder {
         private PolicyHeapCache policyHeapCache;
         private boolean useExpiredDataIfLoaderNotAvailable;
-
+        private Integer maxMBPersistenceCache;
 
         /**
          * If true RxCache will serve Records already expired, instead of evict them and throw an exception
@@ -70,6 +69,16 @@ public final class RxCache {
         }
 
         /**
+         * Sets the max memory in megabytes for all stored records on persistence layer
+         * If not supplied, 100 megabytes will be the default option
+         * @return BuilderRxCache The builder of RxCache
+         */
+        public Builder setMaxMBForPersistenceCache(Integer maxMgPersistenceCache) {
+            this.maxMBPersistenceCache = maxMgPersistenceCache;
+            return this;
+        }
+
+        /**
          * Sets the File cache system used by Cache
          * @param cacheDirectory The File system used by the persistence implementation of Disk
          * @see TwoLayersCache
@@ -81,7 +90,7 @@ public final class RxCache {
             PolicyHeapCache policy = policyHeapCache != null ? policyHeapCache : PolicyHeapCache.CONSERVATIVE;
 
             ProxyProviders proxyProviders = DaggerRxCacheComponent.builder()
-                    .rxCacheModule(new RxCacheModule(cacheDirectory, policy, useExpiredDataIfLoaderNotAvailable))
+                    .rxCacheModule(new RxCacheModule(cacheDirectory, policy, useExpiredDataIfLoaderNotAvailable, maxMBPersistenceCache))
                     .build().proxyRepository();
             return new RxCache(proxyProviders);
         }
@@ -99,7 +108,7 @@ public final class RxCache {
             PolicyHeapCache policy = policyHeapCache != null ? policyHeapCache : PolicyHeapCache.CONSERVATIVE;
 
             ProxyProviders proxyProviders = DaggerRxCacheComponent.builder()
-                    .rxCacheModule(new RxCacheModule(persistence, policy, useExpiredDataIfLoaderNotAvailable))
+                    .rxCacheModule(new RxCacheModule(persistence, policy, useExpiredDataIfLoaderNotAvailable, maxMBPersistenceCache))
                     .build().proxyRepository();
             return new RxCache(proxyProviders);
         }

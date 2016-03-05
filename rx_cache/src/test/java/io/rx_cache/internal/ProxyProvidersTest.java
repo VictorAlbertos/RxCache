@@ -53,7 +53,7 @@ public class ProxyProvidersTest extends BaseTest {
 
         Memory memory = new GuavaMemory(PolicyHeapCache.MODERATE);
         EvictRecord evictRecord =  new EvictRecord(memory,disk);
-        SaveRecord saveRecord = new SaveRecord(memory,disk);
+        SaveRecord saveRecord = new SaveRecord(memory, disk, 100);
         RetrieveRecord retrieveRecord = new RetrieveRecord(memory,disk, evictRecord, hasRecordExpired);
 
         evictExpiredRecordsPersistenceTask = new EvictExpiredRecordsPersistenceTask(hasRecordExpired, disk);

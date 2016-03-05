@@ -30,18 +30,21 @@ public final class RxCacheModule {
     private final PolicyHeapCache policyHeapCache;
     private final Persistence persistenceClient;
     private final boolean useExpiredDataIfLoaderNotAvailable;
+    private final Integer maxMgPersistenceCache;
 
-    public RxCacheModule(File cacheDirectory, PolicyHeapCache policyHeapCache, Boolean useExpiredDataIfLoaderNotAvailable) {
+    public RxCacheModule(File cacheDirectory, PolicyHeapCache policyHeapCache, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache) {
         this.cacheDirectory = cacheDirectory;
         this.policyHeapCache = policyHeapCache;
         this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
+        this.maxMgPersistenceCache = maxMgPersistenceCache;
         this.persistenceClient = null;
     }
 
-    public RxCacheModule(Persistence persistenceClient, PolicyHeapCache policyHeapCache, Boolean useExpiredDataIfLoaderNotAvailable) {
+    public RxCacheModule(Persistence persistenceClient, PolicyHeapCache policyHeapCache, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache) {
         this.persistenceClient = persistenceClient;
         this.policyHeapCache = policyHeapCache;
         this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
+        this.maxMgPersistenceCache = maxMgPersistenceCache;
         this.cacheDirectory = null;
     }
 
@@ -68,5 +71,9 @@ public final class RxCacheModule {
         } catch( ClassNotFoundException e ) {
             return new SimpleMemory();
         }
+    }
+
+    @Singleton @Provides Integer maxMbPersistenceCache() {
+        return maxMgPersistenceCache != null ? maxMgPersistenceCache : 100;
     }
 }
