@@ -6,8 +6,13 @@
 
 RxCache
 =======
+The **goal** of this library is simple: **caching your data models like [Picasso](https://github.com/square/picasso) caches your images, with no effort at all.** 
 
-Inspired by [Retrofit](http://square.github.io/retrofit/) api, RxCache is a reactive caching library for Android and Java which turns your caching needs into an interface. 
+Every Android application is a client application, which means it does not make sense to create and maintain a database just for caching data.
+
+Plus, the fact that you have some sort of legendary database for persisting your data does not solves by itself the real challenge: to be able to configure your caching needs in a flexible and simple way. 
+
+Inspired by [Retrofit](http://square.github.io/retrofit/) api, **RxCache is a reactive caching library for Android and Java which turns your caching needs into an interface.** 
 
 Every method acts as a provider for RxCache, and all of them are managed through observables; they are the fundamental contract 
 between the library and its clients. 
@@ -37,7 +42,7 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos:RxCache:1.0.1"
+    compile "com.github.VictorAlbertos:RxCache:1.1.0"
     compile "io.reactivex:rxjava:1.1.0"
 }
 ```
@@ -46,7 +51,7 @@ dependencies {
 
 ```gradle
 dependencies {
-    compile ("com.github.VictorAlbertos:RxCache:1.0.0") {
+    compile ("com.github.VictorAlbertos:RxCache:1.1.0") {
         exclude module: 'guava'
     }
     compile "io.reactivex:rxjava:1.1.0"
@@ -257,6 +262,22 @@ new RxCache.Builder()
 
 If not PolicyHeapCache is specified, PolicyHeapCache.Conservative would be set as default. 
 
+Configure the limit in megabytes for the data to be persisted 
+-------------------------------------------------------------
+By default, RxCache sets the limit in 100 megabytes, but you can change this value by calling setMaxMBPersistenceCache method when building the provider instance.
+
+```java
+new RxCache.Builder()
+            .setMaxMBPersistenceCache(maxMgPersistenceCache)
+            .persistence(cacheDir)
+            .using(Providers.class);
+```
+
+This limit ensure that the disk will no grow up limitless in case you have providers with dynamic keys which values changes dynamically, like filters based on gps location or dynamic filters supplied by your back-end solution.
+
+When this limit is reached, RxCache will not be able to persisted in disk new data. That's why RxCache has an automated process which allows to evict 'expirable' records. And by 'expirable' I mean any record which has been saved using a provider annotated with LifeCache.
+
+So any record persisted with a LifeCache annotation is a candidate to be evicted when new data is requested but there is no more available space, even it its life time has not been fulfilled.
 
 Use expired data if loader not available
 ----------------------------------------
@@ -325,6 +346,10 @@ The policy is very simple:
 * If the data requested is in memory, and It has not been expired, get it from memory.
 * Else if the data requested is in persistence layer, and It has not been expired, get it from persistence.
 * Else get it from the loader layer. 
+
+RxCache has several :
+
+
 
 Author
 -------
