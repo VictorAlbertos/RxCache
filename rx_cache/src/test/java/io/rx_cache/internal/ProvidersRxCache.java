@@ -65,6 +65,9 @@ interface ProvidersRxCache {
     @LifeCache(duration = 1, timeUnit = TimeUnit.MILLISECONDS)
     Observable<List<Mock>> getEphemeralMocksPaginate(Observable<List<Mock>> mocks, DynamicKey page);
 
+    @LifeCache(duration = 5, timeUnit = TimeUnit.MINUTES)
+    Observable<List<Mock>> getMocksLifeTimeMinutesPaginate(Observable<List<Mock>> mocks, DynamicKey page);
+
     Observable<Mock> getMockWithoutLoaderObservable();
 
     int getMockWithoutReturnObservable();

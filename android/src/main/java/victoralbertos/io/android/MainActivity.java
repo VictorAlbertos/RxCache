@@ -21,7 +21,7 @@ public class MainActivity extends Activity {
         //Create integration test for max mg limit and clearing expired data
 
         final RxProviders rxProviders = new RxCache.Builder()
-                .setMaxMBForPersistenceCache(50)
+                .setMaxMBPersistenceCache(50)
                 .persistence(getApplicationContext().getFilesDir())
                 .using(RxProviders.class);
 

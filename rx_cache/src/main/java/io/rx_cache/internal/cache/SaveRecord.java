@@ -26,10 +26,12 @@ import io.rx_cache.internal.Memory;
 
 public final class SaveRecord extends Action {
     private final Integer maxMgPersistenceCache;
+    private final EvictExpirableRecordsPersistence evictExpirableRecordsPersistence;
 
-    @Inject public SaveRecord(Memory memory, Persistence persistence, Integer maxMgPersistenceCache) {
+    @Inject public SaveRecord(Memory memory, Persistence persistence, Integer maxMgPersistenceCache, EvictExpirableRecordsPersistence evictExpirableRecordsPersistence) {
         super(memory, persistence);
         this.maxMgPersistenceCache = maxMgPersistenceCache;
+        this.evictExpirableRecordsPersistence = evictExpirableRecordsPersistence;
     }
 
     void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data, long lifeTime) {
@@ -39,9 +41,11 @@ public final class SaveRecord extends Action {
         memory.put(composedKey, record);
 
         if (persistence.storedMB() >= maxMgPersistenceCache) {
-            System.out.println(Locale.DATA_CAN_NOT_BE_PERSISTED_BECAUSE_WOULD_EXCEED_THRESHOLD_LIMIT);
+            System.out.println(Locale.RECORD_CAN_NOT_BE_PERSISTED_BECAUSE_WOULD_EXCEED_THRESHOLD_LIMIT);
         } else {
             persistence.saveRecord(composedKey, record);
         }
+
+        evictExpirableRecordsPersistence.startTaskIfNeeded();
     }
 }

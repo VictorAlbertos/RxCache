@@ -28,6 +28,9 @@ public class Record<T> {
     //LifeTime requires to be stored to be evicted by EvictExpiredRecordsTask when no life time is available without a config provider
     private long lifeTime;
 
+    //Required by EvictExpirableRecordsPersistence task
+    private transient float sizeOnMb;
+
     public Record(T data, long lifeTime) {
         this.data = data;
         this.lifeTime = lifeTime;
@@ -57,5 +60,13 @@ public class Record<T> {
 
     public void setLifeTime(long lifeTime) {
         this.lifeTime = lifeTime;
+    }
+
+    public float getSizeOnMb() {
+        return sizeOnMb;
+    }
+
+    public void setSizeOnMb(float sizeOnMb) {
+        this.sizeOnMb = sizeOnMb;
     }
 }

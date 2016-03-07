@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Victor Albertos
+ * Copyright 2016 Victor Albertos
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,7 @@ import org.junit.rules.TemporaryFolder;
 
 import io.rx_cache.internal.Disk;
 
-/**
- * Created by victor on 20/12/15.
- */
+
 public class BaseTest {
     protected Disk disk;
     @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();

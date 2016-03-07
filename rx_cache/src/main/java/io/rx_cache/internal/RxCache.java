@@ -73,7 +73,7 @@ public final class RxCache {
          * If not supplied, 100 megabytes will be the default option
          * @return BuilderRxCache The builder of RxCache
          */
-        public Builder setMaxMBForPersistenceCache(Integer maxMgPersistenceCache) {
+        public Builder setMaxMBPersistenceCache(Integer maxMgPersistenceCache) {
             this.maxMBPersistenceCache = maxMgPersistenceCache;
             return this;
         }

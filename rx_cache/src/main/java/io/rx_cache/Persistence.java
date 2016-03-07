@@ -49,7 +49,7 @@ public interface Persistence {
     List<String> allKeys();
 
     /**
-     * Retrieve records accumulated memory in megabyte
+     * Retrieve accumulated memory records in megabytes
      */
     int storedMB();
 

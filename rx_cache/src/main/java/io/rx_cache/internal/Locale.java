@@ -25,5 +25,6 @@ public interface Locale {
     String JUST_ONE_INSTANCE = " requires just one instance of type ";
     String EVICT_DYNAMIC_KEY_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY = " EvictDynamicKey was provided but not was provided any DynamicKey";
     String EVICT_DYNAMIC_KEY_GROUP_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY_GROUP = " EvictDynamicKeyGroup was provided but not was provided any Group";
-    String DATA_CAN_NOT_BE_PERSISTED_BECAUSE_WOULD_EXCEED_THRESHOLD_LIMIT = "RxCache -> Data can not be persisted because it would exceed the max limit megabytes settled down";
+    String RECORD_CAN_NOT_BE_PERSISTED_BECAUSE_WOULD_EXCEED_THRESHOLD_LIMIT = "RxCache -> Record can not be persisted because it would exceed the max limit megabytes settled down";
+    String RECORD_CAN_NOT_BE_EVICTED_BECAUSE_NO_ONE_IS_EXPIRABLE = "Records can not be evicted because no one is expirable";
 }

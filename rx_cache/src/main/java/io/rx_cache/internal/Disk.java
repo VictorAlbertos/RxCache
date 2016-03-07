@@ -79,6 +79,8 @@ public final class Disk implements Persistence {
         long bytes = 0;
 
         final File[] files = cacheDirectory.listFiles();
+        if (files == null) return 0;
+
         for (File file: files) {
             bytes += file.length();
         }
@@ -150,7 +152,6 @@ public final class Disk implements Persistence {
             DiskRecord tempDiskRecord = new Gson().fromJson(readerTempRecord, DiskRecord.class);
             readerTempRecord.close();
 
-
             BufferedReader reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
             Class classData = Class.forName(tempDiskRecord.getDataClassName());
             Class classCollectionData = tempDiskRecord.getDataCollectionClassName() == null
@@ -179,6 +180,7 @@ public final class Disk implements Persistence {
             }
 
             reader.close();
+            diskRecord.setSizeOnMb(file.length()/1024f/1024f);
             return diskRecord;
         } catch (Exception ignore) {
             return null;

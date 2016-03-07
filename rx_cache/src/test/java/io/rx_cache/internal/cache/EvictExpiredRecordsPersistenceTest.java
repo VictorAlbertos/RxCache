@@ -18,8 +18,8 @@ import static org.hamcrest.core.Is.is;
 /**
  * Created by victor on 03/03/16.
  */
-public class EvictExpiredRecordsPersistenceTaskTest extends BaseTest {
-    private EvictExpiredRecordsPersistenceTask evictExpiredRecordsPersistenceTaskUT;
+public class EvictExpiredRecordsPersistenceTest extends BaseTest {
+    private EvictExpiredRecordsPersistence evictExpiredRecordsPersistenceUT;
     private HasRecordExpired hasRecordExpired;
     private TwoLayersCache twoLayersCache;
     private final Memory memory = new GuavaMemory(PolicyHeapCache.CONSERVATIVE);
@@ -30,7 +30,7 @@ public class EvictExpiredRecordsPersistenceTaskTest extends BaseTest {
 
         twoLayersCache = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
         hasRecordExpired = new HasRecordExpired();
-        evictExpiredRecordsPersistenceTaskUT = new EvictExpiredRecordsPersistenceTask(hasRecordExpired, disk);
+        evictExpiredRecordsPersistenceUT = new EvictExpiredRecordsPersistence(memory, disk, hasRecordExpired);
     }
 
     @Test public void Evict_Just_Expired_Records() {
@@ -46,11 +46,9 @@ public class EvictExpiredRecordsPersistenceTaskTest extends BaseTest {
         assertThat(disk.allKeys().size(), is(recordsCount));
 
         TestSubscriber testSubscriber = new TestSubscriber();
-        evictExpiredRecordsPersistenceTaskUT.startEvictingExpiredRecords().subscribe(testSubscriber);
+        evictExpiredRecordsPersistenceUT.startEvictingExpiredRecords().subscribe(testSubscriber);
         testSubscriber.awaitTerminalEvent();
-
         testSubscriber.assertNoErrors();
-        testSubscriber.assertValueCount(recordsCount / 2);
 
         List<String> allKeys = disk.allKeys();
         assertThat(allKeys.size(), is(recordsCount / 2));
@@ -65,7 +63,7 @@ public class EvictExpiredRecordsPersistenceTaskTest extends BaseTest {
 
     @Test public void Call_On_Complete_When_No_Records_To_Evict() {
         TestSubscriber testSubscriber = new TestSubscriber();
-        evictExpiredRecordsPersistenceTaskUT.startEvictingExpiredRecords().subscribe(testSubscriber);
+        evictExpiredRecordsPersistenceUT.startEvictingExpiredRecords().subscribe(testSubscriber);
         testSubscriber.awaitTerminalEvent();
 
         testSubscriber.assertNoErrors();
@@ -74,7 +72,7 @@ public class EvictExpiredRecordsPersistenceTaskTest extends BaseTest {
     }
 
     private SaveRecord saveRecord(Memory memory) {
-        return new SaveRecord(memory, disk, 100);
+        return new SaveRecord(memory, disk, 100, new EvictExpirableRecordsPersistence(memory, disk, 100));
     }
 
     private EvictRecord evictRecord(Memory memory) {

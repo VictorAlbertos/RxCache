@@ -23,22 +23,22 @@ import javax.inject.Singleton;
 
 import io.rx_cache.Persistence;
 import io.rx_cache.Record;
+import io.rx_cache.internal.Memory;
 import rx.Observable;
 import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
 @Singleton
-public final class EvictExpiredRecordsPersistenceTask {
+public final class EvictExpiredRecordsPersistence extends Action {
     private final HasRecordExpired hasRecordExpired;
-    private final Persistence persistence;
 
-    public @Inject EvictExpiredRecordsPersistenceTask(HasRecordExpired hasRecordExpired, Persistence persistence) {
+    @Inject public EvictExpiredRecordsPersistence(Memory memory, Persistence persistence, HasRecordExpired hasRecordExpired) {
+        super(memory, persistence);
         this.hasRecordExpired = hasRecordExpired;
-        this.persistence = persistence;
     }
 
     public Observable<String> startEvictingExpiredRecords() {
-        return Observable.create(new Observable.OnSubscribe<String>() {
+        Observable<String> oTask = Observable.create(new Observable.OnSubscribe<String>() {
             @Override public void call(Subscriber<? super String> subscriber) {
                 List<String> allKeys = persistence.allKeys();
 
@@ -53,5 +53,7 @@ public final class EvictExpiredRecordsPersistenceTask {
                 subscriber.onCompleted();
             }
         }).subscribeOn((Schedulers.io())).observeOn(Schedulers.io());
+        oTask.subscribe();
+        return oTask.share();
     }
 }
