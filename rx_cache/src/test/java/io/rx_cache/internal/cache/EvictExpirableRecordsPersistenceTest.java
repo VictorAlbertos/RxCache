@@ -46,7 +46,7 @@ public class EvictExpirableRecordsPersistenceTest extends BaseTest {
         super.setUp();
     }
 
-    @Test public void When_Task_Is_Running_Do_Not_Start_Again() {
+/*    @Test public void When_Task_Is_Running_Do_Not_Start_Again() {
         evictExpirableRecordsPersistenceUT = new EvictExpirableRecordsPersistence(memory, disk, 10);
 
         for (int i = 0; i < 10; i++) {
@@ -65,7 +65,7 @@ public class EvictExpirableRecordsPersistenceTest extends BaseTest {
         }
 
         assertThat(evictExpirableRecordsPersistenceUT.runningTasks(), is(10));
-    }
+    }*/
 
     @Test public void When_Not_Reached_Memory_Threshold_Not_Emit() {
         evictExpirableRecordsPersistenceUT = new EvictExpirableRecordsPersistence(memory, disk, 10);
