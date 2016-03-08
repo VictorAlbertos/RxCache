@@ -20,7 +20,6 @@ package io.rx_cache;
  * For those providers which will need to evict all the records
  * @see EvictDynamicKeyGroup
  */
-
 public class EvictProvider {
     private final boolean evict;
 
