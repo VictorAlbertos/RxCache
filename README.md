@@ -293,31 +293,6 @@ new RxCache.Builder()
             .using(Providers.class);
 ```
 
-
-Changing the mechanism for the persistence layer
-------------------------------------------------
-RxCache uses Gson for serialize and deserialize objects in order to save them in disk. This is the mechanism provided by RxCache for the persistence layer. 
-
-But you can supply your own persistence mechanism implementing a Persistence interface and passing it when building, as follow:  
-
-```java
-new RxCache.Builder()
-            .persistence(new Persistence() {
-                @Override public void saveRecord(String key, Record record) {
-                    
-                }
-
-                @Override public void delete(String key) {
-
-                }
-
-                @Override public <T> Record<T> retrieveRecord(String key) {
-                    return null;
-                }
-            })
-            .using(Providers.class);
-```                  
-
 Android considerations
 -----------
 To build an instance of the interface used as provides by RxCache, you need to supply a reference to a file system. On Android, you can get the File reference calling getFilesDir() from the [Android Application](http://developer.android.com/intl/es/reference/android/app/Application.html) class.
