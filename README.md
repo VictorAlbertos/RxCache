@@ -83,7 +83,7 @@ interface Providers {
 ```
 
 
-RxCache accepts as argument a set of classes to indicate how the provider need to handle the cached data:
+RxCache accepts as argument a set of classes to indicate how the provider needs to handle the cached data:
 
 * Observable is the only object required to create a provider. Observable type must be equal to the one specified by the returning value of the provider. 
 * [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/LifeCache.java) sets the amount of time before the data would be evicted. If @LifeCache is not supplied, the data will be never evicted unless it is required explicitly using [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) .
