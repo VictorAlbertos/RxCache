@@ -132,7 +132,7 @@ public class Repository {
     }
 
     public Observable<List<Mock>> getMocksPaginate(final int page, final boolean update) {
-        return providers.getMocksPaginateEvictPerPage(getExpensiveMocks(), new DynamicKey(page), new EvictDynamicKey(update));
+        return providers.getMocksPaginateEvictingPerPage(getExpensiveMocks(), new DynamicKey(page), new EvictDynamicKey(update));
     }
 
     public Observable<List<Mock>> getMocksWithFiltersPaginate(final String filter, final int page, final boolean updateFilter) {
