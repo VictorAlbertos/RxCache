@@ -6,6 +6,9 @@
 
 RxCache
 =======
+
+_For the swift version go [here](https://github.com/VictorAlbertos/RxSCache)_.
+
 The **goal** of this library is simple: **caching your data models like [Picasso](https://github.com/square/picasso) caches your images, with no effort at all.** 
 
 Every Android application is a client application, which means it does not make sense to create and maintain a database just for caching data.
@@ -330,6 +333,10 @@ Author
 * <https://linkedin.com/in/victoralbertos>
 * <https://github.com/VictorAlbertos>
 
+RxCache Swift version:
+----------------------------------------
+[RxCache](https://github.com/VictorAlbertos/RxSCache): Reactive caching library for Swift.
+
 Another author's libraries using RxJava:
--------------------------------------
+----------------------------------------
 * [RxGcm](https://github.com/VictorAlbertos/RxGcm): A reactive wrapper for Android Google Cloud Messaging to get rid of Service(s) configuration, handling foreground and background notifications depending on application state.
