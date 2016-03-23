@@ -54,7 +54,7 @@ dependencies {
 
 ```gradle
 dependencies {
-    compile ("com.github.VictorAlbertos:RxCache:1.1.0") {
+    compile ("com.github.VictorAlbertos:RxCache:1.1.1") {
         exclude module: 'guava'
     }
     compile "io.reactivex:rxjava:1.1.0"
