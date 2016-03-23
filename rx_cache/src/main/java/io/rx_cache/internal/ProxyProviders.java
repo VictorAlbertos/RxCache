@@ -107,7 +107,7 @@ final class ProxyProviders implements InvocationHandler {
                     return new Reply(record.getData(), record.getSource());
                 }
 
-                throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey());
+                throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey(), (Throwable) o);
             }
         });
     }
