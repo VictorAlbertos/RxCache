@@ -2,20 +2,23 @@ package victoralbertos.io.android;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import io.rx_cache.DynamicKey;
+import io.rx_cache.Reply;
 import io.rx_cache.internal.RxCache;
 import rx.Observable;
+import rx.Subscriber;
 
 /**
  * Created by victor on 21/01/16.
  */
 public class MainActivity extends Activity {
 
-    @Override protected void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         //Create integration test for max mg limit and clearing expired data
@@ -25,10 +28,28 @@ public class MainActivity extends Activity {
                 .persistence(getApplicationContext().getFilesDir())
                 .using(RxProviders.class);
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1; i++) {
             String key = System.currentTimeMillis() + i + "";
-            rxProviders.getMocksEphemeralPaginate(createObservableMocks(100), new DynamicKey(key))
-                    .subscribe();
+//            rxProviders.getMocksEphemeralPaginate(createObservableMocks(100), new DynamicKey(key))
+//                    .subscribe();
+
+            rxProviders.cacheThenLoader(createObservableMocks(1))
+                    .subscribe(new Subscriber<Reply<Mock>>() {
+                        @Override
+                        public void onCompleted() {
+                            Log.e("RxCache", "onComplete");
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.e("RxCache", "onError");
+                        }
+
+                        @Override
+                        public void onNext(Reply<Mock> mockReply) {
+                            Log.e("RxCache", "onNext: " + mockReply.getSource());
+                        }
+                    });
         }
     }
 
