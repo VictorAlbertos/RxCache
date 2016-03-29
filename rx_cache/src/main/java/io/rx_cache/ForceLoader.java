@@ -23,9 +23,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * If set, RxCache will firstly load data from cache, then continue to load data from loader
- * It means that your onNext maybe called multi-times with data from different source
- * If not set, RxCache will only only the first valid data
+ * If set, the cache will be ignored, and RxCache will directly load data from loader
  */
 @Target(METHOD)
 @Retention(RUNTIME)

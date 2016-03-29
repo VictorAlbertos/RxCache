@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.rx_cache.CacheThenLoader;
 import io.rx_cache.DynamicKey;
+import io.rx_cache.ForceLoader;
 import io.rx_cache.LifeCache;
 import io.rx_cache.Reply;
 import rx.Observable;
@@ -23,4 +24,6 @@ public interface RxProviders {
     @CacheThenLoader
     Observable<Reply<MainActivity.Mock>> cacheThenLoader(Observable<List<MainActivity.Mock>> loader);
 
+    @ForceLoader
+    Observable<Reply<MainActivity.Mock>> forceLoader(Observable<List<MainActivity.Mock>> loader);
 }

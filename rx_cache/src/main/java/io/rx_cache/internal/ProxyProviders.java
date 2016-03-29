@@ -62,6 +62,17 @@ final class ProxyProviders implements InvocationHandler {
     }
 
     private Observable<Object> getData(final ProxyTranslator.ConfigProvider configProvider) {
+
+        if (configProvider.forceLoader()){
+            return getDataFromLoader(configProvider, null)
+                    .flatMap(new Func1<Reply, Observable<Object>>() {
+                        @Override
+                        public Observable<Object> call(Reply reply) {
+                            return Observable.just(getReturnType(configProvider, reply));
+                        }
+                    });
+        }
+
         return Observable.just(twoLayersCache.retrieve(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), useExpiredDataIfLoaderNotAvailable, configProvider.getLifeTimeMillis()))
                 .map(new Func1<Record, Observable<Reply>>() {
                     @Override public Observable<Reply> call(final Record record) {
