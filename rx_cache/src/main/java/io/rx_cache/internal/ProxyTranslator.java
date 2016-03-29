@@ -20,11 +20,13 @@ import java.lang.reflect.Method;
 
 import javax.inject.Inject;
 
+import io.rx_cache.CacheThenLoader;
 import io.rx_cache.DynamicKey;
 import io.rx_cache.DynamicKeyGroup;
 import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
+import io.rx_cache.ForceLoader;
 import io.rx_cache.LifeCache;
 import io.rx_cache.Reply;
 import rx.Observable;
@@ -39,8 +41,7 @@ final class ProxyTranslator {
         this.method = method;
         this.objectsMethod = objectsMethod;
 
-        ConfigProvider configProvider = new ConfigProvider(getProviderKey(), getDynamicKey(), getDynamicKeyGroup(), getLoaderObservable(),
-                getLifeTimeCache(), requiredDetailResponse(), evictProvider());
+        ConfigProvider configProvider = new ConfigProvider(getProviderKey(), getDynamicKey(), getDynamicKeyGroup(), getLoaderObservable(), getLifeTimeCache(), requiredDetailResponse(), enableCacheThenLoader(), forceLoader(), evictProvider());
         checkIntegrityConfiguration(configProvider);
 
         return configProvider;
@@ -77,6 +78,16 @@ final class ProxyTranslator {
         LifeCache lifeCache = method.getAnnotation(LifeCache.class);
         if (lifeCache == null) return 0;
         return lifeCache.timeUnit().toMillis(lifeCache.duration());
+    }
+
+    protected boolean enableCacheThenLoader(){
+        CacheThenLoader cacheThenLoader = method.getAnnotation(CacheThenLoader.class);
+        return cacheThenLoader != null ? true : false;
+    }
+
+    private boolean forceLoader(){
+        ForceLoader forceLoader = method.getAnnotation(ForceLoader.class);
+        return forceLoader != null ? true : false;
     }
 
     protected boolean requiredDetailResponse() {
@@ -132,6 +143,8 @@ final class ProxyTranslator {
         private final Observable loaderObservable;
         private final long lifeTime;
         private final boolean requiredDetailedResponse;
+        private boolean enableCacheThenLoader;
+        private boolean forceLoader;
         private final EvictProvider evictProvider;
 
         ConfigProvider(String providerKey, String dynamicKey, String group, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider) {
@@ -142,6 +155,13 @@ final class ProxyTranslator {
             this.lifeTime = lifeTime;
             this.evictProvider = evictProvider;
             this.requiredDetailedResponse = requiredDetailedResponse;
+            this.enableCacheThenLoader = false;
+        }
+
+        ConfigProvider(String providerKey, String dynamicKey, String group, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, boolean enableCacheThenLoader, boolean forceLoader, EvictProvider evictProvider) {
+            this(providerKey, dynamicKey, group, loaderObservable, lifeTime, requiredDetailedResponse, evictProvider);
+            this.enableCacheThenLoader = enableCacheThenLoader;
+            this.forceLoader = forceLoader;
         }
 
         String getProviderKey() {
@@ -162,6 +182,14 @@ final class ProxyTranslator {
 
         boolean requiredDetailedResponse() {
             return requiredDetailedResponse;
+        }
+
+        boolean enableCacheThenLoader(){
+            return enableCacheThenLoader;
+        }
+
+        boolean forceLoader(){
+            return forceLoader;
         }
 
         Observable getLoaderObservable() {
