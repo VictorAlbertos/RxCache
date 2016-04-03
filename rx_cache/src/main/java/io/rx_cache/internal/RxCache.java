@@ -20,7 +20,6 @@ import java.io.File;
 import java.lang.reflect.Proxy;
 import java.security.InvalidParameterException;
 
-import io.rx_cache.Persistence;
 import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.internal.cache.TwoLayersCache;
 
@@ -91,24 +90,6 @@ public final class RxCache {
 
             ProxyProviders proxyProviders = DaggerRxCacheComponent.builder()
                     .rxCacheModule(new RxCacheModule(cacheDirectory, policy, useExpiredDataIfLoaderNotAvailable, maxMBPersistenceCache))
-                    .build().proxyRepository();
-            return new RxCache(proxyProviders);
-        }
-
-        /**
-         * Sets an implementation of Persistence layer. By default, Disk is supplied
-         * @param persistence The interface provided to propose a mechanism for persisting data
-         * @see Persistence
-         * @see Disk
-         */
-        public RxCache persistence(Persistence persistence) {
-            if (persistence == null)
-                throw new InvalidParameterException(Locale.PERSISTENCE_CAN_NOT_BE_NULL);
-
-            PolicyHeapCache policy = policyHeapCache != null ? policyHeapCache : PolicyHeapCache.CONSERVATIVE;
-
-            ProxyProviders proxyProviders = DaggerRxCacheComponent.builder()
-                    .rxCacheModule(new RxCacheModule(persistence, policy, useExpiredDataIfLoaderNotAvailable, maxMBPersistenceCache))
                     .build().proxyRepository();
             return new RxCache(proxyProviders);
         }

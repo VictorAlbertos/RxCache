@@ -144,7 +144,7 @@ public final class Disk implements Persistence {
 
     /** Retrieve the Record previously saved.
      * @param key the key whereby the object could be retrieved.*/
-    @Override public <T> Record<T> retrieveRecord(String key) {
+    @Override public <T> DiskRecord<T> retrieveRecord(String key) {
         try {
             File file = new File(cacheDirectory, key);
 

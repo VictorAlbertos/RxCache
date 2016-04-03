@@ -6,12 +6,19 @@ import io.rx_cache.DynamicKeyGroup;
 import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictProvider;
 import io.rx_cache.LifeCache;
+import io.rx_cache.Migration;
+import io.rx_cache.SchemeMigration;
 import io.rx_cache.internal.Mock;
 import rx.Observable;
 
 /**
  * Created by victor on 27/02/16.
  */
+@SchemeMigration({
+    @Migration(version = 1, evictClasses = {
+        Mock.class
+    })
+})
 interface Providers {
     Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
 
@@ -25,5 +32,4 @@ interface Providers {
     Observable<List<Mock>> getMocksPaginateEvictPerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
 
     Observable<List<Mock>> getMocksPaginateWithFiltersEvictingPerFilter(Observable<List<Mock>> oMocks, DynamicKeyGroup filterPage, EvictDynamicKey evictFilter);
-
 }
