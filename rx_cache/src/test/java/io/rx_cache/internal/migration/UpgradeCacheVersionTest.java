@@ -52,7 +52,6 @@ public class UpgradeCacheVersionTest extends BaseTest {
 
         upgradeCacheVersionUT.with(migrations).react().subscribe(upgradeTestSubscriber);
         upgradeTestSubscriber.awaitTerminalEvent();
-        upgradeTestSubscriber.assertNoValues();
         upgradeTestSubscriber.assertNoErrors();
         upgradeTestSubscriber.assertCompleted();
 

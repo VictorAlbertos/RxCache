@@ -135,8 +135,7 @@ public final class Disk implements Persistence {
 
             bufferedReader.close();
             return data;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignore) {
             return null;
         }
     }

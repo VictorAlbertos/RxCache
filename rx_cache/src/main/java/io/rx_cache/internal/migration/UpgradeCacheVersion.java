@@ -38,11 +38,11 @@ final class UpgradeCacheVersion extends CacheVersion {
     }
 
     Observable<Void> react() {
-        if (migrations.isEmpty()) return Observable.empty();
+        if (migrations.isEmpty()) return Observable.just(null);
 
         Migration migration = migrations.get(migrations.size() - 1);
         persistence.save(KEY_CACHE_VERSION, migration.version());
 
-        return Observable.empty();
+        return Observable.just(null);
     }
 }

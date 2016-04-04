@@ -31,6 +31,7 @@ import io.rx_cache.internal.cache.RetrieveRecord;
 import io.rx_cache.internal.cache.SaveRecord;
 import io.rx_cache.internal.cache.TwoLayersCache;
 import io.rx_cache.internal.common.BaseTest;
+import io.rx_cache.internal.migration.DoMigrations;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 
@@ -48,6 +49,7 @@ public class ProxyProvidersTest extends BaseTest {
     private HasRecordExpired hasRecordExpired;
     private EvictExpiredRecordsPersistence evictExpiredRecordsPersistence;
     private GetDeepCopy getDeepCopy;
+    private DoMigrations doMigrations;
 
     @Override public void setUp() {
         super.setUp();
@@ -62,6 +64,7 @@ public class ProxyProvidersTest extends BaseTest {
         evictExpiredRecordsPersistence = new EvictExpiredRecordsPersistence(memory, disk, hasRecordExpired);
         twoLayersCacheMock = new TwoLayersCache(evictRecord, retrieveRecord, saveRecord);
         getDeepCopy = new GetDeepCopy(memory, disk);
+        doMigrations = new DoMigrations(disk, Mock.class);
     }
 
     @Test public void When_First_Retrieve_Then_Source_Retrieved_Is_Cloud() {
@@ -104,7 +107,7 @@ public class ProxyProvidersTest extends BaseTest {
     }
 
     @Test public void When_No_Loader_And_Cache_Expired_But_Use_Expired_Data_If_Loader_Not_Available_Then_Get_Mock() {
-        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, false, evictExpiredRecordsPersistence, getDeepCopy);
+        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, false, evictExpiredRecordsPersistence, getDeepCopy, doMigrations);
 
         TestSubscriber subscriberMock = getSubscriberCompleted(true, true, false, Loader.NULL, true);
         assertThat(subscriberMock.getOnErrorEvents().size(), is(0));
@@ -118,7 +121,7 @@ public class ProxyProvidersTest extends BaseTest {
     }
 
     @Test public void When_Loader_Throws_Exception_And_Cache_Expired_But_Use_Expired_Data_If_Loader_Not_Available_Then_Get_Mock() {
-        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, false, evictExpiredRecordsPersistence, getDeepCopy);
+        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, false, evictExpiredRecordsPersistence, getDeepCopy, doMigrations);
 
         TestSubscriber subscriberMock = getSubscriberCompleted(true, true, false, Loader.EXCEPTION, true);
         assertThat(subscriberMock.getOnErrorEvents().size(), is(0));
@@ -148,7 +151,7 @@ public class ProxyProvidersTest extends BaseTest {
         if (hasCache) twoLayersCacheMock.save("mockKey", "", "", new Mock("message"), configProvider.getLifeTimeMillis());
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
-        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, useExpiredDataIfLoaderNotAvailable, evictExpiredRecordsPersistence, getDeepCopy);
+        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, useExpiredDataIfLoaderNotAvailable, evictExpiredRecordsPersistence, getDeepCopy, doMigrations);
         proxyProvidersUT.getMethodImplementation(configProvider).subscribe(subscriberMock);
 
         subscriberMock.awaitTerminalEvent();
@@ -159,7 +162,7 @@ public class ProxyProvidersTest extends BaseTest {
         ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", Observable.just(new Mock("message")), 0, false, new EvictProvider(false));
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
-        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, true, evictExpiredRecordsPersistence, getDeepCopy);
+        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, true, evictExpiredRecordsPersistence, getDeepCopy, doMigrations);
         Observable<Object> oData = proxyProvidersUT.getMethodImplementation(configProvider);
         assertThat(twoLayersCacheMock.retrieveHasBeenCalled(), is(false));
 
@@ -171,4 +174,5 @@ public class ProxyProvidersTest extends BaseTest {
     enum Loader {
         VALID, NULL, EXCEPTION
     }
+
 }

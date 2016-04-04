@@ -21,12 +21,11 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import io.rx_cache.internal.Persistence;
 import io.rx_cache.Record;
 import io.rx_cache.internal.Memory;
+import io.rx_cache.internal.Persistence;
 import rx.Observable;
-import rx.Subscriber;
-import rx.schedulers.Schedulers;
+import rx.functions.Func0;
 
 @Singleton
 public final class EvictExpiredRecordsPersistence extends Action {
@@ -37,23 +36,20 @@ public final class EvictExpiredRecordsPersistence extends Action {
         this.hasRecordExpired = hasRecordExpired;
     }
 
-    public Observable<String> startEvictingExpiredRecords() {
-        Observable<String> oTask = Observable.create(new Observable.OnSubscribe<String>() {
-            @Override public void call(Subscriber<? super String> subscriber) {
+    public Observable<Void> startEvictingExpiredRecords() {
+        return Observable.defer(new Func0<Observable<Void>>() {
+            @Override public Observable<Void> call() {
                 List<String> allKeys = persistence.allKeys();
 
                 for (String key : allKeys) {
                     Record record = persistence.retrieveRecord(key);
                     if (record != null && hasRecordExpired.hasRecordExpired(record)) {
                         persistence.evict(key);
-                        subscriber.onNext(key);
                     }
                 }
 
-                subscriber.onCompleted();
+                return Observable.just(null);
             }
-        }).subscribeOn((Schedulers.io())).observeOn(Schedulers.io());
-        oTask.subscribe();
-        return oTask.share();
+        });
     }
 }

@@ -39,7 +39,6 @@ import static org.junit.Assert.assertThat;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ProvidersRxCacheEvictExpiredRecordsTest extends BaseTestEvictingTask {
     @ClassRule public static TemporaryFolder temporaryFolder = new TemporaryFolder();
-
     private ProvidersRxCache providersRxCache;
 
     @Before public void setUp() {

@@ -39,6 +39,8 @@ final class DeleteRecordMatchingClassName {
     }
 
     Observable<Void> react() {
+        if (classes.isEmpty()) return Observable.just(null);
+
         List<String> allKeys = persistence.allKeys();
 
         for (String key : allKeys) {
@@ -46,7 +48,7 @@ final class DeleteRecordMatchingClassName {
             if (evictRecord(record)) persistence.evict(key);
         }
 
-        return Observable.empty();
+        return Observable.just(null);
     }
 
     private boolean evictRecord(DiskRecord record) {

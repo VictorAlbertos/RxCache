@@ -19,13 +19,13 @@ package io.rx_cache.internal;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
 
+import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,14 +54,38 @@ public class ProvidersRxCacheTest {
     private ProvidersRxCache providersRxCache;
     private final static int SIZE = 100;
 
-    @Before public void setUp() {
+    private void initProviders(boolean useExpiredDataIfLoaderNotAvailable) {
         providersRxCache = new RxCache.Builder()
                 .withPolicyCache(PolicyHeapCache.MODERATE)
+                .useExpiredDataIfLoaderNotAvailable(useExpiredDataIfLoaderNotAvailable)
                 .persistence(temporaryFolder.getRoot())
                 .using(ProvidersRxCache.class);
     }
 
+    @Test public void _00_Use_Expired_Data() {
+        initProviders(true);
+
+        TestSubscriber<Reply<List<Mock>>> subscriber;
+
+        subscriber = new TestSubscriber<>();
+        providersRxCache.getMocksListResponseOneSecond(createObservableMocks(SIZE)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
+        waitTime(1500);
+
+        subscriber = new TestSubscriber<>();
+        providersRxCache.getMocksListResponseOneSecond(Observable.<List<Mock>>just(null)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
+        File[] files = temporaryFolder.getRoot().listFiles();
+        Reply<List<Mock>> reply = subscriber.getOnNextEvents().get(0);
+        assertThat(reply.getData().size(), is(SIZE));
+        assertThat(subscriber.getOnErrorEvents().size(), is(0));
+    }
+
     @Test public void _01_Before_Destroy_Memory() {
+        initProviders(false);
+
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
@@ -82,6 +106,8 @@ public class ProvidersRxCacheTest {
     }
 
     @Test public void _02_After_Memory_Destroyed() {
+        initProviders(false);
+
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
@@ -120,6 +146,8 @@ public class ProvidersRxCacheTest {
     }
 
     @Test public void _03_Evicting_Cache() {
+        initProviders(false);
+
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
@@ -148,6 +176,8 @@ public class ProvidersRxCacheTest {
     }
 
     @Test public void _04_Session_Mock() {
+        initProviders(false);
+
         TestSubscriber<Mock> subscriber = new TestSubscriber<>();
         Mock mock = createMocks(SIZE).get(0);
 
@@ -166,6 +196,7 @@ public class ProvidersRxCacheTest {
         //logged mock
         subscriber = new TestSubscriber<>();
         providersRxCache.getLoggedMock(Observable.<Mock>just(null), new EvictProvider(false)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
         assertNotNull(subscriber.getOnNextEvents().get(0));
 
         //logout mock
@@ -183,32 +214,8 @@ public class ProvidersRxCacheTest {
         assertThat(subscriber.getOnErrorEvents().size(), is(1));
     }
 
-    @Test public void _05_Use_Expired_Data() {
-        ProvidersRxCache providersRxCache = new RxCache.Builder()
-                .useExpiredDataIfLoaderNotAvailable(true)
-                .persistence(temporaryFolder.getRoot())
-                .using(ProvidersRxCache.class);
-
-        TestSubscriber<Reply<List<Mock>>> subscriber;
-
-        subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksListResponseOneSecond(createObservableMocks(SIZE)).subscribe(subscriber);
-        subscriber.awaitTerminalEvent();
-
-        waitTime(1100);
-
-        subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksListResponseOneSecond(Observable.<List<Mock>>just(null)).subscribe(subscriber);
-        Reply<List<Mock>> reply = subscriber.getOnNextEvents().get(0);
-        assertThat(reply.getData().size(), is(SIZE));
-        assertThat(subscriber.getOnErrorEvents().size(), is(0));
-    }
-
     @Test public void _06_Not_Use_Expired_Data() {
-        ProvidersRxCache providersRxCache = new RxCache.Builder()
-                .useExpiredDataIfLoaderNotAvailable(false)
-                .persistence(temporaryFolder.getRoot())
-                .using(ProvidersRxCache.class);
+        initProviders(false);
 
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
@@ -220,30 +227,29 @@ public class ProvidersRxCacheTest {
 
         subscriber = new TestSubscriber<>();
         providersRxCache.getMocksListResponseOneSecond(Observable.<List<Mock>>just(null)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
         assertThat(subscriber.getOnErrorEvents().size(), is(1));
         assertThat(subscriber.getOnNextEvents().size(), is(0));
     }
 
     @Test public void _07_When_Retrieve_Cached_Data_After_Remove_Item_List_Then_Item_Still_Remains() {
-        ProvidersRxCache providersRxCache = new RxCache.Builder()
-                .useExpiredDataIfLoaderNotAvailable(true)
-                .persistence(temporaryFolder.getRoot())
-                .using(ProvidersRxCache.class);
+        initProviders(false);
 
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksListResponseOneSecond(createObservableMocks(SIZE)).subscribe(subscriber);
+        providersRxCache.getMocksWithDetailResponse(createObservableMocks(SIZE)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         Reply<List<Mock>> reply = subscriber.getOnNextEvents().get(0);
         assertThat(reply.getData().size(), is(SIZE));
         reply.getData().remove(0);
         assertThat(reply.getData().size(), is(SIZE - 1));
 
-        waitTime(1100);
-
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksListResponseOneSecond(Observable.<List<Mock>>just(null)).subscribe(subscriber);
+        providersRxCache.getMocksWithDetailResponse(Observable.<List<Mock>>just(null)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
         assertThat(subscriber.getOnErrorEvents().size(), is(0));
         assertThat(subscriber.getOnNextEvents().size(), is(1));
         reply = subscriber.getOnNextEvents().get(0);
@@ -251,25 +257,22 @@ public class ProvidersRxCacheTest {
     }
 
     @Test public void _08_When_Retrieve_Cached_Data_After_Remove_Item_Array_Then_Item_Still_Remains() {
-        ProvidersRxCache providersRxCache = new RxCache.Builder()
-                .useExpiredDataIfLoaderNotAvailable(true)
-                .persistence(temporaryFolder.getRoot())
-                .using(ProvidersRxCache.class);
+        initProviders(false);
 
         TestSubscriber<Reply<Mock[]>> subscriber;
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksArrayResponseOneSecond(createObservableMocksArray(SIZE)).subscribe(subscriber);
+        providersRxCache.getMocksArrayResponse(createObservableMocksArray(SIZE)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         Reply<Mock[]> reply = subscriber.getOnNextEvents().get(0);
         assertThat(reply.getData().length, is(SIZE));
         reply = new Reply<>(Arrays.copyOf(reply.getData(), reply.getData().length - 1),reply.getSource());
         assertThat(reply.getData().length, is(SIZE - 1));
 
-        waitTime(1100);
-
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksArrayResponseOneSecond(Observable.<Mock[]>just(null)).subscribe(subscriber);
+        providersRxCache.getMocksArrayResponse(Observable.<Mock[]>just(null)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
         assertThat(subscriber.getOnErrorEvents().size(), is(0));
         assertThat(subscriber.getOnNextEvents().size(), is(1));
         reply = subscriber.getOnNextEvents().get(0);
@@ -277,25 +280,22 @@ public class ProvidersRxCacheTest {
     }
 
     @Test public void _09_When_Retrieve_Cached_Data_After_Remove_Item_Map_Then_Item_Still_Remains() {
-        ProvidersRxCache providersRxCache = new RxCache.Builder()
-                .useExpiredDataIfLoaderNotAvailable(true)
-                .persistence(temporaryFolder.getRoot())
-                .using(ProvidersRxCache.class);
+        initProviders(false);
 
         TestSubscriber<Reply<Map<Integer, Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksMapResponseOneSecond(createObservableMocksMap(SIZE)).subscribe(subscriber);
+        providersRxCache.getMocksMapResponse(createObservableMocksMap(SIZE)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         Reply<Map<Integer, Mock>> reply = subscriber.getOnNextEvents().get(0);
         assertThat(reply.getData().size(), is(SIZE));
         reply.getData().remove(0);
         assertThat(reply.getData().size(), is(SIZE - 1));
 
-        waitTime(1100);
-
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksMapResponseOneSecond(Observable.<Map<Integer, Mock>>just(null)).subscribe(subscriber);
+        providersRxCache.getMocksMapResponse(Observable.<Map<Integer, Mock>>just(null)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
         assertThat(subscriber.getOnErrorEvents().size(), is(0));
         assertThat(subscriber.getOnNextEvents().size(), is(1));
         reply = subscriber.getOnNextEvents().get(0);
@@ -303,15 +303,12 @@ public class ProvidersRxCacheTest {
     }
 
     @Test public void _10_When_Retrieve_Cached_Data_After_Modified_Object_On_Item_List_Then_Object_Preserves_Initial_State() {
-        ProvidersRxCache providersRxCache = new RxCache.Builder()
-                .useExpiredDataIfLoaderNotAvailable(true)
-                .persistence(temporaryFolder.getRoot())
-                .using(ProvidersRxCache.class);
+        initProviders(false);
 
         TestSubscriber<Reply<List<Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksListResponseOneSecond(createObservableMocks(SIZE)).subscribe(subscriber);
+        providersRxCache.getMocksWithDetailResponse(createObservableMocks(SIZE)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         Reply<List<Mock>> reply = subscriber.getOnNextEvents().get(0);
         Type type = new TypeToken<Reply<List<Mock>>>(){}.getType();
@@ -320,10 +317,10 @@ public class ProvidersRxCacheTest {
         reply.getData().get(0).setMessage("modified");
         assertThat(compare(reply, replyOriginal, type), is(false));
 
-        waitTime(1100);
-
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksListResponseOneSecond(Observable.<List<Mock>>just(null)).subscribe(subscriber);
+        providersRxCache.getMocksWithDetailResponse(Observable.<List<Mock>>just(null)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
         assertThat(subscriber.getOnErrorEvents().size(), is(0));
         assertThat(subscriber.getOnNextEvents().size(), is(1));
         reply = subscriber.getOnNextEvents().get(0);
@@ -332,15 +329,12 @@ public class ProvidersRxCacheTest {
     }
 
     @Test public void _11_When_Retrieve_Cached_Data_After_Modified_Object_On_Item_Array_Then_Object_Preserves_Initial_State() {
-        ProvidersRxCache providersRxCache = new RxCache.Builder()
-                .useExpiredDataIfLoaderNotAvailable(true)
-                .persistence(temporaryFolder.getRoot())
-                .using(ProvidersRxCache.class);
+        initProviders(false);
 
         TestSubscriber<Reply<Mock[]>> subscriber;
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksArrayResponseOneSecond(createObservableMocksArray(SIZE)).subscribe(subscriber);
+        providersRxCache.getMocksArrayResponse(createObservableMocksArray(SIZE)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         Reply<Mock[]> reply = subscriber.getOnNextEvents().get(0);
         Type type = new TypeToken<Reply<Mock[]>>(){}.getType();
@@ -349,10 +343,10 @@ public class ProvidersRxCacheTest {
         reply.getData()[0].setMessage("modified");
         assertThat(compare(reply, replyOriginal, type), is(false));
 
-        waitTime(1100);
-
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksArrayResponseOneSecond(Observable.<Mock[]>just(null)).subscribe(subscriber);
+        providersRxCache.getMocksArrayResponse(Observable.<Mock[]>just(null)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
         assertThat(subscriber.getOnErrorEvents().size(), is(0));
         assertThat(subscriber.getOnNextEvents().size(), is(1));
         reply = subscriber.getOnNextEvents().get(0);
@@ -361,15 +355,12 @@ public class ProvidersRxCacheTest {
     }
 
     @Test public void _12_When_Retrieve_Cached_Data_After_Modified_Object_On_Item_Map_Then_Object_Preserves_Initial_State() {
-        ProvidersRxCache providersRxCache = new RxCache.Builder()
-                .useExpiredDataIfLoaderNotAvailable(true)
-                .persistence(temporaryFolder.getRoot())
-                .using(ProvidersRxCache.class);
+        initProviders(false);
 
         TestSubscriber<Reply<Map<Integer, Mock>>> subscriber;
 
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksMapResponseOneSecond(createObservableMocksMap(SIZE)).subscribe(subscriber);
+        providersRxCache.getMocksMapResponse(createObservableMocksMap(SIZE)).subscribe(subscriber);
         subscriber.awaitTerminalEvent();
         Reply<Map<Integer, Mock>> reply = subscriber.getOnNextEvents().get(0);
         Type type = new TypeToken<Reply<Map<Integer, Mock>>>(){}.getType();
@@ -378,10 +369,10 @@ public class ProvidersRxCacheTest {
         reply.getData().get(0).setMessage("modified");
         assertThat(compare(reply, replyOriginal, type), is(false));
 
-        waitTime(1100);
-
         subscriber = new TestSubscriber<>();
-        providersRxCache.getMocksMapResponseOneSecond(Observable.<Map<Integer, Mock>>just(null)).subscribe(subscriber);
+        providersRxCache.getMocksMapResponse(Observable.<Map<Integer, Mock>>just(null)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
         assertThat(subscriber.getOnErrorEvents().size(), is(0));
         assertThat(subscriber.getOnNextEvents().size(), is(1));
         reply = subscriber.getOnNextEvents().get(0);
@@ -390,10 +381,7 @@ public class ProvidersRxCacheTest {
     }
 
     @Test public void _13_When_Retrieve_Cached_Data_After_Modified_Object_Then_Object_Preserves_Initial_State() {
-        ProvidersRxCache providersRxCache = new RxCache.Builder()
-                .useExpiredDataIfLoaderNotAvailable(true)
-                .persistence(temporaryFolder.getRoot())
-                .using(ProvidersRxCache.class);
+        initProviders(false);
 
         TestSubscriber<Mock> subscriber;
 
@@ -407,10 +395,10 @@ public class ProvidersRxCacheTest {
         mock.setMessage("modified");
         assertThat(compare(mock, mockOriginal, type), is(false));
 
-        waitTime(1100);
-
         subscriber = new TestSubscriber<>();
         providersRxCache.getLoggedMock(Observable.<Mock>just(null), new EvictProvider(false)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
         assertThat(subscriber.getOnErrorEvents().size(), is(0));
         assertThat(subscriber.getOnNextEvents().size(), is(1));
         mock = subscriber.getOnNextEvents().get(0);

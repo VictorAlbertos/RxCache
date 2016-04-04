@@ -21,6 +21,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import io.rx_cache.Migration;
+import io.rx_cache.internal.Persistence;
 import rx.Observable;
 import rx.functions.Func1;
 
@@ -31,19 +32,20 @@ public final class DoMigrations {
     private final DeleteRecordMatchingClassName deleteRecordMatchingClassName;
     private final UpgradeCacheVersion upgradeCacheVersion;
 
-    @Inject public DoMigrations(GetPendingMigrations getPendingMigrations, GetCacheVersion getCacheVersion, GetClassesToEvictFromMigrations getClassesToEvictFromMigrations, DeleteRecordMatchingClassName deleteRecordMatchingClassName, UpgradeCacheVersion upgradeCacheVersion) {
-        this.getPendingMigrations = getPendingMigrations;
-        this.getCacheVersion = getCacheVersion;
-        this.getClassesToEvictFromMigrations = getClassesToEvictFromMigrations;
-        this.deleteRecordMatchingClassName = deleteRecordMatchingClassName;
-        this.upgradeCacheVersion = upgradeCacheVersion;
+    @Inject public DoMigrations(Persistence persistence, Class providerClass) {
+        this.getCacheVersion = new GetCacheVersion(persistence);
+        this.getPendingMigrations = new GetPendingMigrations(providerClass);
+        this.getClassesToEvictFromMigrations = new GetClassesToEvictFromMigrations();
+        this.deleteRecordMatchingClassName = new DeleteRecordMatchingClassName(persistence);
+        this.upgradeCacheVersion = new UpgradeCacheVersion(persistence);
     }
 
     private List<Migration> migrations;
-    
-    Observable<Void> react() {
+
+    public Observable<Void> react() {
         return getCacheVersion.react().flatMap(new Func1<Integer, Observable<? extends List<Migration>>>() {
-            @Override public Observable<? extends List<Migration>> call(Integer currentCacheVersion) {
+            @Override
+            public Observable<? extends List<Migration>> call(Integer currentCacheVersion) {
                 return getPendingMigrations.with(currentCacheVersion).react();
             }
         }).flatMap(new Func1<List<Migration>, Observable<? extends List<Class>>>() {
@@ -51,8 +53,8 @@ public final class DoMigrations {
                 DoMigrations.this.migrations = migrations;
                 return getClassesToEvictFromMigrations.with(migrations).react();
             }
-        }).flatMap(new Func1<List<Class>, Observable<?>>() {
-            @Override public Observable<?> call(List<Class> classes) {
+        }).flatMap(new Func1<List<Class>, Observable<? extends Void>>() {
+            @Override public Observable<? extends Void> call(List<Class> classes) {
                 return deleteRecordMatchingClassName.with(classes).react();
             }
         }).flatMap(new Func1<Object, Observable<? extends Void>>() {

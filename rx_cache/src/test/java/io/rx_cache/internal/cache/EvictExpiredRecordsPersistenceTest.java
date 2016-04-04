@@ -45,7 +45,7 @@ public class EvictExpiredRecordsPersistenceTest extends BaseTest {
 
         assertThat(disk.allKeys().size(), is(recordsCount));
 
-        TestSubscriber testSubscriber = new TestSubscriber();
+        TestSubscriber<Void> testSubscriber = new TestSubscriber();
         evictExpiredRecordsPersistenceUT.startEvictingExpiredRecords().subscribe(testSubscriber);
         testSubscriber.awaitTerminalEvent();
         testSubscriber.assertNoErrors();
@@ -59,16 +59,6 @@ public class EvictExpiredRecordsPersistenceTest extends BaseTest {
             assert(record.getData().getMessage().contains("live"));
             assert(!record.getData().getMessage().contains("expired"));
         }
-    }
-
-    @Test public void Call_On_Complete_When_No_Records_To_Evict() {
-        TestSubscriber testSubscriber = new TestSubscriber();
-        evictExpiredRecordsPersistenceUT.startEvictingExpiredRecords().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
-
-        testSubscriber.assertNoErrors();
-        testSubscriber.assertNoValues();
-        testSubscriber.assertCompleted();
     }
 
     private SaveRecord saveRecord(Memory memory) {
