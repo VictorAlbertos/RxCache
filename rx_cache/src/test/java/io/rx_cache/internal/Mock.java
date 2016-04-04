@@ -20,7 +20,7 @@ package io.rx_cache.internal;
  * Created by victor on 28/12/15.
  */
 public class Mock {
-    final private String message;
+    private String message;
 
     public Mock(String message) {
         this.message = message;
@@ -28,5 +28,9 @@ public class Mock {
 
     public String getMessage() {
         return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

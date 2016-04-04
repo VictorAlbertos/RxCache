@@ -17,6 +17,7 @@
 package io.rx_cache.internal;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import io.rx_cache.DynamicKey;
@@ -37,7 +38,13 @@ interface ProvidersRxCache {
     Observable<Reply<List<Mock>>> getMocksWithDetailResponse(Observable<List<Mock>> mocks);
 
     @LifeCache(duration = 1, timeUnit = TimeUnit.SECONDS)
-    Observable<Reply<List<Mock>>> getMocksResponseOneSecond(Observable<List<Mock>> mocks);
+    Observable<Reply<List<Mock>>> getMocksListResponseOneSecond(Observable<List<Mock>> mocks);
+
+    @LifeCache(duration = 1, timeUnit = TimeUnit.SECONDS)
+    Observable<Reply<Map<Integer, Mock>>> getMocksMapResponseOneSecond(Observable<Map<Integer, Mock>> mocks);
+
+    @LifeCache(duration = 1, timeUnit = TimeUnit.SECONDS)
+    Observable<Reply<Mock[]>> getMocksArrayResponseOneSecond(Observable<Mock[]> mocks);
 
     @LifeCache(duration = 1, timeUnit = TimeUnit.MINUTES)
     Observable<List<Mock>> getMocksLifeTimeMinutes(Observable<List<Mock>> mocks);
