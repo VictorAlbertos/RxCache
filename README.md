@@ -45,7 +45,7 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos:RxCache:1.1.1"
+    compile "com.github.VictorAlbertos:RxCache:1.2.0"
     compile "io.reactivex:rxjava:1.1.0"
 }
 ```
@@ -54,7 +54,7 @@ dependencies {
 
 ```gradle
 dependencies {
-    compile ("com.github.VictorAlbertos:RxCache:1.1.1") {
+    compile ("com.github.VictorAlbertos:RxCache:1.2.0") {
         exclude module: 'guava'
     }
     compile "io.reactivex:rxjava:1.1.0"
