@@ -24,15 +24,19 @@ import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.internal.cache.TwoLayersCache;
 
 public final class RxCache {
-    private final ProxyProviders proxyProviders;
-    private RxCache(ProxyProviders proxyProviders) {
-        this.proxyProviders = proxyProviders;
+    private final Builder builder;
+    private RxCache(Builder builder) {
+        this.builder = builder;
     }
 
-    public <T> T using(final Class<T> providers) {
+    public <T> T using(final Class<T> classProviders) {
+        ProxyProviders proxyProviders = DaggerRxCacheComponent.builder()
+                .rxCacheModule(new RxCacheModule(builder.cacheDirectory, builder.policyHeapCache, builder.useExpiredDataIfLoaderNotAvailable, builder.maxMBPersistenceCache, classProviders))
+                .build().proxyRepository();
+
         T proxy = (T) Proxy.newProxyInstance(
-                providers.getClassLoader(),
-                new Class<?>[]{providers},
+                classProviders.getClassLoader(),
+                new Class<?>[]{classProviders},
                 proxyProviders);
         return proxy;
     }
@@ -44,6 +48,7 @@ public final class RxCache {
         private PolicyHeapCache policyHeapCache;
         private boolean useExpiredDataIfLoaderNotAvailable;
         private Integer maxMBPersistenceCache;
+        private File cacheDirectory;
 
         /**
          * If true RxCache will serve Records already expired, instead of evict them and throw an exception
@@ -86,12 +91,11 @@ public final class RxCache {
             if (cacheDirectory == null)
                 throw new InvalidParameterException(Locale.REPOSITORY_DISK_ADAPTER_CAN_NOT_BE_NULL);
 
-            PolicyHeapCache policy = policyHeapCache != null ? policyHeapCache : PolicyHeapCache.CONSERVATIVE;
+            this.cacheDirectory = cacheDirectory;
 
-            ProxyProviders proxyProviders = DaggerRxCacheComponent.builder()
-                    .rxCacheModule(new RxCacheModule(cacheDirectory, policy, useExpiredDataIfLoaderNotAvailable, maxMBPersistenceCache))
-                    .build().proxyRepository();
-            return new RxCache(proxyProviders);
+            policyHeapCache = policyHeapCache != null ? policyHeapCache : PolicyHeapCache.CONSERVATIVE;
+
+            return new RxCache(this);
         }
 
     }

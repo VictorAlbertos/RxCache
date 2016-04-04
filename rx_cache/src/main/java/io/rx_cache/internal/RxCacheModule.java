@@ -30,12 +30,14 @@ public final class RxCacheModule {
     private final PolicyHeapCache policyHeapCache;
     private final boolean useExpiredDataIfLoaderNotAvailable;
     private final Integer maxMgPersistenceCache;
+    private final Class classProviders;
 
-    public RxCacheModule(File cacheDirectory, PolicyHeapCache policyHeapCache, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache) {
+    public RxCacheModule(File cacheDirectory, PolicyHeapCache policyHeapCache, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache, Class classProviders) {
         this.cacheDirectory = cacheDirectory;
         this.policyHeapCache = policyHeapCache;
         this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
         this.maxMgPersistenceCache = maxMgPersistenceCache;
+        this.classProviders = classProviders;
     }
 
     @Singleton @Provides File provideCacheDirectory() {
@@ -65,5 +67,9 @@ public final class RxCacheModule {
 
     @Singleton @Provides Integer maxMbPersistenceCache() {
         return maxMgPersistenceCache != null ? maxMgPersistenceCache : 100;
+    }
+
+    @Singleton @Provides Class provideClassProviders() {
+        return classProviders;
     }
 }
