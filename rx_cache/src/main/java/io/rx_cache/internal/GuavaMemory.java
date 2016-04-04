@@ -31,7 +31,7 @@ public class GuavaMemory implements Memory {
     public GuavaMemory(PolicyHeapCache policyHeapCache) {
         this.records = CacheBuilder.<String, Record>newBuilder()
                 .maximumSize(maxCacheSizeBytes(policyHeapCache))
-                .build();;
+                .build();
     }
 
     public @VisibleForTesting long maxCacheSizeBytes(PolicyHeapCache policyHeapCache) {

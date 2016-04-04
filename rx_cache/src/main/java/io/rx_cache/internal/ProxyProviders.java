@@ -30,6 +30,7 @@ import io.rx_cache.Record;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
 import io.rx_cache.internal.cache.EvictExpiredRecordsPersistence;
+import io.rx_cache.internal.cache.GetDeepCopy;
 import io.rx_cache.internal.cache.TwoLayersCache;
 import rx.Observable;
 import rx.functions.Func0;
@@ -39,11 +40,13 @@ final class ProxyProviders implements InvocationHandler {
     private final ProxyTranslator proxyTranslator;
     private final TwoLayersCache twoLayersCache;
     private final Boolean useExpiredDataIfLoaderNotAvailable;
+    private final GetDeepCopy getDeepCopy;
 
-    @Inject public ProxyProviders(ProxyTranslator proxyTranslator, TwoLayersCache twoLayersCache, Boolean useExpiredDataIfLoaderNotAvailable, EvictExpiredRecordsPersistence evictExpiredRecordsPersistence) {
+    @Inject public ProxyProviders(ProxyTranslator proxyTranslator, TwoLayersCache twoLayersCache, Boolean useExpiredDataIfLoaderNotAvailable, EvictExpiredRecordsPersistence evictExpiredRecordsPersistence, GetDeepCopy getDeepCopy) {
         this.proxyTranslator = proxyTranslator;
         this.twoLayersCache = twoLayersCache;
         this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
+        this.getDeepCopy = getDeepCopy;
         evictExpiredRecordsPersistence.startEvictingExpiredRecords();
     }
 
@@ -125,10 +128,12 @@ final class ProxyProviders implements InvocationHandler {
     }
 
     private Object getReturnType(ProxyTranslator.ConfigProvider configProvider, Reply reply) {
+        Object data = getDeepCopy.deepCopy(reply.getData());
+
         if (configProvider.requiredDetailedResponse()) {
-            return reply;
+            return new Reply<>(data, reply.getSource());
         } else {
-            return reply.getData();
+            return data;
         }
     }
 }
