@@ -29,7 +29,7 @@ import io.rx_cache.Migration;
 import io.rx_cache.SchemeMigration;
 import rx.Observable;
 
-public final class GetPendingMigrations {
+final class GetPendingMigrations {
     private final Class providersClass;
     private int cacheVersion;
 

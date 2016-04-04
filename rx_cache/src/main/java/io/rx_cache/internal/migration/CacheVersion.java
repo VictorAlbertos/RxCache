@@ -19,7 +19,7 @@ package io.rx_cache.internal.migration;
 
 import io.rx_cache.internal.Persistence;
 
-public abstract class CacheVersion {
+abstract class CacheVersion {
     protected final Persistence persistence;
     protected final static String KEY_CACHE_VERSION = "key_cache_version";
 

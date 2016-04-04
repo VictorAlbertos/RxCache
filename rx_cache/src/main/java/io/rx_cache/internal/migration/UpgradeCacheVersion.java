@@ -22,7 +22,7 @@ import javax.inject.Inject;
 import io.rx_cache.internal.Persistence;
 import rx.Observable;
 
-public class UpgradeCacheVersion extends CacheVersion {
+final class UpgradeCacheVersion extends CacheVersion {
     private int newVersion;
 
     @Inject public UpgradeCacheVersion(Persistence persistence) {

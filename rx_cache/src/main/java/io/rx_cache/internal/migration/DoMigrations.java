@@ -25,13 +25,15 @@ import rx.Observable;
 import rx.functions.Func1;
 
 public class DoMigrations {
-    private final GetPendingMigrations getPendingMigrations;
     private final GetCacheVersion getCacheVersion;
+    private final GetPendingMigrations getPendingMigrations;
+    private final GetClassesToEvictFromMigrations getClassesToEvictFromMigrations;
     private final UpgradeCacheVersion upgradeCacheVersion;
 
-    @Inject public DoMigrations(GetPendingMigrations getPendingMigrations, GetCacheVersion getCacheVersion, UpgradeCacheVersion upgradeCacheVersion) {
+    @Inject public DoMigrations(GetPendingMigrations getPendingMigrations, GetCacheVersion getCacheVersion, GetClassesToEvictFromMigrations getClassesToEvictFromMigrations, UpgradeCacheVersion upgradeCacheVersion) {
         this.getPendingMigrations = getPendingMigrations;
         this.getCacheVersion = getCacheVersion;
+        this.getClassesToEvictFromMigrations = getClassesToEvictFromMigrations;
         this.upgradeCacheVersion = upgradeCacheVersion;
     }
 
@@ -40,9 +42,9 @@ public class DoMigrations {
             @Override public Observable<? extends List<Migration>> call(Integer currentCacheVersion) {
                 return getPendingMigrations.with(currentCacheVersion).react();
             }
-        }).map(new Func1<List<Migration>, Object>() {
-            @Override public Object call(List<Migration> migrations) {
-                return null;
+        }).flatMap(new Func1<List<Migration>, Observable<? extends List<Class>>>() {
+            @Override public Observable<? extends List<Class>> call(List<Migration> migrations) {
+                return getClassesToEvictFromMigrations.with(migrations).react();
             }
         });
 
