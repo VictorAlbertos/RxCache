@@ -77,5 +77,5 @@ public interface Persistence {
      * @param key The key associated with the Record to be retrieved from persistence
      * @see Record
      */
-    <T> Record<T> retrieveRecord(String key);
+    <T> DiskRecord<T> retrieveRecord(String key);
 }

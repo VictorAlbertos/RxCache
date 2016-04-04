@@ -28,12 +28,14 @@ public class DoMigrations {
     private final GetCacheVersion getCacheVersion;
     private final GetPendingMigrations getPendingMigrations;
     private final GetClassesToEvictFromMigrations getClassesToEvictFromMigrations;
+    private final DeleteRecordMatchingClassName deleteRecordMatchingClassName;
     private final UpgradeCacheVersion upgradeCacheVersion;
 
-    @Inject public DoMigrations(GetPendingMigrations getPendingMigrations, GetCacheVersion getCacheVersion, GetClassesToEvictFromMigrations getClassesToEvictFromMigrations, UpgradeCacheVersion upgradeCacheVersion) {
+    @Inject public DoMigrations(GetPendingMigrations getPendingMigrations, GetCacheVersion getCacheVersion, GetClassesToEvictFromMigrations getClassesToEvictFromMigrations, DeleteRecordMatchingClassName deleteRecordMatchingClassName, UpgradeCacheVersion upgradeCacheVersion) {
         this.getPendingMigrations = getPendingMigrations;
         this.getCacheVersion = getCacheVersion;
         this.getClassesToEvictFromMigrations = getClassesToEvictFromMigrations;
+        this.deleteRecordMatchingClassName = deleteRecordMatchingClassName;
         this.upgradeCacheVersion = upgradeCacheVersion;
     }
 
@@ -45,6 +47,10 @@ public class DoMigrations {
         }).flatMap(new Func1<List<Migration>, Observable<? extends List<Class>>>() {
             @Override public Observable<? extends List<Class>> call(List<Migration> migrations) {
                 return getClassesToEvictFromMigrations.with(migrations).react();
+            }
+        }).flatMap(new Func1<List<Class>, Observable<?>>() {
+            @Override public Observable<?> call(List<Class> classes) {
+                return deleteRecordMatchingClassName.with(classes).react();
             }
         });
 
