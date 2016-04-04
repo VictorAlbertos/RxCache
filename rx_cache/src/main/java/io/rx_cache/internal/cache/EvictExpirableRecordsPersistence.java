@@ -23,7 +23,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import io.rx_cache.Persistence;
+import io.rx_cache.internal.Persistence;
 import io.rx_cache.Record;
 import io.rx_cache.internal.Locale;
 import io.rx_cache.internal.Memory;

@@ -16,10 +16,6 @@
 
 package io.rx_cache.internal;
 
-/**
- * Created by victor on 22/12/15.
- */
-
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -35,7 +31,6 @@ import io.rx_cache.internal.common.BaseTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-
 
 public class DiskTest extends BaseTest {
     private final static String KEY = "store";

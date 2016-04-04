@@ -32,7 +32,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import io.rx_cache.Persistence;
 import io.rx_cache.Record;
 
 /**

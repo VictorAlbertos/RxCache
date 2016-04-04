@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package io.rx_cache;
+package io.rx_cache.internal;
 
 import java.util.List;
+
+import io.rx_cache.Record;
 
 /**
  * Provides the persistence layer for the cache
@@ -24,6 +26,14 @@ import java.util.List;
  * @see io.rx_cache.internal.Disk
  */
 public interface Persistence {
+
+    /**
+     * Save the data supplied based on a certain mechanism which provides persistence somehow
+     * @param key The key associated with the object to be persisted
+     * @param object The object to be persisted
+     */
+    void save(String key, Object object);
+
 
     /**
      * Save the data supplied based on a certain mechanism which provides persistence somehow
@@ -52,6 +62,14 @@ public interface Persistence {
      * Retrieve accumulated memory records in megabytes
      */
     int storedMB();
+
+    /**
+     * Retrieve the object associated with its particular key
+     * @param <T> The data to be retrieved
+     * @param key The key associated with the object to be retrieved from persistence
+     * @see Record
+     */
+    <T> T retrieve(String key, Class<T> clazz);
 
     /**
      * Retrieve the record associated with its particular key

@@ -12,14 +12,15 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Migration {
     /**
-     * Migration number version.
+     * Migration number version. The first migration should start with 1
      * @return
      */
     int version();
 
     /**
      * Classes to be evicted due to inconsistency properties regarding prior migrations.
-     * It means when a new field of a class has been added or deleted.
+     * It means when a new field of a class has been added.
+     * Deleting classes or deleting fields of classes would be handle automatically by RxCache.
      * @return
      */
     Class[] evictClasses();

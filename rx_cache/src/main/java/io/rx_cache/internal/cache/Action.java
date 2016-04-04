@@ -19,7 +19,7 @@ package io.rx_cache.internal.cache;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.rx_cache.Persistence;
+import io.rx_cache.internal.Persistence;
 import io.rx_cache.internal.Memory;
 
 abstract class Action {
