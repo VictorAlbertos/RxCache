@@ -18,6 +18,12 @@ package io.rx_cache.internal.migration;
 
 import org.junit.Test;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.List;
+
+import io.rx_cache.Migration;
+import io.rx_cache.SchemeMigration;
 import io.rx_cache.internal.common.BaseTest;
 import rx.observers.TestSubscriber;
 
@@ -40,9 +46,11 @@ public class UpgradeCacheVersionTest extends BaseTest {
     }
 
     @Test public void When_Upgrade_Version_Upgrade_It() {
-        int newVersion = 3;
+        Annotation annotation = Migrations.class.getAnnotation(SchemeMigration.class);
+        SchemeMigration schemeMigration = (SchemeMigration) annotation;
+        List<Migration> migrations = Arrays.asList(schemeMigration.value());
 
-        upgradeCacheVersionUT.with(newVersion).react().subscribe(upgradeTestSubscriber);
+        upgradeCacheVersionUT.with(migrations).react().subscribe(upgradeTestSubscriber);
         upgradeTestSubscriber.awaitTerminalEvent();
         upgradeTestSubscriber.assertNoValues();
         upgradeTestSubscriber.assertNoErrors();
@@ -52,6 +60,19 @@ public class UpgradeCacheVersionTest extends BaseTest {
         versionTestSubscriber.awaitTerminalEvent();
         int currentVersion = versionTestSubscriber.getOnNextEvents().get(0);
 
-        assertThat(currentVersion, is(newVersion));
+        assertThat(currentVersion, is(5));
+    }
+
+
+    @SchemeMigration({
+            @Migration(version = 1, evictClasses = {Mock1.class}),
+            @Migration(version = 3, evictClasses = {Mock1.class}),
+            @Migration(version = 4, evictClasses = {Mock1.class}),
+            @Migration(version = 5, evictClasses = {Mock1.class})
+    })
+    private interface Migrations {}
+
+    private class Mock1 {
+
     }
 }

@@ -24,7 +24,7 @@ import io.rx_cache.Migration;
 import rx.Observable;
 import rx.functions.Func1;
 
-public class DoMigrations {
+public final class DoMigrations {
     private final GetCacheVersion getCacheVersion;
     private final GetPendingMigrations getPendingMigrations;
     private final GetClassesToEvictFromMigrations getClassesToEvictFromMigrations;
@@ -39,22 +39,26 @@ public class DoMigrations {
         this.upgradeCacheVersion = upgradeCacheVersion;
     }
 
+    private List<Migration> migrations;
+    
     Observable<Void> react() {
-        getCacheVersion.react().flatMap(new Func1<Integer, Observable<? extends List<Migration>>>() {
+        return getCacheVersion.react().flatMap(new Func1<Integer, Observable<? extends List<Migration>>>() {
             @Override public Observable<? extends List<Migration>> call(Integer currentCacheVersion) {
                 return getPendingMigrations.with(currentCacheVersion).react();
             }
         }).flatMap(new Func1<List<Migration>, Observable<? extends List<Class>>>() {
             @Override public Observable<? extends List<Class>> call(List<Migration> migrations) {
+                DoMigrations.this.migrations = migrations;
                 return getClassesToEvictFromMigrations.with(migrations).react();
             }
         }).flatMap(new Func1<List<Class>, Observable<?>>() {
             @Override public Observable<?> call(List<Class> classes) {
                 return deleteRecordMatchingClassName.with(classes).react();
             }
+        }).flatMap(new Func1<Object, Observable<? extends Void>>() {
+            @Override public Observable<? extends Void> call(Object o) {
+                return upgradeCacheVersion.with(migrations).react();
+            }
         });
-
-
-        return null;
     }
 }

@@ -17,25 +17,32 @@
 package io.rx_cache.internal.migration;
 
 
+import java.util.List;
+
 import javax.inject.Inject;
 
+import io.rx_cache.Migration;
 import io.rx_cache.internal.Persistence;
 import rx.Observable;
 
 final class UpgradeCacheVersion extends CacheVersion {
-    private int newVersion;
+    private List<Migration> migrations;
 
     @Inject public UpgradeCacheVersion(Persistence persistence) {
         super(persistence);
     }
 
-    UpgradeCacheVersion with(int newVersion) {
-        this.newVersion = newVersion;
+    UpgradeCacheVersion with(List<Migration> migrations) {
+        this.migrations = migrations;
         return this;
     }
 
     Observable<Void> react() {
-        persistence.save(KEY_CACHE_VERSION, newVersion);
+        if (migrations.isEmpty()) return Observable.empty();
+
+        Migration migration = migrations.get(migrations.size() - 1);
+        persistence.save(KEY_CACHE_VERSION, migration.version());
+
         return Observable.empty();
     }
 }
