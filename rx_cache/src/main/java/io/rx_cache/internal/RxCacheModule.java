@@ -28,7 +28,6 @@ import io.rx_cache.*;
 public final class RxCacheModule {
     private final File cacheDirectory;
     private final PolicyHeapCache policyHeapCache;
-    private final Persistence persistenceClient;
     private final boolean useExpiredDataIfLoaderNotAvailable;
     private final Integer maxMgPersistenceCache;
 
@@ -37,19 +36,10 @@ public final class RxCacheModule {
         this.policyHeapCache = policyHeapCache;
         this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
         this.maxMgPersistenceCache = maxMgPersistenceCache;
-        this.persistenceClient = null;
-    }
-
-    public RxCacheModule(Persistence persistenceClient, PolicyHeapCache policyHeapCache, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache) {
-        this.persistenceClient = persistenceClient;
-        this.policyHeapCache = policyHeapCache;
-        this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
-        this.maxMgPersistenceCache = maxMgPersistenceCache;
-        this.cacheDirectory = null;
     }
 
     @Singleton @Provides File provideCacheDirectory() {
-        return cacheDirectory != null ? cacheDirectory : new File("");
+        return cacheDirectory;
     }
 
     @Singleton @Provides PolicyHeapCache providePolicyCache() {
@@ -57,7 +47,7 @@ public final class RxCacheModule {
     }
 
     @Singleton @Provides Persistence providePersistence(Disk disk) {
-        return persistenceClient != null ? persistenceClient : disk;
+        return disk;
     }
 
     @Singleton @Provides Boolean useExpiredDataIfLoaderNotAvailable() {
