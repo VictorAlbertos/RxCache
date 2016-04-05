@@ -21,7 +21,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import io.rx_cache.Record;
+import io.rx_cache.internal.Record;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Persistence;
 import rx.Observable;

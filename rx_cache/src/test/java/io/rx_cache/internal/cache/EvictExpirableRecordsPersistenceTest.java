@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.rx_cache.Record;
+import io.rx_cache.internal.Record;
 import io.rx_cache.internal.Locale;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Mock;
@@ -40,7 +40,6 @@ import static org.junit.Assert.assertThat;
 public class EvictExpirableRecordsPersistenceTest extends BaseTest {
     private EvictExpirableRecordsPersistence evictExpirableRecordsPersistenceUT;
     private final Memory memory = new SimpleMemory();
-    private static final long ONE_MILLI_LIFE = 1, NOT_EXPIRABLE_LIFE = 0;
 
     @Override public void setUp() {
         super.setUp();
@@ -135,7 +134,7 @@ public class EvictExpirableRecordsPersistenceTest extends BaseTest {
                 mocks.add(mock);
             }
 
-            Record<List<Mock>> record = new Record<>(mocks, expirable? ONE_MILLI_LIFE: NOT_EXPIRABLE_LIFE);
+            Record<List<Mock>> record = new Record<>(mocks, expirable, 1);
             disk.saveRecord(String.valueOf(i), record);
         }
     }

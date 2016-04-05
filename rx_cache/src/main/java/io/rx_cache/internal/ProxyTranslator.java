@@ -26,6 +26,7 @@ import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
 import io.rx_cache.LifeCache;
+import io.rx_cache.Expirable;
 import io.rx_cache.Reply;
 import rx.Observable;
 
@@ -40,7 +41,7 @@ final class ProxyTranslator {
         this.objectsMethod = objectsMethod;
 
         ConfigProvider configProvider = new ConfigProvider(getProviderKey(), getDynamicKey(), getDynamicKeyGroup(), getLoaderObservable(),
-                getLifeTimeCache(), requiredDetailResponse(), evictProvider());
+                getLifeTimeCache(), requiredDetailResponse(), evictProvider(), getExpirable());
         checkIntegrityConfiguration(configProvider);
 
         return configProvider;
@@ -77,6 +78,12 @@ final class ProxyTranslator {
         LifeCache lifeCache = method.getAnnotation(LifeCache.class);
         if (lifeCache == null) return 0;
         return lifeCache.timeUnit().toMillis(lifeCache.duration());
+    }
+
+    protected boolean getExpirable() {
+        Expirable expirable = method.getAnnotation(Expirable.class);
+        if (expirable != null) return expirable.value();
+        return true;
     }
 
     protected boolean requiredDetailResponse() {
@@ -133,8 +140,9 @@ final class ProxyTranslator {
         private final long lifeTime;
         private final boolean requiredDetailedResponse;
         private final EvictProvider evictProvider;
+        private final boolean expirable;
 
-        ConfigProvider(String providerKey, String dynamicKey, String group, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider) {
+        ConfigProvider(String providerKey, String dynamicKey, String group, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider, boolean expirable) {
             this.providerKey = providerKey;
             this.dynamicKey = dynamicKey;
             this.dynamicKeyGroup = group;
@@ -142,6 +150,7 @@ final class ProxyTranslator {
             this.lifeTime = lifeTime;
             this.evictProvider = evictProvider;
             this.requiredDetailedResponse = requiredDetailedResponse;
+            this.expirable = expirable;
         }
 
         String getProviderKey() {
@@ -170,6 +179,10 @@ final class ProxyTranslator {
 
         public EvictProvider evictProvider() {
             return evictProvider;
+        }
+
+        public boolean isExpirable() {
+            return expirable;
         }
     }
 }

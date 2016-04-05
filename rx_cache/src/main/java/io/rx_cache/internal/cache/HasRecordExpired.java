@@ -18,7 +18,7 @@ package io.rx_cache.internal.cache;
 
 import javax.inject.Inject;
 
-import io.rx_cache.Record;
+import io.rx_cache.internal.Record;
 
 public class HasRecordExpired {
 

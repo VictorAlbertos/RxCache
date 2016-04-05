@@ -21,8 +21,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import io.rx_cache.internal.DiskRecord;
 import io.rx_cache.internal.Persistence;
+import io.rx_cache.internal.Record;
 import rx.Observable;
 
 final class DeleteRecordMatchingClassName {
@@ -44,14 +44,14 @@ final class DeleteRecordMatchingClassName {
         List<String> allKeys = persistence.allKeys();
 
         for (String key : allKeys) {
-            DiskRecord record = persistence.retrieveRecord(key);
+            Record record = persistence.retrieveRecord(key);
             if (evictRecord(record)) persistence.evict(key);
         }
 
         return Observable.just(null);
     }
 
-    private boolean evictRecord(DiskRecord record) {
+    private boolean evictRecord(Record record) {
         String candidate = record.getDataClassName();
 
         for (Class aClass : classes) {

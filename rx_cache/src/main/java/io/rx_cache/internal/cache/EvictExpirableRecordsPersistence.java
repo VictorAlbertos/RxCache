@@ -23,13 +23,12 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import io.rx_cache.internal.Persistence;
-import io.rx_cache.Record;
 import io.rx_cache.internal.Locale;
 import io.rx_cache.internal.Memory;
+import io.rx_cache.internal.Persistence;
+import io.rx_cache.internal.Record;
 import rx.Observable;
 import rx.Subscriber;
-import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
@@ -40,7 +39,6 @@ public class EvictExpirableRecordsPersistence extends Action {
     @VisibleForTesting public static final float PERCENTAGE_MEMORY_STORED_TO_STOP = 0.7f;
     private final Observable<String> oEvictingTask;
     private boolean couldBeExpirableRecords;
-    private volatile int runningTasks; //testing purposes
 
     @Inject public EvictExpirableRecordsPersistence(Memory memory, Persistence persistence, Integer maxMgPersistenceCache) {
         super(memory, persistence);
@@ -80,7 +78,7 @@ public class EvictExpirableRecordsPersistence extends Action {
 
                     Record record = persistence.retrieveRecord(key);
                     if (record == null) continue;
-                    if (!isRecordExpirable(record)) continue;
+                    if (!record.isExpirable()) continue;
 
                     persistence.evict(key);
                     subscriber.onNext(key);
@@ -97,21 +95,8 @@ public class EvictExpirableRecordsPersistence extends Action {
                     @Override public void call(Throwable throwable) {
                         throwable.printStackTrace();
                     }
-                })
-          .doOnSubscribe(new Action0() {
-              @Override public void call() {
-                  runningTasks++;
-              }
-          });
+                });
         return oEvictingTask.share();
-    }
-
-    @VisibleForTesting int runningTasks() {
-        return runningTasks;
-    }
-
-    private boolean isRecordExpirable(Record record) {
-        return record.getLifeTime() != 0;
     }
 
     private boolean reachedPercentageMemoryToStop(int storedMBWhenStarted, float releasedMBSoFar) {

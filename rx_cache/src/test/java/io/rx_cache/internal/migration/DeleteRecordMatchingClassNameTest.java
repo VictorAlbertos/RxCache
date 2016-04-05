@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-import io.rx_cache.Record;
+import io.rx_cache.internal.Record;
 import io.rx_cache.internal.common.BaseTest;
 import rx.observers.TestSubscriber;
 
@@ -21,8 +21,8 @@ public class DeleteRecordMatchingClassNameTest extends BaseTest {
     }
 
     @Test public void When_Class_Matches_Delete_Record_1() {
-        disk.saveRecord(Mock1.KEY, new Record(new Mock1(), 0l));
-        disk.saveRecord(Mock2.KEY,  new Record(new Mock2(), 0l));
+        disk.saveRecord(Mock1.KEY, new Record(new Mock1(), true, 0l));
+        disk.saveRecord(Mock2.KEY,  new Record(new Mock2(), true, 0l));
 
         assertThat(disk.allKeys().size(), is(2));
 
@@ -33,8 +33,8 @@ public class DeleteRecordMatchingClassNameTest extends BaseTest {
     }
 
     @Test public void When_Class_Matches_Delete_Record_2() {
-        disk.saveRecord(Mock1.KEY, new Record(new Mock1(), 0l));
-        disk.saveRecord(Mock2.KEY,  new Record(new Mock2(), 0l));
+        disk.saveRecord(Mock1.KEY, new Record(new Mock1(), true, 0l));
+        disk.saveRecord(Mock2.KEY,  new Record(new Mock2(), true, 0l));
 
         assertThat(disk.allKeys().size(), is(2));
 
@@ -45,8 +45,8 @@ public class DeleteRecordMatchingClassNameTest extends BaseTest {
     }
 
     @Test public void When_Class_Matches_Delete_Record_1_List() {
-        disk.saveRecord(Mock1.KEY, new Record(Arrays.asList(new Mock1()), 0l));
-        disk.saveRecord(Mock2.KEY,  new Record(Arrays.asList(new Mock2()), 0l));
+        disk.saveRecord(Mock1.KEY, new Record(Arrays.asList(new Mock1()), true, 0l));
+        disk.saveRecord(Mock2.KEY,  new Record(Arrays.asList(new Mock2()), true, 0l));
 
         assertThat(disk.allKeys().size(), is(2));
 
@@ -57,8 +57,8 @@ public class DeleteRecordMatchingClassNameTest extends BaseTest {
     }
 
     @Test public void When_Class_Matches_Delete_Record_2_List() {
-        disk.saveRecord(Mock1.KEY, new Record(Arrays.asList(new Mock1()), 0l));
-        disk.saveRecord(Mock2.KEY,  new Record(Arrays.asList(new Mock2()), 0l));
+        disk.saveRecord(Mock1.KEY, new Record(Arrays.asList(new Mock1()), true, 0l));
+        disk.saveRecord(Mock2.KEY,  new Record(Arrays.asList(new Mock2()), true, 0l));
 
         assertThat(disk.allKeys().size(), is(2));
 

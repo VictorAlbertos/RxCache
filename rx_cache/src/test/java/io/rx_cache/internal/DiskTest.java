@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import io.rx_cache.Record;
 import io.rx_cache.internal.common.BaseTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,7 +36,7 @@ public class DiskTest extends BaseTest {
     private final static String VALUE = "dummy";
 
     @Test public void When_A_Record_Is_Supplied_Retrieve_It() {
-        disk.save(KEY, new DiskRecord(new Mock(VALUE)));
+        disk.save(KEY, new Record(new Mock(VALUE)));
 
         Record<Mock> diskRecord = disk.retrieveRecord(KEY);
         assertThat(diskRecord.getData().getMessage(), is(VALUE));
@@ -45,7 +44,7 @@ public class DiskTest extends BaseTest {
 
     @Test public void When_A_Record_Collection_Is_Supplied_Retrieve_It() {
         List<Mock> mocks = Arrays.asList(new Mock(VALUE), new Mock(VALUE + 1));
-        disk.save(KEY, new DiskRecord(mocks));
+        disk.save(KEY, new Record(mocks));
 
         Record<List<Mock>> diskRecord = disk.retrieveRecord(KEY);
         assertThat(diskRecord.getData().get(0).getMessage(), is(VALUE));
@@ -54,7 +53,7 @@ public class DiskTest extends BaseTest {
 
     @Test public void When_A_Record_Array_Is_Supplied_Retrieve_It() {
         Mock[] mocks = {new Mock(VALUE), new Mock(VALUE+1)};
-        disk.save(KEY, new DiskRecord(mocks));
+        disk.save(KEY, new Record(mocks));
 
         Record<Mock[]> diskRecord = disk.retrieveRecord(KEY);
         assertThat(diskRecord.getData()[0].getMessage(), is(VALUE));
@@ -66,7 +65,7 @@ public class DiskTest extends BaseTest {
         mocks.put(1, new Mock(VALUE));
         mocks.put(2, new Mock(VALUE + 1));
 
-        disk.save(KEY, new DiskRecord(mocks));
+        disk.save(KEY, new Record(mocks));
 
         Record<Map<Integer, Mock>> diskRecord = disk.retrieveRecord(KEY);
         assertThat(diskRecord.getData().get(1).getMessage(), is(VALUE));

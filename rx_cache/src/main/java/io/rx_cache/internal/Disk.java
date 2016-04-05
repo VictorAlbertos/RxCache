@@ -32,8 +32,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import io.rx_cache.Record;
-
 /**
  * Save objects in disk and evict them too. It uses Gson as json parser.
  */
@@ -49,7 +47,7 @@ public final class Disk implements Persistence {
      * @param record the record to be persisted.
      * */
     @Override public void saveRecord(String key, Record record) {
-        save(key, new DiskRecord(record));
+        save(key, record);
     }
 
     /**
@@ -142,12 +140,12 @@ public final class Disk implements Persistence {
 
     /** Retrieve the Record previously saved.
      * @param key the key whereby the object could be retrieved.*/
-    @Override public <T> DiskRecord<T> retrieveRecord(String key) {
+    @Override public <T> Record<T> retrieveRecord(String key) {
         try {
             File file = new File(cacheDirectory, key);
 
             BufferedReader readerTempRecord = new BufferedReader(new FileReader(file.getAbsoluteFile()));
-            DiskRecord tempDiskRecord = new Gson().fromJson(readerTempRecord, DiskRecord.class);
+            Record tempDiskRecord = new Gson().fromJson(readerTempRecord, Record.class);
             readerTempRecord.close();
 
             BufferedReader reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
@@ -158,22 +156,22 @@ public final class Disk implements Persistence {
             boolean isCollection = Collection.class.isAssignableFrom(classCollectionData);
             boolean isArray = classCollectionData.isArray();
             boolean isMap = Map.class.isAssignableFrom(classCollectionData);
-            DiskRecord<T> diskRecord;
+            Record<T> diskRecord;
 
             if (isCollection) {
                 Type typeCollection = $Gson$Types.newParameterizedTypeWithOwner(null, classCollectionData, classData);
-                Type typeRecord = $Gson$Types.newParameterizedTypeWithOwner(null, DiskRecord.class, typeCollection, classData);
+                Type typeRecord = $Gson$Types.newParameterizedTypeWithOwner(null, Record.class, typeCollection, classData);
                 diskRecord = new Gson().fromJson(reader, typeRecord);
             } else if (isArray) {
-                Type typeRecord = $Gson$Types.newParameterizedTypeWithOwner(null, DiskRecord.class, classCollectionData);
+                Type typeRecord = $Gson$Types.newParameterizedTypeWithOwner(null, Record.class, classCollectionData);
                 diskRecord = new Gson().fromJson(reader, typeRecord);
             } else if (isMap) {
                 Class classKeyMap = Class.forName(tempDiskRecord.getDataKeyMapClassName());
                 Type typeMap = $Gson$Types.newParameterizedTypeWithOwner(null, classCollectionData, classKeyMap, classData);
-                Type typeRecord = $Gson$Types.newParameterizedTypeWithOwner(null, DiskRecord.class, typeMap, classData);
+                Type typeRecord = $Gson$Types.newParameterizedTypeWithOwner(null, Record.class, typeMap, classData);
                 diskRecord = new Gson().fromJson(reader, typeRecord);
             } else {
-                Type type = $Gson$Types.newParameterizedTypeWithOwner(null, DiskRecord.class, classData);
+                Type type = $Gson$Types.newParameterizedTypeWithOwner(null, Record.class, classData);
                 diskRecord = new Gson().fromJson(reader, type);
             }
 

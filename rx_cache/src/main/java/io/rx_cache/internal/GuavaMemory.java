@@ -23,7 +23,6 @@ import com.google.common.cache.CacheBuilder;
 import java.util.Set;
 
 import io.rx_cache.PolicyHeapCache;
-import io.rx_cache.Record;
 
 public class GuavaMemory implements Memory {
     private final Cache<String, Record> records;

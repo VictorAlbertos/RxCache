@@ -22,7 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import io.rx_cache.Record;
+import io.rx_cache.internal.Record;
 
 @Singleton
 public final class TwoLayersCache {
@@ -41,8 +41,8 @@ public final class TwoLayersCache {
         return retrieveRecord.retrieveRecord(providerKey, dynamicKey, dynamicKeyGroup, useExpiredDataIfLoaderNotAvailable, lifeTime);
     }
 
-    public void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data, long lifeTime) {
-        saveRecord.save(providerKey, dynamicKey, dynamicKeyGroup, data, lifeTime);
+    public void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data, long lifeTime, boolean isExpirable) {
+        saveRecord.save(providerKey, dynamicKey, dynamicKeyGroup, data, lifeTime, isExpirable);
     }
 
     public void evictProviderKey(final String providerKey) {

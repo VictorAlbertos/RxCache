@@ -22,21 +22,36 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import io.rx_cache.Record;
+import io.rx_cache.Source;
 
-public final class DiskRecord<T> extends Record<T> {
+/**
+ * Wrapper around the actual data in order to know if its life time has been expired
+ * @param <T> The actual data
+ */
+public class Record<T> {
+    private Source source;
+    private final T data;
+    private final long timeAtWhichWasPersisted;
     private final String dataClassName, dataCollectionClassName, dataKeyMapClassName;
+    private final Boolean isExpirable;
 
-    DiskRecord(Record<T> record) {
-        this(record.getData(), record.getLifeTime());
+    //LifeTime requires to be stored to be evicted by EvictExpiredRecordsTask when no life time is available without a config provider
+    private long lifeTime;
+
+    //Required by EvictExpirableRecordsPersistence task
+    private transient float sizeOnMb;
+
+    @VisibleForTesting
+    Record(T data) {
+        this(data, true, 0);
     }
 
-    @VisibleForTesting DiskRecord(T data) {
-        this(data, 0);
-    }
-
-    private DiskRecord(T data, long lifeTime) {
-        super(data, lifeTime);
+    public Record(T data, Boolean isExpirable, long lifeTime) {
+        this.data = data;
+        this.isExpirable = isExpirable;
+        this.lifeTime = lifeTime;
+        this.timeAtWhichWasPersisted = System.currentTimeMillis();
+        this.source = Source.MEMORY;
 
         boolean isList = Collection.class.isAssignableFrom(data.getClass());
         boolean isArray = data.getClass().isArray();
@@ -81,6 +96,38 @@ public final class DiskRecord<T> extends Record<T> {
         }
     }
 
+    public Source getSource() {
+        return source;
+    }
+
+    public void setSource(Source source) {
+        this.source = source;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public long getTimeAtWhichWasPersisted() {
+        return timeAtWhichWasPersisted;
+    }
+
+    public long getLifeTime() {
+        return lifeTime;
+    }
+
+    public void setLifeTime(long lifeTime) {
+        this.lifeTime = lifeTime;
+    }
+
+    public float getSizeOnMb() {
+        return sizeOnMb;
+    }
+
+    public void setSizeOnMb(float sizeOnMb) {
+        this.sizeOnMb = sizeOnMb;
+    }
+
     public String getDataClassName() {
         return dataClassName;
     }
@@ -91,5 +138,9 @@ public final class DiskRecord<T> extends Record<T> {
 
     String getDataKeyMapClassName() {
         return dataKeyMapClassName;
+    }
+
+    public Boolean isExpirable() {
+        return isExpirable == null ? true : isExpirable;
     }
 }

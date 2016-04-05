@@ -20,8 +20,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import io.rx_cache.Record;
-
 public class SimpleMemory implements Memory {
     private final ConcurrentMap<String, Record> concurrentMap;
 

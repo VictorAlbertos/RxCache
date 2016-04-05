@@ -26,6 +26,7 @@ import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
 import io.rx_cache.LifeCache;
+import io.rx_cache.Expirable;
 import io.rx_cache.Reply;
 import rx.Observable;
 
@@ -55,6 +56,10 @@ interface ProvidersRxCache {
 
     Observable<List<Mock>> getMocksPaginate(Observable<List<Mock>> mocks, DynamicKey page);
 
+    @Expirable(false)
+    @LifeCache(duration = 1, timeUnit = TimeUnit.DAYS)
+    Observable<List<Mock>> getMocksPaginateNotExpirable(Observable<List<Mock>> mocks, DynamicKey page);
+
     Observable<List<Mock>> getMocksPaginateEvictProvider(Observable<List<Mock>> mocks, DynamicKey page, EvictProvider evictProvider);
 
     Reply<List<Mock>> getMocksBadReturnType(Observable<List<Mock>> mocks);
@@ -69,9 +74,6 @@ interface ProvidersRxCache {
 
     @LifeCache(duration = 1, timeUnit = TimeUnit.MILLISECONDS)
     Observable<List<Mock>> getEphemeralMocksPaginate(Observable<List<Mock>> mocks, DynamicKey page);
-
-    @LifeCache(duration = 5, timeUnit = TimeUnit.MINUTES)
-    Observable<List<Mock>> getMocksLifeTimeMinutesPaginate(Observable<List<Mock>> mocks, DynamicKey page);
 
     Observable<Mock> getMockWithoutLoaderObservable();
 

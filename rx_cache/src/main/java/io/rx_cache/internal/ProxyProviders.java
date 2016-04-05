@@ -26,7 +26,6 @@ import javax.inject.Inject;
 
 import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
-import io.rx_cache.Record;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
 import io.rx_cache.internal.cache.EvictExpiredRecordsPersistence;
@@ -127,7 +126,7 @@ final class ProxyProviders implements InvocationHandler {
                 if (data == null)
                     throw new RxCacheException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey());
 
-                twoLayersCache.save(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), data, configProvider.getLifeTimeMillis());
+                twoLayersCache.save(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), data, configProvider.getLifeTimeMillis(), configProvider.isExpirable());
                 return new Reply(data, Source.CLOUD);
             }
         }).onErrorReturn(new Func1() {

@@ -18,8 +18,6 @@ package io.rx_cache.internal;
 
 import java.util.Set;
 
-import io.rx_cache.Record;
-
 public interface Memory {
     <T> Record<T> getIfPresent(String key);
     <T> void put(String key, Record<T> record);

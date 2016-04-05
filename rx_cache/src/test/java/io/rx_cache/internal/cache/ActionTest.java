@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-import io.rx_cache.Record;
+import io.rx_cache.internal.Record;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.common.BaseTest;
 
@@ -116,7 +116,7 @@ public class ActionTest extends BaseTest {
         @Override public void evictAll() {}
 
         private Record<String> mock(String value) {
-            return new Record(value, 0);
+            return new Record(value, true, 0);
         }
     }
 }

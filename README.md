@@ -317,9 +317,16 @@ new RxCache.Builder()
 
 This limit ensure that the disk will no grow up limitless in case you have providers with dynamic keys which values changes dynamically, like filters based on gps location or dynamic filters supplied by your back-end solution.
 
-When this limit is reached, RxCache will not be able to persisted in disk new data. That's why RxCache has an automated process which allows to evict 'expirable' records. And by 'expirable' I mean any record which has been saved using a provider annotated with LifeCache.
+When this limit is reached, RxCache will not be able to persist in disk new data. That's why RxCache has an automated process to evict any record when the threshold memory assigned to the persistence layer is close to be reached, even if the record life time has not been fulfilled.
 
-So any record persisted with a LifeCache annotation is a candidate to be evicted when new data is requested but there is no more available space, even it its life time has not been fulfilled.
+But provider's record annotated with [@Expirable](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Expirable.java) annotation and set its value to false will be exclude from the process.
+
+```java
+interface Providers {
+    @Expirable(false)
+    Observable<List<Mock>> getMocksNotExpirable(Observable<List<Mock>> oMocks);
+}
+```
 
 ### Use expired data if loader not available
 

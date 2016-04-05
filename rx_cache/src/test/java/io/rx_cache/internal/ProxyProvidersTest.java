@@ -146,9 +146,9 @@ public class ProxyProvidersTest extends BaseTest {
                 break;
         }
 
-        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", observable, 0, detailResponse, new EvictProvider(evictCache));
+        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", observable, 0, detailResponse, new EvictProvider(evictCache), true);
 
-        if (hasCache) twoLayersCacheMock.save("mockKey", "", "", new Mock("message"), configProvider.getLifeTimeMillis());
+        if (hasCache) twoLayersCacheMock.save("mockKey", "", "", new Mock("message"), configProvider.getLifeTimeMillis(), configProvider.isExpirable());
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
         proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, useExpiredDataIfLoaderNotAvailable, evictExpiredRecordsPersistence, getDeepCopy, doMigrations);
@@ -159,7 +159,7 @@ public class ProxyProvidersTest extends BaseTest {
     }
 
     @Test public void When_Get_Method_Implementation_Is_Called_Retrieve_Operation_Is_Deferred_Until_Subscription() {
-        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", Observable.just(new Mock("message")), 0, false, new EvictProvider(false));
+        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", Observable.just(new Mock("message")), 0, false, new EvictProvider(false), false);
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
         proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, true, evictExpiredRecordsPersistence, getDeepCopy, doMigrations);

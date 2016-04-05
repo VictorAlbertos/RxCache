@@ -18,8 +18,6 @@ package io.rx_cache.internal;
 
 import java.util.List;
 
-import io.rx_cache.Record;
-
 /**
  * Provides the persistence layer for the cache
  * A default implementation which store the objects in disk is supplied:
@@ -77,5 +75,5 @@ public interface Persistence {
      * @param key The key associated with the Record to be retrieved from persistence
      * @see Record
      */
-    <T> DiskRecord<T> retrieveRecord(String key);
+    <T> Record<T> retrieveRecord(String key);
 }

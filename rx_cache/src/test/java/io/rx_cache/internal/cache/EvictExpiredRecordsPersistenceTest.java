@@ -5,7 +5,7 @@ import org.junit.Test;
 import java.util.List;
 
 import io.rx_cache.PolicyHeapCache;
-import io.rx_cache.Record;
+import io.rx_cache.internal.Record;
 import io.rx_cache.internal.GuavaMemory;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Mock;
@@ -37,8 +37,8 @@ public class EvictExpiredRecordsPersistenceTest extends BaseTest {
         int recordsCount = 100;
 
         for (int i = 0; i < recordsCount/2; i++) {
-            twoLayersCache.save(i+"_expired", "", "", new Mock(i+"_expired"), ONE_SECOND_LIFE);
-            twoLayersCache.save(i+"_live", "", "", new Mock(i+"_live"), THIRTY_SECOND_LIFE);
+            twoLayersCache.save(i+"_expired", "", "", new Mock(i+"_expired"), ONE_SECOND_LIFE, true);
+            twoLayersCache.save(i+"_live", "", "", new Mock(i+"_live"), THIRTY_SECOND_LIFE, true);
         }
 
         waitTime(MORE_THAN_ONE_SECOND_LIFE);

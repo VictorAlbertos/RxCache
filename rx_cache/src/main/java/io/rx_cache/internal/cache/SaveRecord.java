@@ -20,7 +20,7 @@ package io.rx_cache.internal.cache;
 import javax.inject.Inject;
 
 import io.rx_cache.internal.Persistence;
-import io.rx_cache.Record;
+import io.rx_cache.internal.Record;
 import io.rx_cache.internal.Locale;
 import io.rx_cache.internal.Memory;
 
@@ -34,10 +34,10 @@ public final class SaveRecord extends Action {
         this.evictExpirableRecordsPersistence = evictExpirableRecordsPersistence;
     }
 
-    void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data, long lifeTime) {
+    void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data, long lifeTime, boolean isExpirable) {
         String composedKey = composeKey(providerKey, dynamicKey, dynamicKeyGroup);
 
-        Record record = new Record(data, lifeTime);
+        Record record = new Record(data, isExpirable, lifeTime);
         memory.put(composedKey, record);
 
         if (persistence.storedMB() >= maxMgPersistenceCache) {

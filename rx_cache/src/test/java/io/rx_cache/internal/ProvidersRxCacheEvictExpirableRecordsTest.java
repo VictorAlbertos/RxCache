@@ -56,7 +56,7 @@ public class ProvidersRxCacheEvictExpirableRecordsTest extends BaseTestEvictingT
             waitTime(50);
             TestSubscriber<List<Mock>> subscriber = new TestSubscriber<>();
             String key = i + "";
-            providersRxCache.getEphemeralMocksPaginate(createObservableMocks(), new DynamicKey(key)).subscribe(subscriber);
+            providersRxCache.getMocksPaginate(createObservableMocks(), new DynamicKey(key)).subscribe(subscriber);
             subscriber.awaitTerminalEvent();
         }
 
@@ -72,7 +72,7 @@ public class ProvidersRxCacheEvictExpirableRecordsTest extends BaseTestEvictingT
             waitTime(50);
             TestSubscriber<List<Mock>> subscriber = new TestSubscriber<>();
             String key = i + "";
-            providersRxCache.getMocksPaginate(createObservableMocks(), new DynamicKey(key)).subscribe(subscriber);
+            providersRxCache.getMocksPaginateNotExpirable(createObservableMocks(), new DynamicKey(key)).subscribe(subscriber);
             subscriber.awaitTerminalEvent();
         }
 
