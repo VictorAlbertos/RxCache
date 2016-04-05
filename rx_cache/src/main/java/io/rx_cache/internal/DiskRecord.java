@@ -24,7 +24,7 @@ import java.util.Map;
 
 import io.rx_cache.Record;
 
-final class DiskRecord<T> extends Record<T> {
+public final class DiskRecord<T> extends Record<T> {
     private final String dataClassName, dataCollectionClassName, dataKeyMapClassName;
 
     DiskRecord(Record<T> record) {
@@ -81,7 +81,7 @@ final class DiskRecord<T> extends Record<T> {
         }
     }
 
-    String getDataClassName() {
+    public String getDataClassName() {
         return dataClassName;
     }
 

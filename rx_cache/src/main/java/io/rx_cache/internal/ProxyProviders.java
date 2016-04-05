@@ -32,27 +32,56 @@ import io.rx_cache.Source;
 import io.rx_cache.internal.cache.EvictExpiredRecordsPersistence;
 import io.rx_cache.internal.cache.GetDeepCopy;
 import io.rx_cache.internal.cache.TwoLayersCache;
+import io.rx_cache.internal.migration.DoMigrations;
 import rx.Observable;
+import rx.functions.Action1;
 import rx.functions.Func0;
 import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 final class ProxyProviders implements InvocationHandler {
     private final ProxyTranslator proxyTranslator;
     private final TwoLayersCache twoLayersCache;
     private final Boolean useExpiredDataIfLoaderNotAvailable;
     private final GetDeepCopy getDeepCopy;
+    private final Observable<Void> oProcesses;
+    private volatile Boolean hasProcessesEnded;
 
-    @Inject public ProxyProviders(ProxyTranslator proxyTranslator, TwoLayersCache twoLayersCache, Boolean useExpiredDataIfLoaderNotAvailable, EvictExpiredRecordsPersistence evictExpiredRecordsPersistence, GetDeepCopy getDeepCopy) {
+    @Inject public ProxyProviders(ProxyTranslator proxyTranslator, TwoLayersCache twoLayersCache, Boolean useExpiredDataIfLoaderNotAvailable, EvictExpiredRecordsPersistence evictExpiredRecordsPersistence, GetDeepCopy getDeepCopy, DoMigrations doMigrations) {
+        this.hasProcessesEnded = false;
         this.proxyTranslator = proxyTranslator;
         this.twoLayersCache = twoLayersCache;
         this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
         this.getDeepCopy = getDeepCopy;
-        evictExpiredRecordsPersistence.startEvictingExpiredRecords();
+        this.oProcesses = startProcesses(doMigrations, evictExpiredRecordsPersistence);
+    }
+
+    private Observable<Void> startProcesses(DoMigrations doMigrations, final EvictExpiredRecordsPersistence evictExpiredRecordsPersistence) {
+        Observable<Void> oProcesses = doMigrations.react().flatMap(new Func1<Void, Observable<? extends Void>>() {
+            @Override public Observable<? extends Void> call(Void nothing) {
+                return evictExpiredRecordsPersistence.startEvictingExpiredRecords();
+            }
+        }).subscribeOn((Schedulers.io())).observeOn(Schedulers.io()).share();
+
+        oProcesses.subscribe(new Action1<Void>() {
+            @Override public void call(Void nothing) {
+                hasProcessesEnded = true;
+            }
+        });
+
+        return oProcesses;
     }
 
     @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         final ProxyTranslator.ConfigProvider configProvider = proxyTranslator.processMethod(method, args);
-        return getMethodImplementation(configProvider);
+
+        if (hasProcessesEnded) return getMethodImplementation(configProvider);
+
+        return oProcesses.flatMap(new Func1<Void, Observable<?>>() {
+            @Override public Observable<?> call(Void aVoid) {
+                return getMethodImplementation(configProvider);
+            }
+        });
     }
 
     @VisibleForTesting Observable<Object> getMethodImplementation(final ProxyTranslator.ConfigProvider configProvider) {
@@ -88,8 +117,7 @@ final class ProxyProviders implements InvocationHandler {
 
     private Observable<Reply> getDataFromLoader(final ProxyTranslator.ConfigProvider configProvider, final Record record) {
         return configProvider.getLoaderObservable().map(new Func1() {
-            @Override
-            public Reply call(Object data) {
+            @Override public Reply call(Object data) {
                 if (data == null && useExpiredDataIfLoaderNotAvailable && record != null) {
                     return new Reply(record.getData(), record.getSource());
                 }
@@ -97,7 +125,7 @@ final class ProxyProviders implements InvocationHandler {
                 clearKeyIfNeeded(configProvider);
 
                 if (data == null)
-                    throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey());
+                    throw new RxCacheException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey());
 
                 twoLayersCache.save(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), data, configProvider.getLifeTimeMillis());
                 return new Reply(data, Source.CLOUD);
@@ -110,7 +138,7 @@ final class ProxyProviders implements InvocationHandler {
                     return new Reply(record.getData(), record.getSource());
                 }
 
-                throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey(), (Throwable) o);
+                throw new RxCacheException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey(), (Throwable) o);
             }
         });
     }
@@ -135,5 +163,17 @@ final class ProxyProviders implements InvocationHandler {
         } else {
             return data;
         }
+    }
+
+    public class RxCacheException extends RuntimeException {
+
+        public RxCacheException(String message) {
+            super(message);
+        }
+
+        public RxCacheException(String message, Throwable exception) {
+            super(message, exception);
+        }
+
     }
 }

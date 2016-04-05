@@ -28,28 +28,20 @@ import io.rx_cache.*;
 public final class RxCacheModule {
     private final File cacheDirectory;
     private final PolicyHeapCache policyHeapCache;
-    private final Persistence persistenceClient;
     private final boolean useExpiredDataIfLoaderNotAvailable;
     private final Integer maxMgPersistenceCache;
+    private final Class classProviders;
 
-    public RxCacheModule(File cacheDirectory, PolicyHeapCache policyHeapCache, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache) {
+    public RxCacheModule(File cacheDirectory, PolicyHeapCache policyHeapCache, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache, Class classProviders) {
         this.cacheDirectory = cacheDirectory;
         this.policyHeapCache = policyHeapCache;
         this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
         this.maxMgPersistenceCache = maxMgPersistenceCache;
-        this.persistenceClient = null;
-    }
-
-    public RxCacheModule(Persistence persistenceClient, PolicyHeapCache policyHeapCache, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache) {
-        this.persistenceClient = persistenceClient;
-        this.policyHeapCache = policyHeapCache;
-        this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
-        this.maxMgPersistenceCache = maxMgPersistenceCache;
-        this.cacheDirectory = null;
+        this.classProviders = classProviders;
     }
 
     @Singleton @Provides File provideCacheDirectory() {
-        return cacheDirectory != null ? cacheDirectory : new File("");
+        return cacheDirectory;
     }
 
     @Singleton @Provides PolicyHeapCache providePolicyCache() {
@@ -57,7 +49,7 @@ public final class RxCacheModule {
     }
 
     @Singleton @Provides Persistence providePersistence(Disk disk) {
-        return persistenceClient != null ? persistenceClient : disk;
+        return disk;
     }
 
     @Singleton @Provides Boolean useExpiredDataIfLoaderNotAvailable() {
@@ -75,5 +67,9 @@ public final class RxCacheModule {
 
     @Singleton @Provides Integer maxMbPersistenceCache() {
         return maxMgPersistenceCache != null ? maxMgPersistenceCache : 100;
+    }
+
+    @Singleton @Provides Class provideClassProviders() {
+        return classProviders;
     }
 }

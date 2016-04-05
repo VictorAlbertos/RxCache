@@ -22,7 +22,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import io.rx_cache.Persistence;
+import io.rx_cache.internal.Persistence;
 import io.rx_cache.internal.Memory;
 
 public final class EvictRecord extends Action {

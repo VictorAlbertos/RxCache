@@ -9,8 +9,8 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import io.rx_cache.Persistence;
 import io.rx_cache.internal.Memory;
+import io.rx_cache.internal.Persistence;
 
 public class GetDeepCopy extends Action {
 

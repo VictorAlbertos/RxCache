@@ -32,7 +32,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import io.rx_cache.Persistence;
 import io.rx_cache.Record;
 
 /**
@@ -136,15 +135,14 @@ public final class Disk implements Persistence {
 
             bufferedReader.close();
             return data;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignore) {
             return null;
         }
     }
 
     /** Retrieve the Record previously saved.
      * @param key the key whereby the object could be retrieved.*/
-    @Override public <T> Record<T> retrieveRecord(String key) {
+    @Override public <T> DiskRecord<T> retrieveRecord(String key) {
         try {
             File file = new File(cacheDirectory, key);
 

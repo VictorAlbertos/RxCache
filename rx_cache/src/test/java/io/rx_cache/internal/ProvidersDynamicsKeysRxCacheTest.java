@@ -142,6 +142,7 @@ public class ProvidersDynamicsKeysRxCacheTest {
 
         subscriber = new TestSubscriber<>();
         providersRxCache.getMocksPaginateEvictProvider(Observable.<List<Mock>>just(null), new DynamicKey(2), evictProviderFalse).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
         assertThat(subscriber.getOnErrorEvents().size(), is(1));
         assertThat(subscriber.getOnNextEvents().size(), is(0));
     }
