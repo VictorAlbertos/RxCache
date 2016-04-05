@@ -117,8 +117,7 @@ final class ProxyProviders implements InvocationHandler {
 
     private Observable<Reply> getDataFromLoader(final ProxyTranslator.ConfigProvider configProvider, final Record record) {
         return configProvider.getLoaderObservable().map(new Func1() {
-            @Override
-            public Reply call(Object data) {
+            @Override public Reply call(Object data) {
                 if (data == null && useExpiredDataIfLoaderNotAvailable && record != null) {
                     return new Reply(record.getData(), record.getSource());
                 }
@@ -126,7 +125,7 @@ final class ProxyProviders implements InvocationHandler {
                 clearKeyIfNeeded(configProvider);
 
                 if (data == null)
-                    throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey());
+                    throw new RxCacheException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey());
 
                 twoLayersCache.save(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), data, configProvider.getLifeTimeMillis());
                 return new Reply(data, Source.CLOUD);
@@ -139,7 +138,7 @@ final class ProxyProviders implements InvocationHandler {
                     return new Reply(record.getData(), record.getSource());
                 }
 
-                throw new RuntimeException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey(), (Throwable) o);
+                throw new RxCacheException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey(), (Throwable) o);
             }
         });
     }
@@ -164,5 +163,17 @@ final class ProxyProviders implements InvocationHandler {
         } else {
             return data;
         }
+    }
+
+    public class RxCacheException extends RuntimeException {
+
+        public RxCacheException(String message) {
+            super(message);
+        }
+
+        public RxCacheException(String message, Throwable exception) {
+            super(message, exception);
+        }
+
     }
 }
