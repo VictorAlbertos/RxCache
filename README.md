@@ -246,7 +246,7 @@ You need to annotate your providers `interface` with [@SchemeMigration](https://
             @Migration(version = 2, evictClasses = {Mock2.class}),
             @Migration(version = 3, evictClasses = {Mock3.class})
     })
-private interface Providers {}
+interface Providers {}
 ```
 
 You want to annotate a new migration only when a new field has been added in a class model used by RxCache. 
@@ -262,17 +262,16 @@ A migration was added at some point. After that, a second one was added eventual
             @Migration(version = 1, evictClasses = {Mock.class}),
             @Migration(version = 2, evictClasses = {Mock2.class})
     })
-private interface Providers {}
+interface Providers {}
 ```
 
 But now `Mock` class has been deleted from the project, so it is impossible to reference its class anymore. To fix this, just delete the migration `annotation`.
 
 ```java
-@SchemeMigration()
 @SchemeMigration({
             @Migration(version = 2, evictClasses = {Mock2.class})
     })
-private interface Providers {}
+interface Providers {}
 ```
 
 Because RxCache has an internal process to clean memory when it is required, the data will be evicted eventually.
