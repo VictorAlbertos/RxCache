@@ -44,8 +44,7 @@ public final class DoMigrations {
 
     public Observable<Void> react() {
         return getCacheVersion.react().flatMap(new Func1<Integer, Observable<? extends List<Migration>>>() {
-            @Override
-            public Observable<? extends List<Migration>> call(Integer currentCacheVersion) {
+            @Override public Observable<? extends List<Migration>> call(Integer currentCacheVersion) {
                 return getPendingMigrations.with(currentCacheVersion).react();
             }
         }).flatMap(new Func1<List<Migration>, Observable<? extends List<Class>>>() {

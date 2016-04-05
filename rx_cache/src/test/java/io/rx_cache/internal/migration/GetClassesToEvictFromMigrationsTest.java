@@ -40,6 +40,18 @@ public class GetClassesToEvictFromMigrationsTest {
         testSubscriber = new TestSubscriber<>();
     }
 
+    @Test public void When_Migration_Contain_One_Class_To_Evict_Get_It() {
+        Annotation annotation = OneMigrationProviders.class.getAnnotation(SchemeMigration.class);
+        SchemeMigration schemeMigration = (SchemeMigration) annotation;
+        List<Migration> migrations = Arrays.asList(schemeMigration.value());
+
+        getClassesToEvictFromMigrationsUT.with(migrations).react().subscribe(testSubscriber);
+        testSubscriber.awaitTerminalEvent();
+
+        List<Class> classes = testSubscriber.getOnNextEvents().get(0);
+        assertThat(classes.size(), is(1));
+    }
+
     @Test public void When_Migrations_Contains_Classes_To_Evict_Get_Them() {
         Annotation annotation = MigrationsProviders.class.getAnnotation(SchemeMigration.class);
         SchemeMigration schemeMigration = (SchemeMigration) annotation;
@@ -63,6 +75,10 @@ public class GetClassesToEvictFromMigrationsTest {
         List<Class> classes = testSubscriber.getOnNextEvents().get(0);
         assertThat(classes.size(), is(3));
     }
+
+    @SchemeMigration(@Migration(version = 1, evictClasses = {Mock1.class}))
+    private interface OneMigrationProviders {}
+
 
     @SchemeMigration({
             @Migration(version = 1, evictClasses = {Mock1.class}),
