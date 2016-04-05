@@ -134,16 +134,6 @@ public class GetPendingMigrationsTest {
     })
     private class MigrationsSorted {}
 
-
-    @SchemeMigration({
-            @Migration(version = 1, evictClasses = {Mock.class}),
-            @Migration(version = 2, evictClasses = {Mock.class}),
-            @Migration(version = 3, evictClasses = {Mock.class}),
-            @Migration(version = 4, evictClasses = {Mock.class})
-    })
-    private interface MigrationsProviders {}
-
-
     @SchemeMigration({
             @Migration(version = 4, evictClasses = {Mock.class}),
             @Migration(version = 2, evictClasses = {Mock.class}),
