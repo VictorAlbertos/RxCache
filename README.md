@@ -6,7 +6,7 @@
 
 # RxCache
 
-_For the `swift` version go [here](https://github.com/VictorAlbertos/RxSCache)_.
+_For the `swift` version go [here](https://github.com/FuckBoilerplate/RxCache)_.
 
 The **goal** of this library is simple: **caching your data models like [Picasso](https://github.com/square/picasso) caches your images, with no effort at all.** 
 
@@ -376,7 +376,7 @@ The policy is very simple:
 **Víctor Albertos**
 
 * <https://twitter.com/_victorAlbertos>
-* <https://linkedin.com/in/victoralbertos>
+* <https://www.linkedin.com/in/victoralbertos>
 * <https://github.com/VictorAlbertos>
 
 ## RxCache Swift version:
