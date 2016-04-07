@@ -234,6 +234,8 @@ But I have done that for demonstration purposes, you always should narrow the ev
 		
 Nevertheless, there are complete examples for [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).
 
+**Important**: Just to clarify, RxCache is not only a reading cache. You can perform adding, updating and deleting operations playing with `Evict` scopes. [In this discussion](https://github.com/VictorAlbertos/RxCache/issues/13#issuecomment-207124292) it's explained and shown with an example.   
+
 ## Migrations
 
 RxCache provides a simple mechanism for handling migrations between releases. 
