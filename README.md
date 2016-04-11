@@ -373,6 +373,12 @@ The policy is very simple:
 * Else if the data requested is in persistence layer, and It has not been expired, get it from persistence.
 * Else get it from the loader layer. 
 
+## Proguard
+```
+-dontwarn io.rx_cache.internal.**
+```
+
+
 ## Author
 
 **Víctor Albertos**
