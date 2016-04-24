@@ -1,0 +1,10 @@
+apply plugin: 'java'
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile project(':rx_cache')
+
+    compile 'com.squareup:javapoet:1.6.1'
+    testCompile "junit:junit:4.12"
+    testCompile "com.google.testing.compile:compile-testing:0.9"
+}

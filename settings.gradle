@@ -1,1 +1,1 @@
-include ':rx_cache', ':android'
+include ':rx_cache', ':android', ':rx_cache_compiler'

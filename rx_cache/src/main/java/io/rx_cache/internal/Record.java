@@ -28,7 +28,7 @@ import io.rx_cache.Source;
  * Wrapper around the actual data in order to know if its life time has been expired
  * @param <T> The actual data
  */
-public class Record<T> {
+public final class Record<T> {
     private Source source;
     private final T data;
     private final long timeAtWhichWasPersisted;

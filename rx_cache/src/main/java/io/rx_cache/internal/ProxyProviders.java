@@ -38,7 +38,7 @@ import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-final class ProxyProviders implements InvocationHandler {
+public final class ProxyProviders implements InvocationHandler {
     private final ProxyTranslator proxyTranslator;
     private final TwoLayersCache twoLayersCache;
     private final Boolean useExpiredDataIfLoaderNotAvailable;
@@ -71,9 +71,17 @@ final class ProxyProviders implements InvocationHandler {
         return oProcesses;
     }
 
+    /**
+     * Called when user is using standard RxCache API.
+     */
     @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        final ProxyTranslator.ConfigProvider configProvider = proxyTranslator.processMethod(method, args);
+        return invoke(proxyTranslator.processMethod(method, args));
+    }
 
+    /**
+     * Called when user is using actionable RxCache API.
+     */
+    public Object invoke(final ProxyTranslator.ConfigProvider configProvider) {
         if (hasProcessesEnded) return getMethodImplementation(configProvider);
 
         return oProcesses.flatMap(new Func1<Void, Observable<?>>() {

@@ -30,7 +30,7 @@ import io.rx_cache.Expirable;
 import io.rx_cache.Reply;
 import rx.Observable;
 
-final class ProxyTranslator {
+public final class ProxyTranslator {
     private Method method;
     private Object[] objectsMethod;
 
@@ -134,7 +134,7 @@ final class ProxyTranslator {
         }
     }
 
-    final static class ConfigProvider {
+    public final static class ConfigProvider {
         private final String providerKey, dynamicKey, dynamicKeyGroup;
         private final Observable loaderObservable;
         private final long lifeTime;
@@ -142,7 +142,7 @@ final class ProxyTranslator {
         private final EvictProvider evictProvider;
         private final boolean expirable;
 
-        ConfigProvider(String providerKey, String dynamicKey, String group, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider, boolean expirable) {
+        public ConfigProvider(String providerKey, String dynamicKey, String group, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider, boolean expirable) {
             this.providerKey = providerKey;
             this.dynamicKey = dynamicKey;
             this.dynamicKeyGroup = group;
@@ -153,7 +153,7 @@ final class ProxyTranslator {
             this.expirable = expirable;
         }
 
-        String getProviderKey() {
+        public String getProviderKey() {
             return providerKey;
         }
 
@@ -165,7 +165,7 @@ final class ProxyTranslator {
             return dynamicKeyGroup;
         }
 
-        long getLifeTimeMillis() {
+        public long getLifeTimeMillis() {
             return lifeTime;
         }
 
