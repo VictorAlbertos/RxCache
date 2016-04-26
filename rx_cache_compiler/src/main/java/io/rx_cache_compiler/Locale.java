@@ -18,4 +18,8 @@ package io.rx_cache_compiler;
 
 public interface Locale {
     String ONLY_METHODS_CAN_BE_ANNOTATED_WITH = "Only methods can be annotated with ";
+    String ONLY_LIST_IS_SUPPORTED_AS_LOADER = "Only list is supported as loader for ";
+    String ONLY_DYNAMIC_KEY_OR_DYNAMIC_KEY_GROUP = "Only DynamicKey or DynamickeyGroup, but not both of them";
+
+
 }

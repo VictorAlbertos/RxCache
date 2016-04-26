@@ -3,6 +3,7 @@ package victoralbertos.io.android;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.rx_cache.Actionable;
 import io.rx_cache.DynamicKey;
 import io.rx_cache.LifeCache;
 import rx.Observable;
@@ -18,4 +19,6 @@ public interface RxProviders {
     @LifeCache(duration = 1, timeUnit = TimeUnit.MILLISECONDS)
     Observable<List<MainActivity.Mock>> getMocksEphemeralPaginate(Observable<List<MainActivity.Mock>> mocks, DynamicKey page);
 
+    @Actionable
+    Observable<List<String>> testingCompiler(Observable<List<String>> message, DynamicKey dynamicKey);
 }
