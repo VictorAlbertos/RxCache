@@ -25,8 +25,8 @@ import io.rx_cache.DynamicKeyGroup;
 import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
-import io.rx_cache.LifeCache;
 import io.rx_cache.Expirable;
+import io.rx_cache.LifeCache;
 import io.rx_cache.Reply;
 import rx.Observable;
 
@@ -90,5 +90,11 @@ interface ProvidersRxCache {
 
     Observable<Mock> getMockEvictDynamicKeyGroupProvidingDynamicKeyGroup(Observable<Mock> mock, DynamicKeyGroup dynamicKeyGroup, EvictDynamicKeyGroup evictDynamicKeyGroup);
     Observable<Mock> getMockEvictDynamicKeyGroupWithoutProvidingDynamicKeyGroup(Observable<Mock> mock, EvictDynamicKeyGroup evictDynamicKeyGroup);
+
+    //Actions
+    Observable<List<Mock>> mocks(Observable<List<Mock>> mocks, EvictProvider evictProvider);
+    Observable<List<Mock>> mocksPaginated(Observable<List<Mock>> mocks, DynamicKey dynamicKey, EvictDynamicKey evictDynamicKey);
+    Observable<List<Mock>> mocksPaginatedFiltered(Observable<List<Mock>> mocks, DynamicKeyGroup dynamicKey, EvictDynamicKeyGroup evictDynamicKeyGroup);
+
 }
 

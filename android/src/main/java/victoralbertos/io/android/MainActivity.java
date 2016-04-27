@@ -30,6 +30,7 @@ public class MainActivity extends Activity {
             rxProviders.getMocksEphemeralPaginate(createObservableMocks(100), new DynamicKey(key))
                     .subscribe();
         }
+
     }
 
     private Observable<List<Mock>> createObservableMocks(int size) {
@@ -44,15 +45,4 @@ public class MainActivity extends Activity {
         return Observable.just(mocks);
     }
 
-    public static class Mock {
-        final private String message;
-
-        public Mock(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-    }
 }
