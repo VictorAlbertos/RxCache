@@ -19,17 +19,13 @@ package io.rx_cache_compiler;
 class ProviderScheme {
     private final String fullQualifiedNameOwner, nameMethod, fullQualifiedNameTypeList;
     private final boolean hasDynamicKey, hasDynamicKeyGroup;
-    private final boolean hasEvictProvider, hasEvictDynamicKey, hasEvictDynamicKeyGroup;
 
-    public ProviderScheme(String fullQualifiedNameOwner, String nameMethod, String fullQualifiedNameTypeList, boolean hasDynamicKey, boolean hasDynamicKeyGroup, boolean hasEvictProvider, boolean hasEvictDynamicKey, boolean hasEvictDynamicKeyGroup) {
+    public ProviderScheme(String fullQualifiedNameOwner, String nameMethod, String fullQualifiedNameTypeList, boolean hasDynamicKey, boolean hasDynamicKeyGroup) {
         this.fullQualifiedNameOwner = fullQualifiedNameOwner;
         this.nameMethod = nameMethod;
         this.fullQualifiedNameTypeList = fullQualifiedNameTypeList;
         this.hasDynamicKey = hasDynamicKey;
         this.hasDynamicKeyGroup = hasDynamicKeyGroup;
-        this.hasEvictProvider = hasEvictProvider;
-        this.hasEvictDynamicKey = hasEvictDynamicKey;
-        this.hasEvictDynamicKeyGroup = hasEvictDynamicKeyGroup;
     }
 
     public String getSimpleNameOwner() {
@@ -58,18 +54,6 @@ class ProviderScheme {
 
     public boolean hasDynamicKeyGroup() {
         return hasDynamicKeyGroup;
-    }
-
-    public boolean hasEvictProvider() {
-        return hasEvictProvider;
-    }
-
-    public boolean hasEvictDynamicKey() {
-        return hasEvictDynamicKey;
-    }
-
-    public boolean hasEvictDynamicKeyGroup() {
-        return hasEvictDynamicKeyGroup;
     }
 
 }

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.rx_cache.ActionsProviders;
 import io.rx_cache.DynamicKey;
 import io.rx_cache.internal.RxCache;
 import rx.Observable;
@@ -34,6 +35,11 @@ public class MainActivity extends Activity {
     }
 
     private Observable<List<Mock>> createObservableMocks(int size) {
+        ActionsProviders.mocks()
+                .addFirst(new InnerMock(""))
+                .addLast()
+                .toObservable();
+
         List<Mock> mocks = new ArrayList(size);
         for (int i = 0; i < size; i++) {
             mocks.add(new Mock("Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, " +
@@ -43,6 +49,18 @@ public class MainActivity extends Activity {
                     "theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, \"Lorem ipsum dolor sit amet..\", comes from a line in section 1.10.32."));
         }
         return Observable.just(mocks);
+    }
+
+    public class InnerMock {
+        final private String message;
+
+        public InnerMock(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
 
 }

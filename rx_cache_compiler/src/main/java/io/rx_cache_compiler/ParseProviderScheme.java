@@ -18,6 +18,7 @@ package io.rx_cache_compiler;
 
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
 
 import java.util.List;
 
@@ -49,13 +50,13 @@ class ParseProviderScheme {
         String classNameOwner = element.owner.toString();
         String nameMethod = element.getSimpleName().toString();
         String signatureMethod = element.toString();
-
-        String fullQualifiedNameTypeList = fullQualifiedNameTypeList(signatureMethod);
-        if (fullQualifiedNameTypeList == null) {
-            throw new ParseException(element, "Error parsing @%s provider. Only list is supported as loader", nameMethod);
-        }
-
         List<Symbol.VarSymbol> symbols = element.getParameters();
+
+
+        String fullQualifiedNameTypeList = fullQualifiedNameTypeList(symbols);
+        if (fullQualifiedNameTypeList == null) {
+            throw new ParseException(element, "Error parsing @%s provider. Only list is supported as observable loader", nameMethod);
+        }
 
         boolean hasDynamicKey = hasDynamicKey(symbols);
         boolean hasDynamicKeyGroup = hasDynamicKeyGroup(symbols);
@@ -79,18 +80,19 @@ class ParseProviderScheme {
             throw new ParseException(element, "Error parsing @%s provider. The provider requires one evicting argument: EvictProvider, EvictDynamicKey or EvictDynamicKeyGroup", nameMethod);
         }
 
-        ProviderScheme providerScheme = new ProviderScheme(classNameOwner, nameMethod, fullQualifiedNameTypeList, hasDynamicKey, hasDynamicKeyGroup, hasEvictProvider, hasEvictDynamicKey, hasEvictDynamicKeyGroup);
+        ProviderScheme providerScheme = new ProviderScheme(classNameOwner, nameMethod, fullQualifiedNameTypeList, hasDynamicKey, hasDynamicKeyGroup);
         return providerScheme;
     }
 
-    private String fullQualifiedNameTypeList(String signatureMethod) {
-        int startPosition = signatureMethod.indexOf("List<")+5;
-        int endPosition = signatureMethod.indexOf(">>");
-
-        if (startPosition  == -1 || endPosition == -1) return null;
-
-        String fullQualifiedNameTypeList = signatureMethod.substring(startPosition, endPosition);
-        return fullQualifiedNameTypeList;
+    private String fullQualifiedNameTypeList(List<Symbol.VarSymbol> symbols) {
+        for (Symbol.VarSymbol symbol: symbols) {
+            String nameSymbol = ((Type.ClassType) (symbol.type)).tsym.toString();
+            if (nameSymbol.equals(rx.Observable.class.getName())) {
+                String fullQualifiedNameTypeList = ((Type.ClassType) (symbol).type).typarams_field.get(0).getTypeArguments().get(0).toString();
+                return fullQualifiedNameTypeList;
+            }
+        }
+        return null;
     }
 
     private boolean hasDynamicKey(List<Symbol.VarSymbol> symbols) {

@@ -24,11 +24,11 @@ public interface RxProviders {
     Observable<List<Mock>> getMocksEphemeralPaginate(Observable<List<Mock>> mocks, DynamicKey page);
 
     @Actionable
-    Observable<List<Mock>> mocks(Observable<List<Mock>> message, EvictProvider evictProvider);
+    Observable<List<MainActivity.InnerMock>> mocks(Observable<List<MainActivity.InnerMock>> message, EvictProvider evictProvider);
 
     @Actionable
     Observable<List<Mock>> mocksDynamicKey(Observable<List<Mock>> message, DynamicKey dynamicKey, EvictDynamicKey evictDynamicKey);
 
     @Actionable
-    Observable<List<Mock>> mocksDynamicKeyGroup(Observable<List<Mock>> message, DynamicKeyGroup dynamicKey, EvictDynamicKeyGroup evictDynamicKey);
+    Observable<List<Mock>> mocksDynamicKeyGroup(Observable<List<Mock>> message, DynamicKeyGroup dynamicKeyGroup, EvictDynamicKeyGroup evictDynamicKey);
 }

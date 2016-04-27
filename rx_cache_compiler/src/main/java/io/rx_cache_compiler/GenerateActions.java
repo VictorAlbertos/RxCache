@@ -31,6 +31,9 @@ import javax.lang.model.element.Modifier;
 
 import io.rx_cache.DynamicKey;
 import io.rx_cache.DynamicKeyGroup;
+import io.rx_cache.EvictDynamicKey;
+import io.rx_cache.EvictDynamicKeyGroup;
+import io.rx_cache.EvictProvider;
 import io.rx_cache.internal.RxCache;
 import io.rx_cache.internal.actions.Actions;
 
@@ -69,6 +72,7 @@ class GenerateActions {
         ClassName type = ClassName.get(providerScheme.getPackageNameTypeList(), providerScheme.getSimpleNameTypeList());
         ParameterizedTypeName action = ParameterizedTypeName.get(ClassName.get("io.rx_cache.internal.actions", "Actions"), type);
         ParameterizedTypeName list = ParameterizedTypeName.get(ClassName.get("java.util", "List"), type);
+        ParameterizedTypeName arrayList = ParameterizedTypeName.get(ClassName.get("java.util", "ArrayList"), type);
         ParameterizedTypeName observable = ParameterizedTypeName.get(ClassName.get("rx", "Observable"), list);
 
         ParameterizedTypeName evict = ParameterizedTypeName.get(ClassName.get(Actions.Evict.class), type);
@@ -77,31 +81,61 @@ class GenerateActions {
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(action);
 
-        //final ProvidersRxCache rxProviders = (ProvidersRxCache) RxCache.retainedProxy();
-        ClassName proxyClass = ClassName.get(providerScheme.getPackageNameOwner(), providerScheme.getSimpleNameOwner());
-        builder.addStatement("final $T rxProviders = ($T) $T.retainedProxy()", proxyClass, proxyClass, RxCache.class);
+        if (providerScheme.hasDynamicKey()) {
+            builder.addParameter(DynamicKey.class, "dynamicKey", Modifier.FINAL);
+        } else if (providerScheme.hasDynamicKeyGroup()) {
+            builder.addParameter(DynamicKeyGroup.class, "dynamicKeyGroup", Modifier.FINAL);
+        }
 
-        //Actions.Evict<Mock> evict = new Actions.Evict<Mock>() {
-        //  @Override public Observable<List<Mock>> call(Observable<List<Mock>> elements) {
-        //      return null;
-        //  }
-        //}
+        ClassName proxyClass = ClassName.get(providerScheme.getPackageNameOwner(), providerScheme.getSimpleNameOwner());
+        builder.addStatement("final $T proxy = ($T) $T.retainedProxy()", proxyClass, proxyClass, RxCache.class);
 
         builder.beginControlFlow("$T evict = new $T()", evict, evict)
-                .beginControlFlow("@Override public $T call($T elements)", observable, observable)
-                .addStatement("return null")
-                .endControlFlow()
+                .beginControlFlow("@Override public $T call($T elements)", observable, observable);
+        if (providerScheme.hasDynamicKey()) {
+            setReturnEvictForEvictDynamicKey(builder, methodName);
+        } else if (providerScheme.hasDynamicKeyGroup()) {
+            setReturnEvictForEvictDynamicKeyGroup(builder, methodName);
+        } else {
+            setReturnEvictForEvictProvider(builder, methodName);
+        }
+        builder.endControlFlow()
                 .endControlFlow(";");
 
         if (providerScheme.hasDynamicKey()) {
-            builder.addParameter(DynamicKey.class, "dynamicKey");
+            setCacheForEvictDynamicKey(builder, observable, arrayList, methodName, providerScheme.getSimpleNameTypeList());
         } else if (providerScheme.hasDynamicKeyGroup()) {
-            builder.addParameter(DynamicKeyGroup.class, "dynamicKeyGroup");
+            setCacheForEvictDynamicKeyGroup(builder, observable, arrayList, methodName, providerScheme.getSimpleNameTypeList());
+        } else {
+            setCacheForEvictProvider(builder, observable, arrayList, methodName, providerScheme.getSimpleNameTypeList());
         }
 
-
-        builder.addStatement("new Actions<>(evict, oCache)");
+        builder.addStatement("return new Actions<>(evict, oCache)");
 
         return builder.build();
+    }
+
+    private void setReturnEvictForEvictProvider(MethodSpec.Builder builder, String methodName) {
+        builder.addStatement("return proxy."+methodName+"(elements, new $T(true))", EvictProvider.class);
+    }
+
+    private void setReturnEvictForEvictDynamicKey(MethodSpec.Builder builder, String methodName) {
+        builder.addStatement("return proxy."+methodName+"(elements, dynamicKey, new $T(true))", EvictDynamicKey.class);
+    }
+
+    private void setReturnEvictForEvictDynamicKeyGroup(MethodSpec.Builder builder, String methodName) {
+        builder.addStatement("return proxy."+methodName+"(elements, dynamicKeyGroup, new $T(true))", EvictDynamicKeyGroup.class);
+    }
+
+    private void setCacheForEvictProvider(MethodSpec.Builder builder, ParameterizedTypeName observable, ParameterizedTypeName arrayList, String methodName, String typeName) {
+        builder.addStatement("$T oCache = proxy."+methodName+"(Observable.<List<"+typeName+">>just(new $T()), new EvictProvider(false))", observable, arrayList);
+    }
+
+    private void setCacheForEvictDynamicKey(MethodSpec.Builder builder, ParameterizedTypeName observable, ParameterizedTypeName arrayList, String methodName, String typeName) {
+        builder.addStatement("$T oCache = proxy."+methodName+"(Observable.<List<"+typeName+">>just(new $T()), dynamicKey, new EvictDynamicKey(false))", observable, arrayList);
+    }
+
+    private void setCacheForEvictDynamicKeyGroup(MethodSpec.Builder builder, ParameterizedTypeName observable, ParameterizedTypeName arrayList, String methodName, String typeName) {
+        builder.addStatement("$T oCache = proxy."+methodName+"(Observable.<List<"+typeName+">>just(new $T()), dynamicKeyGroup, new EvictDynamicKeyGroup(false))", observable, arrayList);
     }
 }
