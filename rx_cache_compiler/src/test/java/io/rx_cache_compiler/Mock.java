@@ -20,7 +20,7 @@ package io.rx_cache_compiler;
  * Created by victor on 28/12/15.
  */
 public class Mock {
-    private String message;
+    final private String message;
 
     public Mock(String message) {
         this.message = message;
@@ -30,7 +30,15 @@ public class Mock {
         return message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public class InnerMock {
+        final private String message;
+
+        public InnerMock(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
 }
