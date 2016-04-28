@@ -483,6 +483,8 @@ public class ActionsTest {
         cache().subscribe(testSubscriber);
         testSubscriber.awaitTerminalEvent();
 
+        if (testSubscriber.getOnNextEvents().isEmpty()) return;
+
         List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
         assertThat(mocks.size(), is(0));
     }
