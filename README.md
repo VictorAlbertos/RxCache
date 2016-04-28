@@ -6,7 +6,7 @@
 
 # RxCache
 
-_For the `swift` version go [here](https://github.com/VictorAlbertos/RxSCache)_.
+_For the `swift` version go [here](https://github.com/FuckBoilerplate/RxCache)_.
 
 The **goal** of this library is simple: **caching your data models like [Picasso](https://github.com/square/picasso) caches your images, with no effort at all.** 
 
@@ -234,6 +234,8 @@ But I have done that for demonstration purposes, you always should narrow the ev
 		
 Nevertheless, there are complete examples for [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).
 
+**Important**: Just to clarify, RxCache is not only a reading cache. You can perform adding, updating and deleting operations playing with `Evict` scopes. [In this discussion](https://github.com/VictorAlbertos/RxCache/issues/13#issuecomment-207124292) it's explained and shown with an example.   
+
 ## Migrations
 
 RxCache provides a simple mechanism for handling migrations between releases. 
@@ -371,12 +373,18 @@ The policy is very simple:
 * Else if the data requested is in persistence layer, and It has not been expired, get it from persistence.
 * Else get it from the loader layer. 
 
+## Proguard
+```
+-dontwarn io.rx_cache.internal.**
+```
+
+
 ## Author
 
 **Víctor Albertos**
 
 * <https://twitter.com/_victorAlbertos>
-* <https://linkedin.com/in/victoralbertos>
+* <https://www.linkedin.com/in/victoralbertos>
 * <https://github.com/VictorAlbertos>
 
 ## RxCache Swift version:
