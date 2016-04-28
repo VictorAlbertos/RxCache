@@ -207,6 +207,20 @@ public class Actions<T> {
     }
 
     /**
+     * Evict all elements from the cache
+     * @return itself
+     */
+    public Actions<T> evictAll() {
+        Func3<T> func3 = new Func3<T>() {
+            @Override public boolean call(int position, int count, T element) {
+                return true;
+            }
+        };
+
+        return evictIterable(func3);
+    }
+
+    /**
      * Func3 will be called for every iteration.
      * When true, the element of the current iteration is evicted from the cache.
      * @param func3 exposes the position of the current iteration, the count of elements in the cache and the element of the current iteration.

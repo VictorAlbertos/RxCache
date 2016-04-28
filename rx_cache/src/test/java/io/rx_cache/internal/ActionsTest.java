@@ -307,6 +307,23 @@ public class ActionsTest {
         assertThat(mocks.get(3).getMessage(), is("5"));
     }
 
+    @Test public void EvictAll() {
+        checkInitialState();
+        addAll(10);
+
+        TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+
+        io.rx_cache.Actions.with(evict(), cache())
+                .evictAll()
+                .toObservable()
+                .subscribe(testSubscriber);
+
+        testSubscriber.awaitTerminalEvent();
+
+        List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+        assertThat(mocks.size(), is(0));
+    }
+
     @Test public void UpdateExposingElementCurrentIteration() {
         checkInitialState();
         addAll(10);
