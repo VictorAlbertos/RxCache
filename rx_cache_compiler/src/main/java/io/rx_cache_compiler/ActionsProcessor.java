@@ -57,13 +57,14 @@ public class ActionsProcessor extends AbstractProcessor {
 
     @Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         providerSchemes.clear();
+
         for (Element element : roundEnv.getElementsAnnotatedWith(Actionable.class)) {
             try {
                 ParseProviderScheme parseProviderScheme = new ParseProviderScheme(element);
                 ProviderScheme providerScheme = parseProviderScheme.getProviderScheme();
                 providerSchemes.add(providerScheme);
             } catch (ParseProviderScheme.ParseException e) {
-                messager.printMessage(Diagnostic.Kind.ERROR, e.getMessage(), element);
+                messager.printMessage(Diagnostic.Kind.ERROR, e.getMessage(), e.getElement());
                 return true;
             }
         }
