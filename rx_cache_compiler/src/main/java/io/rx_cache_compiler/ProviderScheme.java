@@ -45,11 +45,7 @@ class ProviderScheme {
     }
 
     public String getPackageNameTypeList() {
-        try {
-            return fullQualifiedNameTypeList.substring(0, fullQualifiedNameTypeList.lastIndexOf("."));
-        }catch (IndexOutOfBoundsException e) {
-            return fullQualifiedNameTypeList;
-        }
+        return fullQualifiedNameTypeList.substring(0, fullQualifiedNameTypeList.lastIndexOf("."));
     }
 
     public boolean hasDynamicKey() {

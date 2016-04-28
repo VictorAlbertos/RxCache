@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Victor Albertos
+ * Copyright 2016 Victor Albertos
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,6 @@
 
 package io.rx_cache_compiler;
 
-/**
- * Created by victor on 28/12/15.
- */
 public class Mock {
     final private String message;
 
