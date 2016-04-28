@@ -35,7 +35,7 @@ import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
 import io.rx_cache.internal.RxCache;
-import io.rx_cache.internal.actions.Actions;
+import io.rx_cache.Actions;
 
 class GenerateActions {
     private final List<ProviderScheme> providersScheme;
@@ -70,7 +70,7 @@ class GenerateActions {
         String methodName = providerScheme.getNameMethod();
 
         ClassName type = ClassName.get(providerScheme.getPackageNameTypeList(), providerScheme.getSimpleNameTypeList());
-        ParameterizedTypeName action = ParameterizedTypeName.get(ClassName.get("io.rx_cache.internal.actions", "Actions"), type);
+        ParameterizedTypeName action = ParameterizedTypeName.get(ClassName.get("io.rx_cache", "Actions"), type);
         ParameterizedTypeName list = ParameterizedTypeName.get(ClassName.get("java.util", "List"), type);
         ParameterizedTypeName arrayList = ParameterizedTypeName.get(ClassName.get("java.util", "ArrayList"), type);
         ParameterizedTypeName observable = ParameterizedTypeName.get(ClassName.get("rx", "Observable"), list);
@@ -110,7 +110,7 @@ class GenerateActions {
             setCacheForEvictProvider(builder, observable, arrayList, methodName, providerScheme.getSimpleNameTypeList());
         }
 
-        builder.addStatement("return new Actions<>(evict, oCache)");
+        builder.addStatement("return Actions.with(evict, oCache)");
 
         return builder.build();
     }

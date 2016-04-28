@@ -124,4 +124,18 @@ class ParseProviderScheme {
 
         return false;
     }
+
+    static class ParseException extends Exception {
+        private final Element element;
+
+        public ParseException(Element element, String msg, Object... args) {
+            super(String.format(msg, args));
+            this.element = element;
+        }
+
+        public Element getElement() {
+            return element;
+        }
+
+    }
 }

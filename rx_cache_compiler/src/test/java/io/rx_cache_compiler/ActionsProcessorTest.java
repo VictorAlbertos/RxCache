@@ -54,7 +54,6 @@ public class ActionsProcessorTest {
                 "package io.rx_cache;\n" +
                 "\n" +
                 "import io.rx_cache.internal.RxCache;\n" +
-                "import io.rx_cache.internal.actions.Actions;\n" +
                 "import java.lang.String;\n" +
                 "import java.util.ArrayList;\n" +
                 "import java.util.List;\n" +
@@ -70,7 +69,7 @@ public class ActionsProcessorTest {
                 "      }\n" +
                 "    } ;;\n" +
                 "    Observable<List<String>> oCache = proxy.mocks(Observable.<List<String>>just(new ArrayList<String>()), new EvictProvider(false));\n" +
-                "    return new Actions<>(evict, oCache);\n" +
+                "    return Actions.with(evict, oCache);\n" +
                 "  }\n" +
                 "\n" +
                 "  public static Actions<String> mocksDynamicKey(final DynamicKey dynamicKey) {\n" +
@@ -81,7 +80,7 @@ public class ActionsProcessorTest {
                 "      }\n" +
                 "    } ;;\n" +
                 "    Observable<List<String>> oCache = proxy.mocksDynamicKey(Observable.<List<String>>just(new ArrayList<String>()), dynamicKey, new EvictDynamicKey(false));\n" +
-                "    return new Actions<>(evict, oCache);\n" +
+                "    return Actions.with(evict, oCache);\n" +
                 "  }\n" +
                 "\n" +
                 "  public static Actions<String> mocksDynamicKeyGroup(final DynamicKeyGroup dynamicKeyGroup) {\n" +
@@ -92,7 +91,7 @@ public class ActionsProcessorTest {
                 "      }\n" +
                 "    } ;;\n" +
                 "    Observable<List<String>> oCache = proxy.mocksDynamicKeyGroup(Observable.<List<String>>just(new ArrayList<String>()), dynamicKeyGroup, new EvictDynamicKeyGroup(false));\n" +
-                "    return new Actions<>(evict, oCache);\n" +
+                "    return Actions.with(evict, oCache);\n" +
                 "  }\n" +
                 "}");
 

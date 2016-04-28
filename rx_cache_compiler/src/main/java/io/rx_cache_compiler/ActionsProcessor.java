@@ -62,7 +62,7 @@ public class ActionsProcessor extends AbstractProcessor {
                 ParseProviderScheme parseProviderScheme = new ParseProviderScheme(element);
                 ProviderScheme providerScheme = parseProviderScheme.getProviderScheme();
                 providerSchemes.add(providerScheme);
-            } catch (ParseException e) {
+            } catch (ParseProviderScheme.ParseException e) {
                 messager.printMessage(Diagnostic.Kind.ERROR, e.getMessage(), element);
                 return true;
             }
