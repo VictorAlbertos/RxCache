@@ -43,7 +43,7 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos:RxCache:1.2.6"
+    compile "com.github.VictorAlbertos:RxCache:1.3.3"
     compile "io.reactivex:rxjava:1.1.0"
 }
 ```
@@ -52,7 +52,7 @@ dependencies {
 
 ```gradle
 dependencies {
-    compile ("com.github.VictorAlbertos:RxCache:1.2.6") {
+    compile ("com.github.VictorAlbertos:RxCache:1.3.3") {
         exclude module: 'guava'
     }
     compile "io.reactivex:rxjava:1.1.0"
@@ -150,6 +150,11 @@ public class Repository {
 
 ## Use cases
 
+* Using classic API RxCache for read actions with little write needs.
+* Using actionable API RxCache, exclusive for write actions.
+
+
+## Classic API RxCache:
 Following use cases illustrate some common scenarios which will help to understand the usage of `DynamicKey` and `DynamicKeyGroup` classes along with evicting scopes. 
 
 ### List
@@ -231,10 +236,95 @@ As you may already notice, the whole point of using `DynamicKey` or `DynamicKeyG
 The above examples declare providers which their method signature accepts `EvictProvider` in order to be able to concrete more specifics types of `EvictProvider` at runtime.
 
 But I have done that for demonstration purposes, you always should narrow the evicting classes in your method signature to the type which you really need. For the last example, I would use `EvictDynamicKey` in production code, because this way I would be able to paginate the filtered items and evict them per its filter, triggered by a pull to refresh for instance.
+	
+Nevertheless, there are complete examples for [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).			
 		
-Nevertheless, there are complete examples for [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).
+## Actionable API RxCache:
 
-**Important**: Just to clarify, RxCache is not only a reading cache. You can perform adding, updating and deleting operations playing with `Evict` scopes. [In this discussion](https://github.com/VictorAlbertos/RxCache/issues/13#issuecomment-207124292) it's explained and shown with an example.   
+This actionable api offers an easy way to perform write operations using providers. Although write operations could be achieved using the classic api too, it's much complex and error-prone. Indeed, the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Actions.java) class it's a wrapper around the classic api which play with evicting scopes and lists.
+
+In order to use this actionable api, first you need to add [RxCacheCompiler](https://github.com/VictorAlbertos/RxCacheCompiler) repository as a dependency to your project using an annotation processor. For Android, it would be as follows:
+
+Add this line to your root build.gradle:
+
+```gradle
+dependencies {
+     // other classpath definitions here
+     classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+ }
+```
+
+
+Then make sure to apply the plugin in your app/build.gradle and add the RxCacheCompiler dependency:
+
+```gradle
+apply plugin: 'com.neenbedankt.android-apt'
+
+dependencies {
+    // apt command comes from the android-apt plugin
+    apt "com.github.VictorAlbertos:RxCacheCompiler:0.0.2"
+}
+```
+		
+After this configuration, every provider annotated with [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Actionable.java) `annotation` will generate an accessor method in the `ActionsProviders` class.
+
+The order in the params supplies must be as in the following example:
+
+```java
+public interface RxProviders {
+    @Actionable
+    Observable<List<Mock.InnerMock>> mocks(Observable<List<Mock.InnerMock>> message, EvictProvider evictProvider);
+
+    @Actionable
+    Observable<List<Mock>> mocksDynamicKey(Observable<List<Mock>> message, DynamicKey dynamicKey, EvictDynamicKey evictDynamicKey);
+
+    @Actionable
+    Observable<List<Mock>> mocksDynamicKeyGroup(Observable<List<Mock>> message, DynamicKeyGroup dynamicKeyGroup, EvictDynamicKeyGroup evictDynamicKey);
+}
+```
+
+The observable value must be a List, otherwise an error will be thrown. 
+
+The previous RxProviders interface will expose the next accessors methods in the `ActionsProviders` class.
+```java
+ActionsProviders.mocks();
+ActionsProviders.mocksDynamicKey(DynamicKey dynamicKey);
+ActionsProviders.mocksDynamicKeyGroup(DynamicKeyGroup dynamicKeyGroup);
+```
+
+This methods return an instance of the `Actions` class, so now you are ready to use every write operation available in the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Actions.java) class. It is advisable to explore the [ActionsTest](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/test/java/io/rx_cache/internal/ActionsTest.java) class to see what action fits better for your case. If you feel that some action has been missed please don't hesitate to open an issue to request it.   
+
+Some actions examples: 
+
+```java
+ActionsProviders.mocks()
+    .addFirst(new Mock())
+    .addLast(new Mock())
+    .add((position, count) -> position == 5, new Mock())
+    
+    .evictFirst()
+    .evictFirst(count -> count > 300)
+    .evictLast()
+    .evictLast(count -> count > 300)
+    //It will be called for every iteration.
+    .evictIterable((position, count, mock) -> mock.isInactive())
+    .evictAll()
+   
+    .update(mock -> mock.isInactive(), mock -> {
+        mock.setActive();
+        return mock;
+    })
+    //It will be called for every iteration.
+    .updateIterable(mock -> mock.isInactive(), mock -> { 
+        mock.setActive();
+        return mock;
+    })
+    .toObservable()
+    .subscriner(processedMocks -> {})
+```
+
+Every one of the previous actions will be execute only after the compose observable receives a subscription. This way, the underliyng provider cache will be modified its elements without effort at all.
+
 
 ## Migrations
 
