@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.rx_cache.*;
@@ -48,12 +49,50 @@ public class ActionsTest {
         addAll(10);
     }
 
+    @Test public void Add_All_First() {
+        checkInitialState();
+        addAll(10);
+
+        TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+
+        Actions.with(evict(), cache())
+                .addAllFirst(Arrays.asList(new Mock("11"), new Mock("12")))
+                .toObservable()
+                .subscribe(testSubscriber);
+
+        testSubscriber.awaitTerminalEvent();
+
+        List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+        assertThat(mocks.size(), is(12));
+        assertThat(mocks.get(0).getMessage(), is("11"));
+        assertThat(mocks.get(1).getMessage(), is("12"));
+    }
+
+    @Test public void Add_All_Last() {
+        checkInitialState();
+        addAll(10);
+
+        TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+
+        Actions.with(evict(), cache())
+                .addAllLast(Arrays.asList(new Mock("11"), new Mock("12")))
+                .toObservable()
+                .subscribe(testSubscriber);
+
+        testSubscriber.awaitTerminalEvent();
+
+        List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+        assertThat(mocks.size(), is(12));
+        assertThat(mocks.get(10).getMessage(), is("11"));
+        assertThat(mocks.get(11).getMessage(), is("12"));
+    }
+
     @Test public void Add_First() {
         checkInitialState();
 
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .addFirst(new Mock("1"))
                 .toObservable()
                 .subscribe(testSubscriber);
@@ -71,7 +110,7 @@ public class ActionsTest {
 
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .addLast(new Mock("11"))
                 .toObservable()
                 .subscribe(testSubscriber);
@@ -89,8 +128,8 @@ public class ActionsTest {
 
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
-                .add(new io.rx_cache.Actions.Func2() {
+        Actions.with(evict(), cache())
+                .add(new Actions.Func2() {
                         @Override public boolean call(int position, int count) {
                             return position == 5;
                         }
@@ -111,7 +150,7 @@ public class ActionsTest {
 
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .evictFirst()
                 .toObservable()
                 .subscribe(testSubscriber);
@@ -130,7 +169,7 @@ public class ActionsTest {
         //do not evict
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .evictFirst(new Actions.Func1Count() {
                     @Override public boolean call(int count) {
                         return count > 10;
@@ -147,8 +186,8 @@ public class ActionsTest {
         //evict
         testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
-                .evictFirst(new io.rx_cache.Actions.Func1Count() {
+        Actions.with(evict(), cache())
+                .evictFirst(new Actions.Func1Count() {
                     @Override public boolean call(int count) {
                         return count > 9;
                     }
@@ -169,7 +208,7 @@ public class ActionsTest {
 
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .evictLast()
                 .toObservable()
                 .subscribe(testSubscriber);
@@ -188,8 +227,8 @@ public class ActionsTest {
         //do not evict
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
-                .evictLast(new io.rx_cache.Actions.Func1Count() {
+        Actions.with(evict(), cache())
+                .evictLast(new Actions.Func1Count() {
                     @Override public boolean call(int count) {
                         return count > 10;
                     }
@@ -205,8 +244,8 @@ public class ActionsTest {
         //evict
         testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
-                .evictLast(new io.rx_cache.Actions.Func1Count() {
+        Actions.with(evict(), cache())
+                .evictLast(new Actions.Func1Count() {
                     @Override public boolean call(int count) {
                         return count > 9;
                     }
@@ -227,8 +266,8 @@ public class ActionsTest {
 
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
-                .evict(new io.rx_cache.Actions.Func1Element<Mock>() {
+        Actions.with(evict(), cache())
+                .evict(new Actions.Func1Element<Mock>() {
                     @Override public boolean call(Mock element) {
                         return element.getMessage().equals("3");
                     }
@@ -250,8 +289,8 @@ public class ActionsTest {
         //do not evict
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
-                .evict(new io.rx_cache.Actions.Func3<Mock>() {
+        Actions.with(evict(), cache())
+                .evict(new Actions.Func3<Mock>() {
                     @Override public boolean call(int position, int count, Mock element) {
                         return count > 10 && element.getMessage().equals("3");
                     }
@@ -268,8 +307,8 @@ public class ActionsTest {
         //evict
         testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
-                .evict(new io.rx_cache.Actions.Func3<Mock>() {
+        Actions.with(evict(), cache())
+                .evict(new Actions.Func3<Mock>() {
                     @Override public boolean call(int position, int count, Mock element) {
                         return count > 9 && element.getMessage().equals("3");
                     }
@@ -290,7 +329,7 @@ public class ActionsTest {
 
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .evictIterable(new io.rx_cache.Actions.Func3<Mock>() {
                     @Override public boolean call(int position, int count, Mock element) {
                         return element.getMessage().equals("2") || element.getMessage().equals("3");
@@ -313,7 +352,7 @@ public class ActionsTest {
 
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .evictAll()
                 .toObservable()
                 .subscribe(testSubscriber);
@@ -330,7 +369,7 @@ public class ActionsTest {
 
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .update(new io.rx_cache.Actions.Func1Element<Mock>() {
                     @Override public boolean call(Mock element) {
                         return element.getMessage().equals("5");
@@ -358,7 +397,7 @@ public class ActionsTest {
         //do not evict
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .update(new io.rx_cache.Actions.Func3<Mock>() {
                     @Override public boolean call(int position, int count, Mock element) {
                         return count > 10 && element.getMessage().equals("5");
@@ -381,7 +420,7 @@ public class ActionsTest {
         //evict
         testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .update(new io.rx_cache.Actions.Func3<Mock>() {
                     @Override public boolean call(int position, int count, Mock element) {
                         return count > 9 && element.getMessage().equals("5");
@@ -408,7 +447,7 @@ public class ActionsTest {
 
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .updateIterable(new io.rx_cache.Actions.Func1Element<Mock>() {
                     @Override public boolean call(Mock element) {
                         return element.getMessage().equals("5") || element.getMessage().equals("6");
@@ -437,7 +476,7 @@ public class ActionsTest {
         //do not evict
         TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .updateIterable(new io.rx_cache.Actions.Func3<Mock>() {
                     @Override public boolean call(int position, int count, Mock element) {
                         return count > 10 && (element.getMessage().equals("5") || element.getMessage().equals("6"));
@@ -461,7 +500,7 @@ public class ActionsTest {
         //evict
         testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .updateIterable(new io.rx_cache.Actions.Func3<Mock>() {
                     @Override public boolean call(int position, int count, Mock element) {
                         return count > 9 && (element.getMessage().equals("5") || element.getMessage().equals("6"));
@@ -487,7 +526,7 @@ public class ActionsTest {
         return providersActions.mocks(Observable.<List<Mock>>just(new ArrayList<Mock>()), new EvictProvider(false));
     }
 
-    private io.rx_cache.Actions.Evict<Mock> evict() {
+    private Actions.Evict<Mock> evict() {
         return new io.rx_cache.Actions.Evict<Mock>() {
             @Override public Observable<List<Mock>> call(Observable<List<Mock>> elements) {
                 return providersActions.mocks(elements, new EvictProvider(true));
@@ -515,7 +554,7 @@ public class ActionsTest {
 
         TestSubscriber<List<Mock>>  testSubscriber = new TestSubscriber<>();
 
-        io.rx_cache.Actions.with(evict(), cache())
+        Actions.with(evict(), cache())
                 .addAll(new io.rx_cache.Actions.Func2() {
                         @Override public boolean call(int position, int count) {
                             return position == count;

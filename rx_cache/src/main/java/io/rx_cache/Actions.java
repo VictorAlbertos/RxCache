@@ -87,6 +87,35 @@ public class Actions<T> {
     }
 
     /**
+     * Add the objects at the first position of the cache.
+     * @param elements the objects to add to the cache.
+     * @return itself
+     */
+    public Actions<T> addAllFirst(List<T> elements) {
+        Func2 first = new Func2() {
+            @Override public boolean call(int position, int count) {
+                return position == 0;
+            }
+        };
+        return addAll(first, elements);
+    }
+
+    /**
+     * Add the objects at the last position of the cache.
+     * @param elements the objects to add to the cache.
+     * @return itself
+     */
+    public Actions<T> addAllLast(List<T> elements) {
+        Func2 last = new Func2() {
+            @Override public boolean call(int position, int count) {
+                return position == count;
+            }
+        };
+
+        return addAll(last, elements);
+    }
+
+    /**
      * Func2 will be called for every iteration until its condition returns true.
      * When true, the elements are added to the cache at the position of the current iteration.
      * @param func2 exposes the position of the current iteration and the count of elements in the cache.
