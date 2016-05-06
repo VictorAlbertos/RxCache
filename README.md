@@ -283,9 +283,9 @@ public interface RxProviders {
 }
 ```
 
-The observable value must be a List, otherwise an error will be thrown. 
+The observable value must be a `List`, otherwise an error will be thrown. 
 
-The previous RxProviders interface will expose the next accessors methods in the `ActionsProviders` class.
+The previous RxProviders `interface` will expose the next accessors methods in the `ActionsProviders` class.
 ```java
 ActionsProviders.mocks();
 ActionsProviders.mocksDynamicKey(DynamicKey dynamicKey);
@@ -300,31 +300,34 @@ Some actions examples:
 ActionsProviders.mocks()
     .addFirst(new Mock())
     .addLast(new Mock())
+    //Add a new mock at 5 position
     .add((position, count) -> position == 5, new Mock())
     
     .evictFirst()
+    //Evict first element if the cache has already 300 records
     .evictFirst(count -> count > 300)
     .evictLast()
+    //Evict last element if the cache has already 300 records
     .evictLast(count -> count > 300)
-    //It will be called for every iteration.
+    //Evict all inactive elements 
     .evictIterable((position, count, mock) -> mock.isInactive())
     .evictAll()
    
-    .update(mock -> mock.isInactive(), mock -> {
+    //Update the mock with id 5
+    .update(mock -> mock.getId() == 5, mock -> {
         mock.setActive();
         return mock;
     })
-    //It will be called for every iteration.
+    //Update all inactive mocks
     .updateIterable(mock -> mock.isInactive(), mock -> { 
         mock.setActive();
         return mock;
     })
     .toObservable()
-    .subscriner(processedMocks -> {})
+    .subscribe(processedMocks -> {})
 ```
 
-Every one of the previous actions will be execute only after the compose observable receives a subscription. This way, the underliyng provider cache will be modified its elements without effort at all.
-
+Every one of the previous actions will be execute only after the composed observable receives a subscription. This way, the underliyng provider cache will be modified its elements without effort at all.
 
 ## Migrations
 
@@ -481,5 +484,6 @@ The policy is very simple:
 [RxCache](https://github.com/VictorAlbertos/RxSCache): Reactive caching library for Swift.
 
 ## Another author's libraries using RxJava:
+* [RxPaparazzo](https://github.com/FuckBoilerplate/RxPaparazzo): RxJava extension for Android to take images using camera and gallery.
 * [RxGcm](https://github.com/VictorAlbertos/RxGcm): A reactive wrapper for Android Google Cloud Messaging to get rid of Service(s) configuration, handling foreground and background notifications depending on application state.
 * [RxActivityResult](https://github.com/VictorAlbertos/RxActivityResult): A reactive-tiny-badass-vindictive library to break with the OnActivityResult implementation as it breaks the observables chain. 
