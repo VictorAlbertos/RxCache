@@ -58,7 +58,7 @@ dependencies {
     compile "com.google.dagger:dagger:2.0.1"
     compile "org.glassfish:javax.annotation:10.0-b28"
 
-    compile "io.reactivex:rxjava:1.1.0"
+    compile "io.reactivex:rxjava:1.1.5"
     compile 'com.google.code.gson:gson:2.5'
 
     compile 'com.google.guava:guava:19.0'

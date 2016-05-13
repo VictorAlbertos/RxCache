@@ -162,6 +162,24 @@ public class ActionsTest {
         assertThat(mocks.get(0).getMessage(), is("1"));
     }
 
+    @Test public void EvictFirstX() {
+        checkInitialState();
+        addAll(10);
+
+        TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+
+        Actions.with(evict(), cache())
+                .evictFirstX(4)
+                .toObservable()
+                .subscribe(testSubscriber);
+
+        testSubscriber.awaitTerminalEvent();
+
+        List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+        assertThat(mocks.size(), is(6));
+        assertThat(mocks.get(0).getMessage(), is("4"));
+    }
+
     @Test public void EvictFirstExposingCount() {
         checkInitialState();
         addAll(10);
@@ -202,6 +220,47 @@ public class ActionsTest {
         assertThat(mocks.get(0).getMessage(), is("1"));
     }
 
+    @Test public void EvictFirstXExposingCount() {
+        checkInitialState();
+        addAll(10);
+
+        //do not evict
+        TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+
+        Actions.with(evict(), cache())
+                .evictFirstX(new Actions.Func1Count() {
+                    @Override public boolean call(int count) {
+                        return count > 10;
+                    }
+                }, 5)
+                .toObservable()
+                .subscribe(testSubscriber);
+
+        testSubscriber.awaitTerminalEvent();
+
+        List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+        assertThat(mocks.size(), is(10));
+
+        //evict
+        testSubscriber = new TestSubscriber<>();
+
+        Actions.with(evict(), cache())
+                .evictFirstX(new Actions.Func1Count() {
+                    @Override public boolean call(int count) {
+                        return count > 9;
+                    }
+                }, 5)
+                .toObservable()
+                .subscribe(testSubscriber);
+
+        testSubscriber.awaitTerminalEvent();
+
+        mocks = testSubscriber.getOnNextEvents().get(0);
+        assertThat(mocks.size(), is(5));
+        assertThat(mocks.get(0).getMessage(), is("5"));
+        assertThat(mocks.get(1).getMessage(), is("6"));
+    }
+
     @Test public void EvictLast() {
         checkInitialState();
         addAll(10);
@@ -218,6 +277,24 @@ public class ActionsTest {
         List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
         assertThat(mocks.size(), is(9));
         assertThat(mocks.get(8).getMessage(), is("8"));
+    }
+
+    @Test public void EvictLastX() {
+        checkInitialState();
+        addAll(10);
+
+        TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+
+        Actions.with(evict(), cache())
+                .evictLastX(4)
+                .toObservable()
+                .subscribe(testSubscriber);
+
+        testSubscriber.awaitTerminalEvent();
+
+        List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+        assertThat(mocks.size(), is(6));
+        assertThat(mocks.get(0).getMessage(), is("0"));
     }
 
     @Test public void EvictLastExposingCount() {
@@ -258,6 +335,47 @@ public class ActionsTest {
         mocks = testSubscriber.getOnNextEvents().get(0);
         assertThat(mocks.size(), is(9));
         assertThat(mocks.get(8).getMessage(), is("8"));
+    }
+
+    @Test public void EvictLastXExposingCount() {
+        checkInitialState();
+        addAll(10);
+
+        //do not evict
+        TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+
+        Actions.with(evict(), cache())
+                .evictLastX(new Actions.Func1Count() {
+                    @Override public boolean call(int count) {
+                        return count > 10;
+                    }
+                }, 5)
+                .toObservable()
+                .subscribe(testSubscriber);
+
+        testSubscriber.awaitTerminalEvent();
+
+        List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+        assertThat(mocks.size(), is(10));
+
+        //evict
+        testSubscriber = new TestSubscriber<>();
+
+        Actions.with(evict(), cache())
+                .evictLastX(new Actions.Func1Count() {
+                    @Override public boolean call(int count) {
+                        return count > 9;
+                    }
+                }, 5)
+                .toObservable()
+                .subscribe(testSubscriber);
+
+        testSubscriber.awaitTerminalEvent();
+
+        mocks = testSubscriber.getOnNextEvents().get(0);
+        assertThat(mocks.size(), is(5));
+        assertThat(mocks.get(0).getMessage(), is("0"));
+        assertThat(mocks.get(1).getMessage(), is("1"));
     }
 
     @Test public void EvictExposingElementCurrentIteration() {

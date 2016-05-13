@@ -10,9 +10,9 @@ import java.util.List;
 import io.rx_cache.Migration;
 import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.SchemeMigration;
+import io.rx_cache.internal.ProxyProviders;
 import io.rx_cache.internal.RxCache;
 import rx.Observable;
-import rx.exceptions.CompositeException;
 import rx.observers.TestSubscriber;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,7 +38,7 @@ public class ProvidersRxCacheMigrations {
         providersMigrations.getMocks(Observable.<List<Mock1>>just(null)).subscribe(testSubscriber);
         testSubscriber.awaitTerminalEvent();
         testSubscriber.assertNoValues();
-        testSubscriber.assertError(CompositeException.class);
+        testSubscriber.assertError(ProxyProviders.RxCacheException.class);
     }
 
     private void populateMocks() {
