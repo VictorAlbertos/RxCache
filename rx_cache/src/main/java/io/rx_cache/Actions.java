@@ -155,12 +155,12 @@ public class Actions<T> {
     }
 
     /**
-     * Evict as much objects as requested by x param starting from the first position.
-     * @param x the amount of elements to evict.
+     * Evict as much objects as requested by n param starting from the first position.
+     * @param n the amount of elements to evict.
      * @return itself
      */
-    public Actions<T> evictFirstX(final int x) {
-        return evictFirstX(new Func1Count() { @Override public boolean call(int count) { return true; }}, x);
+    public Actions<T> evictFirstN(final int n) {
+        return evictFirstN(new Func1Count() { @Override public boolean call(int count) { return true; }}, n);
     }
 
     /**
@@ -177,12 +177,12 @@ public class Actions<T> {
     }
 
     /**
-     * Evict as much objects as requested by x param starting from the last position.
-     * @param x the amount of elements to evict.
+     * Evict as much objects as requested by n param starting from the last position.
+     * @param n the amount of elements to evict.
      * @return itself
      */
-    public Actions<T> evictLastX(final int x) {
-        return evictLastX(new Func1Count() { @Override public boolean call(int count) { return true; }}, x);
+    public Actions<T> evictLastN(final int n) {
+        return evictLastN(new Func1Count() { @Override public boolean call(int count) { return true; }}, n);
     }
 
     /**
@@ -200,19 +200,15 @@ public class Actions<T> {
     }
 
     /**
-     * Evict as much objects as requested by x param starting from the first position.
+     * Evict as much objects as requested by n param starting from the first position.
      * @param func1Count exposes the count of elements in the cache.
-     * @param x the amount of elements to evict.
+     * @param n the amount of elements to evict.
      * @return itself
      */
-    int evictFirstXCountExposingCountIndex;
-    public Actions<T> evictFirstX(final Func1Count func1Count, final int x) {
-        evictFirstXCountExposingCountIndex = 0;
-
+    public Actions<T> evictFirstN(final Func1Count func1Count, final int n) {
         Func3<T> func3 = new Func3<T>() {
             @Override public boolean call(int position, int count, T element) {
-                evictFirstXCountExposingCountIndex++;
-                return evictFirstXCountExposingCountIndex <= x && func1Count.call(count);
+                return position < n && func1Count.call(count);
             }
         };
         return evictIterable(func3);
@@ -232,25 +228,22 @@ public class Actions<T> {
         return evict(lastPlusFunc1);
     }
 
+    boolean startToEvict;
     /**
-     * Evict as much objects as requested by x param starting from the last position.
+     * Evict as much objects as requested by n param starting from the last position.
      * @param func1Count exposes the count of elements in the cache.
-     * @param x the amount of elements to evict.
+     * @param n the amount of elements to evict.
      * @return itself
      */
-    int evictLastXCountExposingCountIndex;
-    boolean startToEvict;
-    public Actions<T> evictLastX(final Func1Count func1Count, final int x) {
-        evictLastXCountExposingCountIndex = 0;
+    public Actions<T> evictLastN(final Func1Count func1Count, final int n) {
         startToEvict = false;
 
         Func3<T> func3 = new Func3<T>() {
             @Override public boolean call(int position, int count, T element) {
-                if (!startToEvict) startToEvict = count - position == x;
+                if (!startToEvict) startToEvict = count - position == n;
 
                 if (startToEvict) {
-                    evictLastXCountExposingCountIndex++;
-                    return evictLastXCountExposingCountIndex <= x && func1Count.call(count);
+                    return count - position <= n && func1Count.call(count);
                 } else {
                     return false;
                 }
@@ -313,6 +306,37 @@ public class Actions<T> {
         return evictIterable(func3);
     }
 
+    /**
+     * Evict elements from the cache starting from the first position until its count is equal to the value specified in n param.
+     * @param n the amount of elements to keep from evict.
+     * @return itself
+     */
+    public Actions<T> evictAllKeepingFirstN(final int n) {
+        Func3<T> func3 = new Func3<T>() {
+            @Override public boolean call(int position, int count, T element) {
+                int positionToStartEvicting = count - (count - n);
+                return position >= positionToStartEvicting;
+            }
+        };
+
+        return evictIterable(func3);
+    }
+
+    /**
+     * Evict elements from the cache starting from the last position until its count is equal to the value specified in n param.
+     * @param n the amount of elements to keep from evict.
+     * @return itself
+     */
+    public Actions<T> evictAllKeepingLastN(final int n) {
+        Func3<T> func3 = new Func3<T>() {
+            @Override public boolean call(int position, int count, T element) {
+                int elementsToEvict = count - n;
+                return position < elementsToEvict;
+            }
+        };
+
+        return evictIterable(func3);
+    }
     /**
      * Func3 will be called for every iteration.
      * When true, the element of the current iteration is evicted from the cache.
