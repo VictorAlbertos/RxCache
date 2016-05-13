@@ -22,19 +22,17 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import io.rx_cache.*;
+import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
 
 @Module
 public final class RxCacheModule {
     private final File cacheDirectory;
-    private final PolicyHeapCache policyHeapCache;
     private final boolean useExpiredDataIfLoaderNotAvailable;
     private final Integer maxMgPersistenceCache;
     private final Class classProviders;
 
-    public RxCacheModule(File cacheDirectory, PolicyHeapCache policyHeapCache, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache, Class classProviders) {
+    public RxCacheModule(File cacheDirectory, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache, Class classProviders) {
         this.cacheDirectory = cacheDirectory;
-        this.policyHeapCache = policyHeapCache;
         this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
         this.maxMgPersistenceCache = maxMgPersistenceCache;
         this.classProviders = classProviders;
@@ -42,10 +40,6 @@ public final class RxCacheModule {
 
     @Singleton @Provides File provideCacheDirectory() {
         return cacheDirectory;
-    }
-
-    @Singleton @Provides PolicyHeapCache providePolicyCache() {
-        return policyHeapCache;
     }
 
     @Singleton @Provides Persistence providePersistence(Disk disk) {
@@ -56,13 +50,8 @@ public final class RxCacheModule {
         return useExpiredDataIfLoaderNotAvailable;
     }
 
-    @Singleton @Provides Memory provideMemory(PolicyHeapCache policyHeapCache) {
-        try {
-            Class.forName("com.google.common.cache.Cache");
-            return new GuavaMemory(policyHeapCache);
-        } catch( ClassNotFoundException e ) {
-            return new SimpleMemory();
-        }
+    @Singleton @Provides Memory provideMemory() {
+        return new ReferenceMapMemory();
     }
 
     @Singleton @Provides Integer maxMbPersistenceCache() {

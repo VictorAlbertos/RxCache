@@ -19,7 +19,6 @@ package io.rx_cache.internal;
 import org.junit.Test;
 
 import io.rx_cache.EvictProvider;
-import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
 import io.rx_cache.internal.cache.EvictExpirableRecordsPersistence;
@@ -30,6 +29,7 @@ import io.rx_cache.internal.cache.HasRecordExpired;
 import io.rx_cache.internal.cache.RetrieveRecord;
 import io.rx_cache.internal.cache.SaveRecord;
 import io.rx_cache.internal.cache.TwoLayersCache;
+import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
 import io.rx_cache.internal.common.BaseTest;
 import io.rx_cache.internal.migration.DoMigrations;
 import rx.Observable;
@@ -56,7 +56,7 @@ public class ProxyProvidersTest extends BaseTest {
 
         hasRecordExpired = new HasRecordExpired();
 
-        Memory memory = new GuavaMemory(PolicyHeapCache.MODERATE);
+        Memory memory = new ReferenceMapMemory();
         EvictRecord evictRecord =  new EvictRecord(memory,disk);
         SaveRecord saveRecord = new SaveRecord(memory, disk, 100, new EvictExpirableRecordsPersistence(memory, disk, 100));
         RetrieveRecord retrieveRecord = new RetrieveRecord(memory,disk, evictRecord, hasRecordExpired);

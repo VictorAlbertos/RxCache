@@ -16,14 +16,13 @@
 
 package io.rx_cache.internal.cache;
 
-import com.google.common.annotations.VisibleForTesting;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
-import io.rx_cache.internal.Persistence;
 import io.rx_cache.internal.Memory;
+import io.rx_cache.internal.Persistence;
 
 public final class EvictRecord extends Action {
 
@@ -56,7 +55,8 @@ public final class EvictRecord extends Action {
         persistence.evict(composedKey);
     }
 
-    @VisibleForTesting void mockMemoryDestroyed() {
+    //VisibleForTesting
+    void mockMemoryDestroyed() {
         memory.evictAll();
     }
 

@@ -6,8 +6,6 @@ import android.os.Bundle;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.rx_cache.DynamicKey;
-import io.rx_cache.internal.RxCache;
 import rx.Observable;
 
 /**
@@ -20,7 +18,7 @@ public class MainActivity extends Activity {
 
         //Create integration test for max mg limit and clearing expired data
 
-        final RxProviders rxProviders = new RxCache.Builder()
+/*        final RxProviders rxProviders = new RxCache.Builder()
                 .setMaxMBPersistenceCache(50)
                 .persistence(getApplicationContext().getFilesDir())
                 .using(RxProviders.class);
@@ -29,7 +27,7 @@ public class MainActivity extends Activity {
             String key = System.currentTimeMillis() + i + "";
             rxProviders.getMocksEphemeralPaginate(createObservableMocks(100), new DynamicKey(key))
                     .subscribe();
-        }
+        }*/
 
     }
 

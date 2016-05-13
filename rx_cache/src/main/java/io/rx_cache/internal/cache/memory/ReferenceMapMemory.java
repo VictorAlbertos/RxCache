@@ -14,38 +14,49 @@
  * limitations under the License.
  */
 
-package io.rx_cache.internal;
+package io.rx_cache.internal.cache.memory;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-public class SimpleMemory implements Memory {
-    private final ConcurrentMap<String, Record> concurrentMap;
+import io.rx_cache.internal.Memory;
+import io.rx_cache.internal.Record;
+import io.rx_cache.internal.cache.memory.apache.ReferenceMap;
 
-    public SimpleMemory() {
-        concurrentMap = new ConcurrentHashMap();
+public class ReferenceMapMemory implements Memory {
+    private final Map<String, Record> referenceMap;
+
+    public ReferenceMapMemory() {
+        referenceMap = Collections.synchronizedMap(new ReferenceMap<String, Record>());
     }
 
     @Override public <T> Record<T> getIfPresent(String key) {
-        return concurrentMap.get(key);
+        return referenceMap.get(key);
     }
 
     @Override public <T> void put(String key, Record<T> record) {
-        concurrentMap.put(key, record);
+        referenceMap.put(key, record);
     }
 
     @Override public Set<String> keySet() {
-        return concurrentMap.keySet();
+        return referenceMap.keySet();
     }
 
     @Override public void evict(String key) {
-        concurrentMap.remove(key);
+        referenceMap.remove(key);
     }
 
     @Override public void evictAll() {
-        for (String key : keySet()) {
-            concurrentMap.remove(key);
+        Set<String> keys = referenceMap.keySet();
+
+        synchronized (referenceMap) {
+            Iterator iterator = keys.iterator();
+            while (iterator.hasNext()) {
+                iterator.next();
+                iterator.remove();
+            }
         }
     }
 }

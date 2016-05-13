@@ -4,11 +4,10 @@ import org.junit.Test;
 
 import java.util.List;
 
-import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.internal.Record;
-import io.rx_cache.internal.GuavaMemory;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Mock;
+import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
 import io.rx_cache.internal.common.BaseTest;
 import rx.observers.TestSubscriber;
 
@@ -22,7 +21,7 @@ public class EvictExpiredRecordsPersistenceTest extends BaseTest {
     private EvictExpiredRecordsPersistence evictExpiredRecordsPersistenceUT;
     private HasRecordExpired hasRecordExpired;
     private TwoLayersCache twoLayersCache;
-    private final Memory memory = new GuavaMemory(PolicyHeapCache.CONSERVATIVE);
+    private final Memory memory = new ReferenceMapMemory();
     private static final long ONE_SECOND_LIFE = 1000, THIRTY_SECOND_LIFE = 30000, MORE_THAN_ONE_SECOND_LIFE = 1250;
 
     @Override public void setUp() {

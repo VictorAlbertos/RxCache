@@ -26,7 +26,6 @@ import org.junit.runners.MethodSorters;
 import java.util.List;
 
 import io.rx_cache.DynamicKey;
-import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.internal.cache.EvictExpirableRecordsPersistence;
 import io.rx_cache.internal.common.BaseTestEvictingTask;
 import rx.observers.TestSubscriber;
@@ -43,7 +42,6 @@ public class ProvidersRxCacheEvictExpirableRecordsTest extends BaseTestEvictingT
 
     @Before public void setUp() {
         providersRxCache = new RxCache.Builder()
-                .withPolicyCache(PolicyHeapCache.MODERATE)
                 .setMaxMBPersistenceCache(maxMgPersistenceCache)
                 .persistence(temporaryFolder.getRoot())
                 .using(ProvidersRxCache.class);

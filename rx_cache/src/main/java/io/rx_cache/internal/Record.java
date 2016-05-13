@@ -16,8 +16,6 @@
 
 package io.rx_cache.internal;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +39,7 @@ public final class Record<T> {
     //Required by EvictExpirableRecordsPersistence task
     private transient float sizeOnMb;
 
-    @VisibleForTesting
+    //VisibleForTesting
     Record(T data) {
         this(data, true, 0);
     }

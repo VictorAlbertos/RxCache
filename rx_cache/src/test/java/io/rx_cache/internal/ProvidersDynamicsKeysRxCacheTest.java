@@ -30,7 +30,6 @@ import io.rx_cache.DynamicKeyGroup;
 import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
-import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.Reply;
 import rx.Observable;
 import rx.Subscriber;
@@ -48,7 +47,6 @@ public class ProvidersDynamicsKeysRxCacheTest {
 
     @Before public void setUp() {
         providersRxCache = new RxCache.Builder()
-                .withPolicyCache(PolicyHeapCache.MODERATE)
                 .persistence(temporaryFolder.getRoot())
                 .using(ProvidersRxCache.class);
     }

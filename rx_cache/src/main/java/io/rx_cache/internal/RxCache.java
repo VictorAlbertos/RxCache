@@ -20,7 +20,6 @@ import java.io.File;
 import java.lang.reflect.Proxy;
 import java.security.InvalidParameterException;
 
-import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.internal.cache.TwoLayersCache;
 
 public final class RxCache {
@@ -33,7 +32,7 @@ public final class RxCache {
 
     public <T> T using(final Class<T> classProviders) {
         ProxyProviders proxyProviders = DaggerRxCacheComponent.builder()
-                .rxCacheModule(new RxCacheModule(builder.cacheDirectory, builder.policyHeapCache, builder.useExpiredDataIfLoaderNotAvailable, builder.maxMBPersistenceCache, classProviders))
+                .rxCacheModule(new RxCacheModule(builder.cacheDirectory, builder.useExpiredDataIfLoaderNotAvailable, builder.maxMBPersistenceCache, classProviders))
                 .build().proxyRepository();
 
         T proxy = (T) Proxy.newProxyInstance(
@@ -58,7 +57,6 @@ public final class RxCache {
      * Builder for building an specific RxCache instance
      */
     public static class Builder {
-        private PolicyHeapCache policyHeapCache;
         private boolean useExpiredDataIfLoaderNotAvailable;
         private Integer maxMBPersistenceCache;
         private File cacheDirectory;
@@ -70,18 +68,6 @@ public final class RxCache {
          */
         public Builder useExpiredDataIfLoaderNotAvailable(boolean useExpiredDataIfLoaderNotAvailable) {
             this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
-            return this;
-        }
-
-        /**
-         * Sets the policy memory used by the memory cache
-         * If not supplied, CONSERVATIVE will be the default option
-         * @param aPolicyHeapCache The File system used by the persistence implementation of Disk
-         * @return BuilderRxCache The builder of RxCache
-         * @see PolicyHeapCache
-         */
-        public Builder withPolicyCache(PolicyHeapCache aPolicyHeapCache) {
-            policyHeapCache = aPolicyHeapCache;
             return this;
         }
 
@@ -105,8 +91,6 @@ public final class RxCache {
                 throw new InvalidParameterException(Locale.REPOSITORY_DISK_ADAPTER_CAN_NOT_BE_NULL);
 
             this.cacheDirectory = cacheDirectory;
-
-            policyHeapCache = policyHeapCache != null ? policyHeapCache : PolicyHeapCache.CONSERVATIVE;
 
             return new RxCache(this);
         }

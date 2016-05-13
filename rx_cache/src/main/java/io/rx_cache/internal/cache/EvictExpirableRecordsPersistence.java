@@ -16,8 +16,6 @@
 
 package io.rx_cache.internal.cache;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import java.util.List;
 
 import javax.inject.Inject;
@@ -36,7 +34,8 @@ import rx.schedulers.Schedulers;
 public class EvictExpirableRecordsPersistence extends Action {
     private final Integer maxMgPersistenceCache;
     private static final float PERCENTAGE_MEMORY_STORED_TO_START = 0.95f;
-    @VisibleForTesting public static final float PERCENTAGE_MEMORY_STORED_TO_STOP = 0.7f;
+    //VisibleForTesting
+    public static final float PERCENTAGE_MEMORY_STORED_TO_STOP = 0.7f;
     private final Observable<String> oEvictingTask;
     private boolean couldBeExpirableRecords;
 

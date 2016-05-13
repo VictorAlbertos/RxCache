@@ -27,7 +27,7 @@ import java.util.List;
 
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Mock;
-import io.rx_cache.internal.SimpleMemory;
+import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
 import io.rx_cache.internal.common.BaseTest;
 
 import static org.hamcrest.core.Is.is;
@@ -45,7 +45,7 @@ public class SaveRecordTest extends BaseTest {
 
     @Override public void setUp() {
         super.setUp();
-        memory = new SimpleMemory();
+        memory = new ReferenceMapMemory();
     }
 
     @Test @Theory public void When_Max_Persistence_Exceed_Do_Not_Persists_Data(Integer maxMB) {

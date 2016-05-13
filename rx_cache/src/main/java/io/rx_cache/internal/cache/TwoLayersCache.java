@@ -17,8 +17,6 @@
 package io.rx_cache.internal.cache;
 
 
-import com.google.common.annotations.VisibleForTesting;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -61,12 +59,14 @@ public final class TwoLayersCache {
         evictRecord.evictAll();
     }
 
-    public @VisibleForTesting void mockMemoryDestroyed() {
+    //VisibleForTesting
+    public void mockMemoryDestroyed() {
         evictRecord.mockMemoryDestroyed();
     }
 
     private boolean retrieveHasBeenCalled;
-    public @VisibleForTesting boolean retrieveHasBeenCalled() {
+    //VisibleForTesting
+    public boolean retrieveHasBeenCalled() {
         return retrieveHasBeenCalled;
     }
 }

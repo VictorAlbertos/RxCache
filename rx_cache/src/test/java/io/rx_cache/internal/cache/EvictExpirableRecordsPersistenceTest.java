@@ -29,7 +29,7 @@ import io.rx_cache.internal.Record;
 import io.rx_cache.internal.Locale;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Mock;
-import io.rx_cache.internal.SimpleMemory;
+import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
 import io.rx_cache.internal.common.BaseTest;
 import rx.observers.TestSubscriber;
 
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertThat;
 @RunWith(Theories.class)
 public class EvictExpirableRecordsPersistenceTest extends BaseTest {
     private EvictExpirableRecordsPersistence evictExpirableRecordsPersistenceUT;
-    private final Memory memory = new SimpleMemory();
+    private final Memory memory = new ReferenceMapMemory();
 
     @Override public void setUp() {
         super.setUp();

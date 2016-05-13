@@ -17,8 +17,6 @@
 package io.rx_cache.internal;
 
 
-import com.google.common.annotations.VisibleForTesting;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
@@ -91,7 +89,8 @@ public final class ProxyProviders implements InvocationHandler {
         });
     }
 
-    @VisibleForTesting Observable<Object> getMethodImplementation(final ProxyTranslator.ConfigProvider configProvider) {
+    //VisibleForTesting
+    Observable<Object> getMethodImplementation(final ProxyTranslator.ConfigProvider configProvider) {
         return Observable.defer(new Func0<Observable<Object>>() {
             @Override
             public Observable<Object> call() {

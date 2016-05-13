@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.rx_cache.EvictProvider;
-import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
 import rx.Observable;
@@ -56,7 +55,6 @@ public class ProvidersRxCacheTest {
 
     private void initProviders(boolean useExpiredDataIfLoaderNotAvailable) {
         providersRxCache = new RxCache.Builder()
-                .withPolicyCache(PolicyHeapCache.MODERATE)
                 .useExpiredDataIfLoaderNotAvailable(useExpiredDataIfLoaderNotAvailable)
                 .persistence(temporaryFolder.getRoot())
                 .using(ProvidersRxCache.class);

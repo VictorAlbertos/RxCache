@@ -26,7 +26,6 @@ import org.junit.runners.MethodSorters;
 import java.util.List;
 
 import io.rx_cache.DynamicKey;
-import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.internal.common.BaseTestEvictingTask;
 import rx.observers.TestSubscriber;
 
@@ -43,7 +42,6 @@ public class ProvidersRxCacheEvictExpiredRecordsTest extends BaseTestEvictingTas
 
     @Before public void setUp() {
         providersRxCache = new RxCache.Builder()
-                .withPolicyCache(PolicyHeapCache.MODERATE)
                 .persistence(temporaryFolder.getRoot())
                 .using(ProvidersRxCache.class);
     }

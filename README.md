@@ -43,23 +43,10 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos:RxCache:1.3.5"
+    compile "com.github.VictorAlbertos:RxCache:1.4.0"
     compile "io.reactivex:rxjava:1.1.5"
 }
 ```
-
-**Important:** RxCache by default uses Guava in order to be able to evict cached objects automatically before the application reaches its max heap memory. But most apps will not be benefit from this feature because, due to its mount of data, they will never reach the max heap memory limit. In that case, it is possible to exclude Guava dependency from RxCache cache, doing as follow:
-
-```gradle
-dependencies {
-    compile ("com.github.VictorAlbertos:RxCache:1.3.5") {
-        exclude module: 'guava'
-    }
-    compile "io.reactivex:rxjava:1.1.5"
-}
-``` 
-
-Doing this you will reduce the number of methods of your apk in more than 13.000, helping this way to stay away from the annoying [65K Reference Limit](http://developer.android.com/intl/es/tools/building/multidex.html).
 
 ## Usage
 
@@ -375,30 +362,6 @@ Because RxCache has an internal process to clean memory when it is required, the
 
 RxCache allows to set certain parameters when building the providers instance:
 
-### PolicyHeapCache
-
-**Important:** This configuration will not have any effect if you exclude Guava dependency, as it is already explained at the Setup section.
-
-PolicyHeapCache sets the percentage to be used for the the in memory cache layer, based on the total heap memory available.
-
-```java
-public enum PolicyHeapCache {
-        CONSERVATIVE(.40), MODERATE(.60), AGGRESSIVE(.80);
-}
-```
-
-The memory cache will use as much memory as resulting of this percentage, regardless the current memory allocated by other resources. 
-
-So you may incur in out of memory errors if you allocates chunks of memory not managed by this library.
-```java
-new RxCache.Builder()
-            .withPolicyCache(PolicyHeapCache.MODERATE)
-            .persistence(cacheDir)
-            .using(Providers.class);
-```
-
-If not PolicyHeapCache is specified, PolicyHeapCache.Conservative would be set as default. 
-
 ### Configure the limit in megabytes for the data to be persisted 
 
 By default, RxCache sets the limit in 100 megabytes, but you can change this value by calling setMaxMBPersistenceCache method when building the provider instance.
@@ -456,7 +419,7 @@ You can check an [example](https://github.com/VictorAlbertos/RxCacheSamples/blob
 
 RxCache serves the data from one of its three layers:
 
-* A memory layer -> Powered by [Guava LoadingCache](https://github.com/google/guava/wiki/CachesExplained).
+* A memory layer -> Powered by [Apache ReferenceMap](https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/ReferenceMap.html).
 * A persisting layer -> RxCache uses internally [Gson](https://github.com/google/gson) for serialize and deserialize objects.
 * A loader layer (the observable supplied by the client library)
 

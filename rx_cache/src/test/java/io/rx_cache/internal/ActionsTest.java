@@ -39,7 +39,6 @@ public class ActionsTest {
 
     @Before public void setUp() {
         providersActions = new RxCache.Builder()
-                .withPolicyCache(PolicyHeapCache.MODERATE)
                 .persistence(temporaryFolder.getRoot())
                 .using(ProvidersActions.class);
     }

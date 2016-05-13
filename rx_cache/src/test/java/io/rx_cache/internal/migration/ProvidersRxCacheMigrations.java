@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.rx_cache.Migration;
-import io.rx_cache.PolicyHeapCache;
 import io.rx_cache.SchemeMigration;
 import io.rx_cache.internal.ProxyProviders;
 import io.rx_cache.internal.RxCache;
@@ -30,7 +29,6 @@ public class ProvidersRxCacheMigrations {
         assert countFiles > 0;
 
         ProvidersMigrations providersMigrations = new RxCache.Builder()
-                .withPolicyCache(PolicyHeapCache.MODERATE)
                 .persistence(temporaryFolder.getRoot())
                 .using(ProvidersMigrations.class);
 
@@ -43,7 +41,6 @@ public class ProvidersRxCacheMigrations {
 
     private void populateMocks() {
         Providers providers = new RxCache.Builder()
-                .withPolicyCache(PolicyHeapCache.MODERATE)
                 .persistence(temporaryFolder.getRoot())
                 .using(Providers.class);
 
