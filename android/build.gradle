@@ -1,4 +1,16 @@
 apply plugin: 'com.android.application'
+apply plugin: 'android-apt'
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath "com.neenbedankt.gradle.plugins:android-apt:1.8"
+    }
+}
 
 android {
     compileSdkVersion 23
@@ -26,6 +38,10 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':rx_cache')
     testCompile 'junit:junit:4.12'
+
+    apt "com.google.dagger:dagger-compiler:2.4"
+    compile "com.google.dagger:dagger:2.4"
+    provided "org.glassfish:javax.annotation:10.0-b28"
 }
 
 
