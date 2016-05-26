@@ -43,7 +43,7 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos:RxCache:1.4.2"
+    compile "com.github.VictorAlbertos.RxCache:core:1.4.6"
     compile "io.reactivex:rxjava:1.1.5"
 }
 ```
@@ -230,7 +230,7 @@ Nevertheless, there are complete examples for [Android and Java projects](https:
 
 This actionable api offers an easy way to perform write operations using providers. Although write operations could be achieved using the classic api too, it's much complex and error-prone. Indeed, the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Actions.java) class it's a wrapper around the classic api which play with evicting scopes and lists.
 
-In order to use this actionable api, first you need to add [RxCacheCompiler](https://github.com/VictorAlbertos/RxCacheCompiler) repository as a dependency to your project using an annotation processor. For Android, it would be as follows:
+In order to use this actionable api, first you need to add the [repository compiler](https://github.com/VictorAlbertos/RxCache/tree/master/compiler) as a dependency to your project using an annotation processor. For Android, it would be as follows:
 
 Add this line to your root build.gradle:
 
@@ -242,14 +242,14 @@ dependencies {
 ```
 
 
-Then make sure to apply the plugin in your app/build.gradle and add the RxCacheCompiler dependency:
+Then make sure to apply the plugin in your app/build.gradle and add the compiler dependency:
 
 ```gradle
 apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
     // apt command comes from the android-apt plugin
-    apt "com.github.VictorAlbertos:RxCacheCompiler:0.0.2"
+    apt "com.github.VictorAlbertos.RxCache:compiler:1.4.6"
 }
 ```
 		
