@@ -18,6 +18,9 @@ package io.rx_cache.internal;
 
 import org.junit.Test;
 
+import java.lang.reflect.Method;
+
+import io.rx_cache.DynamicKey;
 import io.rx_cache.EvictProvider;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
@@ -158,17 +161,21 @@ public class ProxyProvidersTest extends BaseTest {
         return subscriberMock;
     }
 
-    @Test public void When_Get_Method_Implementation_Is_Called_Retrieve_Operation_Is_Deferred_Until_Subscription() {
-        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", Observable.just(new Mock("message")), 0, false, new EvictProvider(false), false);
+    @Test public void When_Invoke_Is_Called_Process_Method_Is_Deferred_Until_Subscription() throws Throwable {
+        ProxyTranslator proxyTranslator = new ProxyTranslator();
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
-        proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, true, evictExpiredRecordsPersistence, getDeepCopy, doMigrations);
-        Observable<Object> oData = proxyProvidersUT.getMethodImplementation(configProvider);
-        assertThat(twoLayersCacheMock.retrieveHasBeenCalled(), is(false));
+        proxyProvidersUT = new ProxyProviders(proxyTranslator, twoLayersCacheMock, true, evictExpiredRecordsPersistence, getDeepCopy, doMigrations);
+
+        Object[] dataMethodPaginate = {Observable.just(null), new DynamicKey(1)};
+        Method mockMethod = ProvidersRxCache.class.getDeclaredMethod("getMocksPaginate", Observable.class, DynamicKey.class);
+
+        Observable<Object> oData = (Observable<Object>) proxyProvidersUT.invoke(null, mockMethod, dataMethodPaginate);
+        assertThat(proxyTranslator.processMethodHasBeenCalled(), is(false));
 
         oData.subscribe(subscriberMock);
         subscriberMock.awaitTerminalEvent();
-        assertThat(twoLayersCacheMock.retrieveHasBeenCalled(), is(true));
+        assertThat(proxyTranslator.processMethodHasBeenCalled(), is(true));
     }
 
     enum Loader {

@@ -72,31 +72,40 @@ public final class ProxyProviders implements InvocationHandler {
     /**
      * Called when user is using standard RxCache API.
      */
-    @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        return invoke(proxyTranslator.processMethod(method, args));
+    @Override public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+        return invoke(Observable.defer(new Func0<Observable<ProxyTranslator.ConfigProvider>>() {
+            @Override public Observable<ProxyTranslator.ConfigProvider> call() {
+                return Observable.just(proxyTranslator.processMethod(method, args));
+            }
+        }));
     }
 
     /**
      * Called when user is using actionable RxCache API.
      */
-    public Object invoke(final ProxyTranslator.ConfigProvider configProvider) {
-        if (hasProcessesEnded) return getMethodImplementation(configProvider);
+    public Object invoke(final Observable<ProxyTranslator.ConfigProvider> oConfigProvider) {
+        if (hasProcessesEnded) {
+            return oConfigProvider.flatMap(new Func1<ProxyTranslator.ConfigProvider, Observable<?>>() {
+                @Override public Observable<?> call(ProxyTranslator.ConfigProvider configProvider) {
+                    return getMethodImplementation(configProvider);
+                }
+            });
+        }
 
         return oProcesses.flatMap(new Func1<Void, Observable<?>>() {
             @Override public Observable<?> call(Void aVoid) {
-                return getMethodImplementation(configProvider);
+                return oConfigProvider.flatMap(new Func1<ProxyTranslator.ConfigProvider, Observable<?>>() {
+                    @Override public Observable<?> call(ProxyTranslator.ConfigProvider configProvider) {
+                        return getMethodImplementation(configProvider);
+                    }
+                });
             }
         });
     }
 
     //VisibleForTesting
     Observable<Object> getMethodImplementation(final ProxyTranslator.ConfigProvider configProvider) {
-        return Observable.defer(new Func0<Observable<Object>>() {
-            @Override
-            public Observable<Object> call() {
-                return getData(configProvider);
-            }
-        });
+        return getData(configProvider);
     }
 
     private Observable<Object> getData(final ProxyTranslator.ConfigProvider configProvider) {
