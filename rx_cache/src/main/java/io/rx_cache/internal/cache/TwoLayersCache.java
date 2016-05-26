@@ -35,7 +35,6 @@ public final class TwoLayersCache {
     }
 
     public  <T> Record<T> retrieve(String providerKey, String dynamicKey, String dynamicKeyGroup, boolean useExpiredDataIfLoaderNotAvailable, long lifeTime) {
-        retrieveHasBeenCalled = true;
         return retrieveRecord.retrieveRecord(providerKey, dynamicKey, dynamicKeyGroup, useExpiredDataIfLoaderNotAvailable, lifeTime);
     }
 
@@ -59,14 +58,8 @@ public final class TwoLayersCache {
         evictRecord.evictAll();
     }
 
-    //VisibleForTesting
+    //Exists for testing purposes
     public void mockMemoryDestroyed() {
         evictRecord.mockMemoryDestroyed();
-    }
-
-    private boolean retrieveHasBeenCalled;
-    //VisibleForTesting
-    public boolean retrieveHasBeenCalled() {
-        return retrieveHasBeenCalled;
     }
 }

@@ -25,8 +25,8 @@ import io.rx_cache.DynamicKeyGroup;
 import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
-import io.rx_cache.LifeCache;
 import io.rx_cache.Expirable;
+import io.rx_cache.LifeCache;
 import io.rx_cache.Reply;
 import rx.Observable;
 
@@ -44,6 +44,7 @@ public final class ProxyTranslator {
                 getLifeTimeCache(), requiredDetailResponse(), evictProvider(), getExpirable());
         checkIntegrityConfiguration(configProvider);
 
+        processMethodHasBeenCalled = true;
         return configProvider;
     }
 
@@ -184,5 +185,11 @@ public final class ProxyTranslator {
         public boolean isExpirable() {
             return expirable;
         }
+    }
+
+    //Exits for testing purposes
+    private boolean processMethodHasBeenCalled;
+    public boolean processMethodHasBeenCalled() {
+        return processMethodHasBeenCalled;
     }
 }
