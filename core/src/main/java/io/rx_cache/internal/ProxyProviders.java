@@ -69,9 +69,6 @@ public final class ProxyProviders implements InvocationHandler {
         return oProcesses;
     }
 
-    /**
-     * Called when user is using standard RxCache API.
-     */
     @Override public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
         return invoke(Observable.defer(new Func0<Observable<ProxyTranslator.ConfigProvider>>() {
             @Override public Observable<ProxyTranslator.ConfigProvider> call() {
@@ -80,10 +77,7 @@ public final class ProxyProviders implements InvocationHandler {
         }));
     }
 
-    /**
-     * Called when user is using actionable RxCache API.
-     */
-    public Object invoke(final Observable<ProxyTranslator.ConfigProvider> oConfigProvider) {
+    private Object invoke(final Observable<ProxyTranslator.ConfigProvider> oConfigProvider) {
         if (hasProcessesEnded) {
             return oConfigProvider.flatMap(new Func1<ProxyTranslator.ConfigProvider, Observable<?>>() {
                 @Override public Observable<?> call(ProxyTranslator.ConfigProvider configProvider) {

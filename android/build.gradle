@@ -36,7 +36,9 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile project(':rx_cache')
+    compile project(':core')
+    apt project(':compiler')
+
     testCompile 'junit:junit:4.12'
 
     apt "com.google.dagger:dagger-compiler:2.4"
