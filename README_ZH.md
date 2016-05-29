@@ -1,25 +1,10 @@
 # RxCache使用教程
 
-_`swift`版请点击[这里](https://github.com/FuckBoilerplate/RxCache)_.
+以简单快捷的方式实现Android app实现网络数据缓存并不是一件容易的事
 
-这个库的**目标**非常简单: **像[Picasso](https://github.com/square/picasso) 缓存图片一样毫不费力地缓存你的数据** 
+就像Sina微博Android客户端实现数据缓存离线阅读微博那样
 
-每一个Android 应用都属于客户端程序,这意味着创建和维护一个仅用于缓存数据的数据库没有任何意义.
-
-另外，事实上用数据库持久化保存数据并不能解决真正的挑战：以灵活简单的方式实现数据缓存.
-
-
-源于  [Retrofit](http://square.github.io/retrofit/) api, ** RxCache 是一个Reactive缓存库，可用于Android 和Java。能够将你的缓存成需求转成一个接口.**
-
-每个方法都充当RxCache的提供者, 他们都是通过`observables`来管理的,他们是类库和当前客户端之间的基本联系
-
-当提供一个`observable`包含的数据由一个昂贵的任务提供者可能是一个HTTP连接，rxcache确定是否需要订阅，或代替获取数据以前缓存。这取决于你的配置
-
-因此，提供当`observable`你得到你的`observable`达到了回来，下次还会检索它不与它的基本任务相关联的时间成本.
- 
-```java
-Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
-```
+这是一个基于 [Retrofit](http://square.github.io/retrofit/)的Reactive缓存库，可用于Android 和Java。能够将你的缓存成需求转成一个接口.**
 
 ## 配置
 
@@ -41,59 +26,185 @@ dependencies {
 }
 ```
 
-##  使用方法
+## 使用方法
 
-定义一个 `接口`方法对应你所需要缓存的数据提供者
+定义一个接口CacheProvider
 
 ```java
-interface Providers {
-        Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
+public interface CacheProviders {
+    //这里设置缓存失效时间为2分钟。
+    @LifeCache(duration = 2, timeUnit = TimeUnit.MINUTES)
+    Observable<Reply<List<Repo>>> getRepos(Observable<List<Repo>> oRepos, DynamicKey userName, EvictDynamicKey evictDynamicKey);
     
-        @LifeCache(duration = 5, timeUnit = TimeUnit.MINUTES)
-        Observable<List<Mock>> getMocksWith5MinutesLifeTime(Observable<List<Mock>> oMocks);
-    
-        Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, EvictProvider evictProvider);
-    
-        Observable<List<Mock>> getMocksPaginate(Observable<List<Mock>> oMocks, DynamicKey page);
-    
-        Observable<List<Mock>> getMocksPaginateEvictingPerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
-        
-        Observable<List<Mock>> getMocksPaginateWithFiltersEvictingPerFilter(Observable<List<Mock>> oMocks, DynamicKeyGroup filterPage, EvictDynamicKey evictFilter);
+    @LifeCache(duration = 2, timeUnit = TimeUnit.MINUTES)
+    Observable<Reply<List<User>>> getUsers(Observable<List<User>> oUsers, DynamicKey idLastUserQueried, EvictProvider evictProvider);
+
+    Observable<Reply<User>> getCurrentUser(Observable<User> oUser, EvictProvider evictProvider);
 }
 ```
 
+```java
+public interface RestApi {
+    String URL_BASE = "https://api.github.com";
+    String HEADER_API_VERSION = "Accept: application/vnd.github.v3+json";
 
-RxCache接受作为参数一组类来表示提供商需要如何处理缓存的数据:
+    @Headers({HEADER_API_VERSION})
+    @GET("/users")
+    Observable<List<User>> getUsers(@Query("since") int lastIdQueried, @Query("per_page") int perPage);
 
-*`Observable`是创建一个提供所需的唯一对象。 `Observable`类型必须等于提供商的返回值指定的。
-* [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/LifeCache.java)设置缓存过期时间. 如果没有设置`@LifeCache` , 数据将用于不会过期清理除非你使用了 [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) .
-* [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java)可以明确地清理与提供者有关的所有数据. 
-* [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java)允许明确地清理特殊的数据 [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java).
-* [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) 允许明确地驱逐一组特定的数据. [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java).
+    @Headers({HEADER_API_VERSION})
+    @GET("/users/{username}/repos")
+    Observable<List<Repo>> getRepos(@Path("username") String userName);
+
+    @Headers({HEADER_API_VERSION})
+    @GET("/users/{username}") Observable<Response<User>> getUser(@Path("username") String username);
+}
+```
+
+将RestApi中需要缓存的接口方法在CacheProviders写相应的方法,如：
+
+```java
+    Observable<List<Repo>> getRepos(@Path("username") String userName);
+```
+对应
+```java
+    Observable<Reply<List<Repo>>> getRepos(Observable<List<Repo>> oRepos, DynamicKey userName, EvictDynamicKey evictDynamicKey);
+```
+
+* 默认如果未配置以下参数，所有请求如果有缓存数据将不会重新从服务器获取
+
+* [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/LifeCache.java)设置缓存过期时间. 如果没有设置`@LifeCache` , 数据将被永久缓存理除非你使用了 [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) .
+* [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java)可以明确地清理清理所有缓存数据. 
+* [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java)可以明确地清理特殊的数据 [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java).
+* [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) 允许明确地清理一组特定的数据. [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java).
 * [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java)对于那些需要处理多个记录供应商的关键对象的包装，所以他们需要提供多个密钥，具有分页，排序或筛选要求，我们的端点。驱逐与一个特定的键使用`EvictDynamicKey`相关的数据。
  
 * [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java)是围绕重点及本集团对于那些需要处理分组的多个记录提供者的包装，所以他们需要提供团体组织的多个key，例如我们与终端过滤和分页要求。驱逐与一个特定群体的密钥关联的数据，使用`EvictDynamicKeyGroup`。
 
 
-###创建一个提供者的实例并使用它
+###创建一个RxCache实例并使用它
 
 最后,使用 `RxCache.Builder`实例化提供者`interface`，提供一个有效的文件系统路径允许RxCache写磁盘上。
 
 ```java
-File cacheDir = getFilesDir();
-Providers providers = new RxCache.Builder()
-                            .persistence(cacheDir)
-                            .using(Providers.class);
+ //cacheDir缓存文件路径
+ ort rx.Observable;
+import rx.functions.Func1;
+import sample_data.cache.CacheProviders;
+import sample_data.entities.Repo;
+import sample_data.entities.User;
+import sample_data.net.RestApi;
+
+public class Repository {
+    public static final int USERS_PER_PAGE = 25;
+
+    public static Repository init(File cacheDir) {
+        return new Repository(cacheDir);
+    }
+
+    private final CacheProviders cacheProviders;
+    private final RestApi restApi;
+
+    public Repository(File cacheDir) {
+        //persistence设置为缓存文件路径cacheDir,using设置成你所定义的接口类class
+        cacheProviders = new RxCache.Builder()
+                .persistence(cacheDir)
+                .using(CacheProviders.class);
+
+        restApi = new Retrofit.Builder()
+                .baseUrl(RestApi.URL_BASE)
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build().create(RestApi.class);
+    }
+    /**
+     *
+     * @param update 是否更新,如果设置为true，缓存数据将被清理，并且向服务器请求数据
+     * @return
+     */
+    public Observable<Reply<List<User>>> getUsers(int idLastUserQueried, final boolean update) {
+        //这里设置idLastUserQueried为DynamicKey,
+        return cacheProviders.getUsers(restApi.getUsers(idLastUserQueried, USERS_PER_PAGE), new DynamicKey(idLastUserQueried), new EvictDynamicKey(update));
+    }
+
+    //对应每个不同的userName，配置缓存
+    public Observable<Reply<List<Repo>>> getRepos(final String userName, final boolean update) {
+        //以userName为DynamicKey,如果update为true,将会重新获取数据并清理缓存。
+        return cacheProviders.getRepos(restApi.getRepos(userName), new DynamicKey(userName), new EvictDynamicKey(update));
+    }
+
+    public Observable<Reply<User>> loginUser(final String userName) {
+        return restApi.getUser(userName).map(new Func1<Response<User>, Observable<Reply<User>>>() {
+            @Override public Observable<Reply<User>> call(Response<User> userResponse) {
+
+                if (!userResponse.isSuccess()) {
+                    try {
+                        ResponseError responseError = new Gson().fromJson(userResponse.errorBody().string(), ResponseError.class);
+                        throw new RuntimeException(responseError.getMessage());
+                    } catch (JsonParseException | IOException exception) {
+                        throw new RuntimeException(exception.getMessage());
+                    }
+                }
+                //用户登陆，这里设置 new EvictProvider(true),表示登陆不缓存，为实时登陆
+                return cacheProviders.getCurrentUser(Observable.just(userResponse.body()), new EvictProvider(true));
+            }
+        }).flatMap(new Func1<Observable<Reply<User>>, Observable<Reply<User>>>() {
+            @Override public Observable<Reply<User>> call(Observable<Reply<User>> replyObservable) {
+                return replyObservable;
+            }
+        }).map(new Func1<Reply<User>, Reply<User>>() {
+            @Override public Reply<User> call(Reply<User> userReply) {
+                return userReply;
+            }
+        });
+    }
+
+    public Observable<String> logoutUser() {
+        return cacheProviders.getCurrentUser(Observable.<User>just(null), new EvictProvider(true))
+                .map(new Func1<Reply<User>, String>() {
+                    @Override
+                    public String call(Reply<User> user) {
+                        return "Logout";
+                    }
+                })
+                .onErrorReturn(new Func1<Throwable, String>() {
+                    @Override
+                    public String call(Throwable throwable) {
+                        return "Logout";
+                    }
+                });
+    }
+
+    public Observable<Reply<User>> getLoggedUser(boolean invalidate) {
+        Observable<Reply<User>> cachedUser = cacheProviders.getCurrentUser(Observable.<User>just(null), new EvictProvider(false));
+
+        Observable<Reply<User>> freshUser = cachedUser.flatMap(new Func1<Reply<User>, Observable<Reply<User>>>() {
+            @Override public Observable<Reply<User>> call(Reply<User> userReply) {
+                return loginUser(userReply.getData().getLogin());
+            }
+        });
+
+        if (invalidate) return freshUser;
+        else return cachedUser;
+    }
+
+    private static class ResponseError {
+        private final String message;
+
+        public ResponseError(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+}          
 ```
 
-###全部放在一起
-
+###
 ```java
 interface Providers {        
-    Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, EvictProvider evictProvider);
-        
-    Observable<List<Mock>> getMocksPaginateEvictingPerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
-    
     Observable<List<Mock>> getMocksPaginateWithFiltersEvictingPerFilter(Observable<List<Mock>> oMocks, DynamicKeyGroup filterPage, EvictDynamicKey evictFilter);
 }
 ```
@@ -107,15 +218,7 @@ public class Repository {
                 .persistence(cacheDir)
                 .using(Providers.class);
     }
-
-    public Observable<List<Mock>> getMocks(final boolean update) {
-        return providers.getMocksEvictProvider(getExpensiveMocks(), new EvictProvider(update));
-    }
-
-    public Observable<List<Mock>> getMocksPaginate(final int page, final boolean update) {
-        return providers.getMocksPaginateEvictingPerPage(getExpensiveMocks(), new DynamicKey(page), new EvictDynamicKey(update));
-    }
-
+    
     public Observable<List<Mock>> getMocksWithFiltersPaginate(final String filter, final int page, final boolean updateFilter) {
         return providers.getMocksPaginateWithFiltersEvictingPerFilter(getExpensiveMocks(), new DynamicKeyGroup(filter, page), new EvictDynamicKey(updateFilter));
     }
@@ -129,96 +232,7 @@ public class Repository {
 ```
 
 
-## 用例
-
-* 使用经典的API RxCache对阅读的行为很少写的需要。
-* 使用可操作的API接收缓存，独有的写操作。
-
-
-## 经典API缓存：
-
-下面用案例说明一些常见的场景，这将有助于了解`DynamicKey`和`DynamicKey`类随着驱逐范围使用。
-
-### List
-
-List 不需要驱逐:
-```java
-Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
-```
-
-List 驱逐缓存数据:
-```java
-Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, EvictProvider evictProvider);
-```
-
-> 运行时的用法：
-
-```java
-//驱逐所有morks
-getMocksEvictProvider(oMocks, new EvictProvider(true))
-//这一行抛出一个异常IllegalArgumentException:"EvictDynamicKey已经提供但是却少DynamicKey"
-getMocksEvictProvider(oMocks, new EvictDynamicKey(true))
-```
-
-### List 过滤
-
-List 过滤不驱逐:
-```java
-Observable<List<Mock>> getMocksFiltered(Observable<List<Mock>> oMocks, DynamicKey filter);
-```
-
-
-List 过滤驱逐:
-```java
-Observable<List<Mock>> getMocksFilteredEvict(Observable<List<Mock>> oMocks, DynamicKey filter, EvictProvider evictDynamicKey);
-```
-
-> 运行时使用：
-
-```java
-// 驱逐所有 mocks使用EvictProvider
-getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictProvider(true))
-//一个过滤器使用EvictDynamicKey的驱逐
-getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictDynamicKey(true))
-
-//这一行抛出异常 IllegalArgumentException: "EvictDynamicKeyGroup提供 但是却少EvictDynamicKey"
-getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictDynamicKeyGroup(true))
-```		
-		
-###List分页带过滤器
-
-List分页带过滤器不驱逐数据:
-```java
-Observable<List<Mock>> getMocksFilteredPaginate(Observable<List<Mock>> oMocks, DynamicKey filterAndPage);
-```
-
-
-List分页带过滤器驱逐：
-```java
-Observable<List<Mock>> getMocksFilteredPaginateEvict(Observable<List<Mock>> oMocks, DynamicKeyGroup filterAndPage, EvictProvider evictProvider);
-```
-
-> 运行时使用:
-
-```java
-// 驱逐所有的 mocks 使用 EvictProvider
-getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictProvider(true))
-
-//驱逐所有的morks一个过滤器使用evictdynamickey页
-getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictDynamicKey(true))
-
-//驱逐一个过滤器使用EvictDynamicKeyGroup的一页morks
-getMocksFilteredPaginateInvalidate(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictDynamicKeyGroup(true))
-```
-
-正如你可能已经注意到，使用`DynamicKey`或`DynamicKeyGroup`用`Evict`类一起整点驱逐对象时，有几个领域发挥。
-
-上面的例子，其方法签名声明供应商接受` EvictProvider `为了能够具体的更多细节的类型在运行时` EvictProvider `。
-
-但我这样做，是出于演示的目的，你总是应该缩小你的方法签名驱逐类，你真正需要的类型。对于最后一个例子，我在生产代码使用`EvictDynamicKey`，因为这样我就能够分页经过滤项，并驱逐他们每它的过滤，通过拉触发刷新实例。
-
-	
-不过，也有完整的例子 [RxCacheSamples](https://github.com/VictorAlbertos/RxCacheSamples).			
+Demo地址[RxCacheSamples](https://github.com/VictorAlbertos/RxCacheSamples).			
 
 ## 混淆配置
 ```
