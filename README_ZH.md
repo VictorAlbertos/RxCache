@@ -224,9 +224,9 @@ getMocksFilteredPaginateInvalidate(oMocks, new DynamicKeyGroup("actives", "page1
 但我这样做，是出于演示的目的，你总是应该缩小你的方法签名驱逐类，你真正需要的类型。对于最后一个例子，我在生产代码使用`EvictDynamicKey`，因为这样我就能够分页经过滤项，并驱逐他们每它的过滤，通过拉触发刷新实例。
 
 	
-不过，也有完整的例子 [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).			
+不过，也有完整的例子 [RxCacheSamples](https://github.com/VictorAlbertos/RxCacheSamples).			
 		
-## Actionable API RxCache:
+## 可操作的API RxCache:
 
 This actionable api offers an easy way to perform write operations using providers. Although write operations could be achieved using the classic api too, it's much complex and error-prone. Indeed, the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Actions.java) class it's a wrapper around the classic api which play with evicting scopes and lists.
 
