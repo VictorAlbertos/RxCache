@@ -116,7 +116,7 @@ public class ActionTest extends BaseTest {
         @Override public void evictAll() {}
 
         private Record<String> mock(String value) {
-            return new Record(value, true, 0);
+            return new Record(value, true, null);
         }
     }
 }

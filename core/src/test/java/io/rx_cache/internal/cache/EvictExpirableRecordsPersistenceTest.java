@@ -134,7 +134,7 @@ public class EvictExpirableRecordsPersistenceTest extends BaseTest {
                 mocks.add(mock);
             }
 
-            Record<List<Mock>> record = new Record<>(mocks, expirable, 1);
+            Record<List<Mock>> record = new Record<>(mocks, expirable, 1l);
             disk.saveRecord(String.valueOf(i), record);
         }
     }

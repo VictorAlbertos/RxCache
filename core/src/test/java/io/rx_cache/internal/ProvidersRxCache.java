@@ -45,6 +45,9 @@ interface ProvidersRxCache {
 
     Observable<Reply<Mock[]>> getMocksArrayResponse(Observable<Mock[]> mocks);
 
+    @LifeCache(duration = 0, timeUnit = TimeUnit.MINUTES)
+    Observable<Reply<List<Mock>>>  getMocksLife0Minutes(Observable<List<Mock>> mocks);
+
     @LifeCache(duration = 1, timeUnit = TimeUnit.MINUTES)
     Observable<List<Mock>> getMocksLifeTimeMinutes(Observable<List<Mock>> mocks);
 

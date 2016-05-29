@@ -403,6 +403,25 @@ public class ProvidersRxCacheTest {
         assertThat(compare(mock, mockOriginal, type), is(true));
     }
 
+    @Test public void _14_When_0_Is_The_Value_For_Life_Time_Not_Cached_Ad_Infinitum() {
+        initProviders(false);
+
+        TestSubscriber<Reply<List<Mock>>> subscriber;
+        subscriber = new TestSubscriber<>();
+        providersRxCache.getMocksLife0Minutes(createObservableMocks(10)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
+        Reply<List<Mock>> reply = subscriber.getOnNextEvents().get(0);
+        assertThat(reply.getSource(), is(Source.CLOUD));
+
+        subscriber = new TestSubscriber<>();
+        providersRxCache.getMocksLife0Minutes(createObservableMocks(10)).subscribe(subscriber);
+        subscriber.awaitTerminalEvent();
+
+        reply = subscriber.getOnNextEvents().get(0);
+        assertThat(reply.getSource(), is(Source.CLOUD));
+    }
+
     private Object deepCopy(Object object, Type type) {
         return new Gson().fromJson(new Gson().toJson(object), type);
     }

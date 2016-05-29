@@ -34,7 +34,7 @@ public final class SaveRecord extends Action {
         this.evictExpirableRecordsPersistence = evictExpirableRecordsPersistence;
     }
 
-    void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data, long lifeTime, boolean isExpirable) {
+    void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data, Long lifeTime, boolean isExpirable) {
         String composedKey = composeKey(providerKey, dynamicKey, dynamicKeyGroup);
 
         Record record = new Record(data, isExpirable, lifeTime);

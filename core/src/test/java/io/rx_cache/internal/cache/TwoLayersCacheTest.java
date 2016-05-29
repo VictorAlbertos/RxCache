@@ -128,13 +128,13 @@ public class TwoLayersCacheTest extends BaseTest {
 
         twoLayersCacheUT.save(PROVIDER_KEY, "", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME, true);
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
-        Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "", "", false, 0);
+        Record<Mock> record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "", "", false, null);
 
         assertThat(record.getData().getMessage(), is(MOCK_VALUE));
         assertThat(record.getSource(), is(Source.MEMORY));
 
         twoLayersCacheUT.mockMemoryDestroyed();
-        record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "", "", false, 0);
+        record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "", "", false, null);
         assertThat(record.getData().getMessage(), is(MOCK_VALUE));
         assertThat(record.getSource(), is(Source.PERSISTENCE));
     }
@@ -266,7 +266,7 @@ public class TwoLayersCacheTest extends BaseTest {
         twoLayersCacheUT.save(PROVIDER_KEY, "1", "", new Mock(MOCK_VALUE), DUMMY_LIFE_TIME, true);
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
 
-        record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, 0);
+        record = twoLayersCacheUT.retrieve(PROVIDER_KEY, "1", "", false, null);
         assertThat(record.getData().getMessage(), is(MOCK_VALUE));
     }
 

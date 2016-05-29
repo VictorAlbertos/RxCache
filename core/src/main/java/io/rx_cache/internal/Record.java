@@ -34,17 +34,17 @@ public final class Record<T> {
     private final Boolean isExpirable;
 
     //LifeTime requires to be stored to be evicted by EvictExpiredRecordsTask when no life time is available without a config provider
-    private long lifeTime;
+    private Long lifeTime;
 
     //Required by EvictExpirableRecordsPersistence task
     private transient float sizeOnMb;
 
     //VisibleForTesting
     Record(T data) {
-        this(data, true, 0);
+        this(data, true, null);
     }
 
-    public Record(T data, Boolean isExpirable, long lifeTime) {
+    public Record(T data, Boolean isExpirable, Long lifeTime) {
         this.data = data;
         this.isExpirable = isExpirable;
         this.lifeTime = lifeTime;
@@ -110,11 +110,11 @@ public final class Record<T> {
         return timeAtWhichWasPersisted;
     }
 
-    public long getLifeTime() {
+    public Long getLifeTime() {
         return lifeTime;
     }
 
-    public void setLifeTime(long lifeTime) {
+    public void setLifeTime(Long lifeTime) {
         this.lifeTime = lifeTime;
     }
 

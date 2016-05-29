@@ -75,9 +75,9 @@ public final class ProxyTranslator {
         throw new IllegalArgumentException(errorMessage);
     }
 
-    protected long getLifeTimeCache() {
+    protected Long getLifeTimeCache() {
         LifeCache lifeCache = method.getAnnotation(LifeCache.class);
-        if (lifeCache == null) return 0;
+        if (lifeCache == null) return null;
         return lifeCache.timeUnit().toMillis(lifeCache.duration());
     }
 
@@ -138,12 +138,12 @@ public final class ProxyTranslator {
     public final static class ConfigProvider {
         private final String providerKey, dynamicKey, dynamicKeyGroup;
         private final Observable loaderObservable;
-        private final long lifeTime;
+        private final Long lifeTime;
         private final boolean requiredDetailedResponse;
         private final EvictProvider evictProvider;
         private final boolean expirable;
 
-        public ConfigProvider(String providerKey, String dynamicKey, String group, Observable loaderObservable, long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider, boolean expirable) {
+        public ConfigProvider(String providerKey, String dynamicKey, String group, Observable loaderObservable, Long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider, boolean expirable) {
             this.providerKey = providerKey;
             this.dynamicKey = dynamicKey;
             this.dynamicKeyGroup = group;
@@ -166,7 +166,7 @@ public final class ProxyTranslator {
             return dynamicKeyGroup;
         }
 
-        public long getLifeTimeMillis() {
+        public Long getLifeTimeMillis() {
             return lifeTime;
         }
 

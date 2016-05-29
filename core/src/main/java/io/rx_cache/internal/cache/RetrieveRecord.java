@@ -33,7 +33,7 @@ public final class RetrieveRecord extends Action {
         this.hasRecordExpired = hasRecordExpired;
     }
 
-    <T> Record<T> retrieveRecord(String providerKey, String dynamicKey, String dynamicKeyGroup, boolean useExpiredDataIfLoaderNotAvailable, long lifeTime) {
+    <T> Record<T> retrieveRecord(String providerKey, String dynamicKey, String dynamicKeyGroup, boolean useExpiredDataIfLoaderNotAvailable, Long lifeTime) {
         String composedKey = composeKey(providerKey, dynamicKey, dynamicKeyGroup);
 
         Record<T> record = memory.getIfPresent(composedKey);

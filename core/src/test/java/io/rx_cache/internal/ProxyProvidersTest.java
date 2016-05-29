@@ -149,7 +149,7 @@ public class ProxyProvidersTest extends BaseTest {
                 break;
         }
 
-        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", observable, 0, detailResponse, new EvictProvider(evictCache), true);
+        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", observable, null, detailResponse, new EvictProvider(evictCache), true);
 
         if (hasCache) twoLayersCacheMock.save("mockKey", "", "", new Mock("message"), configProvider.getLifeTimeMillis(), configProvider.isExpirable());
 
