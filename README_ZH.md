@@ -10,29 +10,26 @@ _`swift`版请点击[这里](https://github.com/FuckBoilerplate/RxCache)_.
 
 这个库的**目标**非常简单: **像[Picasso](https://github.com/square/picasso) 缓存图片一样毫不费力地缓存你的数据** 
 
-The **goal** of this library is simple: **caching your data models like [Picasso](https://github.com/square/picasso) caches your images, with no effort at all.** 
+每一个Android 应用都属于客户端程序,这意味着创建和维护一个仅用于缓存数据的数据库没有任何意义.
 
-Every Android application is a client application, which means it does not make sense to create and maintain a database just for caching data.
+另外，事实上用数据库持久化保存数据并不能解决真正的挑战：以灵活简单的方式实现数据缓存.
 
-Plus, the fact that you have some sort of legendary database for persisting your data does not solves by itself the real challenge: to be able to configure your caching needs in a flexible and simple way. 
 
-Inspired by [Retrofit](http://square.github.io/retrofit/) api, **RxCache is a reactive caching library for Android and Java which turns your caching needs into an interface.** 
+源于  [Retrofit](http://square.github.io/retrofit/) api, ** RxCache 是一个Reactive缓存库，可用于Android 和Java。能够将你的缓存成需求转成一个接口.**
 
-Every method acts as a provider for RxCache, and all of them are managed through `observables`; they are the fundamental contract 
-between the library and its clients. 
+每个方法都充当RxCache的提供者, 他们都是通过`observables`来管理的,他们是类库和当前客户端之间的基本联系
 
-When supplying an `observable` which contains the data provided by an expensive task -probably an http connection, RxCache determines if it is needed 
-to subscribe to it or instead fetch the data previously cached. This decision is made based on the providers configuration.
+当提供一个`observable`包含的数据由一个昂贵的任务提供者可能是一个HTTP连接，rxcache确定是否需要订阅，或代替获取数据以前缓存。这取决于你的配置
 
-So, when supplying an `observable` you get your `observable` cached back, and next time you will retrieve it without the time cost associated with its underlying task. 
+因此，提供当`observable`你得到你的`observable`达到了回来，下次还会检索它不与它的基本任务相关联的时间成本.
  
 ```java
 Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
 ```
 
-## Setup
+## 配置
 
-Add the JitPack repository in your build.gradle (top level module):
+ 添加JitPack仓库在你的build.gradle文件 (项目根目录下):
 ```gradle
 allprojects {
     repositories {
@@ -42,7 +39,7 @@ allprojects {
 }
 ```
 
-And add next dependencies in the build.gradle of the module:
+添加依赖库,在项目模块中
 ```gradle
 dependencies {
     compile "com.github.VictorAlbertos.RxCache:core:1.4.6"
@@ -50,9 +47,9 @@ dependencies {
 }
 ```
 
-## Usage
+##  使用方法
 
-Define an `interface` with as much methods as needed to create the caching providers:
+定义一个 `接口`方法对应你所需要缓存的数据提供者
 
 ```java
 interface Providers {
@@ -72,20 +69,21 @@ interface Providers {
 ```
 
 
-RxCache accepts as argument a set of classes to indicate how the provider needs to handle the cached data:
+RxCache接受作为参数一组类来表示提供商需要如何处理缓存的数据:
 
-* `Observable` is the only object required to create a provider. `Observable` type must be equal to the one specified by the returning value of the provider. 
-* [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/LifeCache.java) sets the amount of time before the data would be evicted. If `@LifeCache` is not supplied, the data will be never evicted unless it is required explicitly using [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) .
-* [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java) allows to explicitly evict all the data associated with the provider. 
-* [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) allows to explicitly evict the data of an specific [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java).
-* [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) allows to explicitly evict the data of an specific [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java).
-* [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java) is a wrapper around the key object for those providers which need to handle multiple records, so they need to provide multiple keys, such us endpoints with pagination, ordering or filtering requirements. To evict the data associated with one particular key use `EvictDynamicKey`.  
-* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java) is a wrapper around the key and the group for those providers which need to handle multiple records grouped, so they need to provide multiple keys organized in groups, such us endpoints with filtering AND pagination requirements. To evict the data associated with the key of one particular group, use `EvictDynamicKeyGroup`. 
+*`Observable`是创建一个提供所需的唯一对象。 `Observable`类型必须等于提供商的返回值指定的。
+* [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/LifeCache.java)设置缓存过期时间. 如果没有设置`@LifeCache` , 数据将用于不会过期清理除非你使用了 [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) .
+* [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java)可以明确地清理与提供者有关的所有数据. 
+* [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java)允许明确地清理特殊的数据 [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java).
+* [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) 允许明确地驱逐一组特定的数据. [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java).
+* [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java)对于那些需要处理多个记录供应商的关键对象的包装，所以他们需要提供多个密钥，具有分页，排序或筛选要求，我们的端点。驱逐与一个特定的键使用`EvictDynamicKey`相关的数据。
+ 
+* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java)是围绕重点及本集团对于那些需要处理分组的多个记录提供者的包装，所以他们需要提供团体组织的多个key，例如我们与终端过滤和分页要求。驱逐与一个特定群体的密钥关联的数据，使用`EvictDynamicKeyGroup`。
 
 
-### Build an instance of Providers and use it
+###创建一个提供者的实例并使用它
 
-Finally, instantiate the Providers `interface` using `RxCache.Builder` and supplying a valid file system path which would allow RxCache to write on disk. 
+最后,使用 `RxCache.Builder`实例化提供者`interface`，提供一个有效的文件系统路径允许RxCache写磁盘上。
 
 ```java
 File cacheDir = getFilesDir();
@@ -94,7 +92,7 @@ Providers providers = new RxCache.Builder()
                             .using(Providers.class);
 ```
 
-### Putting It All Together
+###全部放在一起
 
 ```java
 interface Providers {        
@@ -128,8 +126,8 @@ public class Repository {
         return providers.getMocksPaginateWithFiltersEvictingPerFilter(getExpensiveMocks(), new DynamicKeyGroup(filter, page), new EvictDynamicKey(updateFilter));
     }
 
-    //In a real use case, here is when you build your observable with the expensive operation.
-    //Or if you are making http calls you can use Retrofit to get it out of the box.
+    //在实际的使用情况下，这里是当你建立你观察到的与昂贵的操作。
+    //如果你正在使用HTTP调用可以改造出来的盒子。
     private Observable<List<Mock>> getExpensiveMocks() {
         return Observable.just(Arrays.asList(new Mock("")));
     }
@@ -137,28 +135,29 @@ public class Repository {
 ```
 
 
-## Use cases
+## 用例
 
-* Using classic API RxCache for read actions with little write needs.
-* Using actionable API RxCache, exclusive for write actions.
+* 使用经典的API RxCache对阅读的行为很少写的需要。
+* 使用可操作的API接收缓存，独有的写操作。
 
 
-## Classic API RxCache:
-Following use cases illustrate some common scenarios which will help to understand the usage of `DynamicKey` and `DynamicKeyGroup` classes along with evicting scopes. 
+## 经典API缓存：
+
+下面用案例说明一些常见的场景，这将有助于了解`DynamicKey`和`DynamicKey`类随着驱逐范围使用。
 
 ### List
 
-List without evicting:
+List 不需要驱逐:
 ```java
 Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
 ```
 
-List evicting:
+List 驱逐缓存数据:
 ```java
 Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, EvictProvider evictProvider);
 ```
 
-> Runtime usage:
+> 运行时的用法：
 
 ```java
 //Hit observable evicting all mocks 
@@ -168,7 +167,7 @@ getMocksEvictProvider(oMocks, new EvictProvider(true))
 getMocksEvictProvider(oMocks, new EvictDynamicKey(true))
 ```
 
-### List Filtering
+### List 过滤
 
 List filtering without evicting:
 ```java
@@ -176,7 +175,7 @@ Observable<List<Mock>> getMocksFiltered(Observable<List<Mock>> oMocks, DynamicKe
 ```
 
 
-List filtering evicting:
+List 过滤驱逐:
 ```java
 Observable<List<Mock>> getMocksFilteredEvict(Observable<List<Mock>> oMocks, DynamicKey filter, EvictProvider evictDynamicKey);
 ```
