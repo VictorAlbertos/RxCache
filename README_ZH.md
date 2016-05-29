@@ -6,7 +6,9 @@
 
 # RxCache
 
-_For the `swift` version go [here](https://github.com/FuckBoilerplate/RxCache)_.
+_`swift`版请点击[这里](https://github.com/FuckBoilerplate/RxCache)_.
+
+这个库的**目标**非常简单: **像[Picasso](https://github.com/square/picasso) 缓存图片一样毫不费力地缓存你的数据** 
 
 The **goal** of this library is simple: **caching your data models like [Picasso](https://github.com/square/picasso) caches your images, with no effort at all.** 
 
