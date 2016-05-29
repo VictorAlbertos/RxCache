@@ -4,7 +4,7 @@
 
 就像Sina微博Android客户端实现数据缓存离线阅读微博那样
 
-这是一个基于 [Retrofit](http://square.github.io/retrofit/)的Reactive缓存库，可用于Android 和Java。能够将你的缓存成需求转成一个接口.**
+这是一个基于 [Retrofit](http://square.github.io/retrofit/)的Reactive缓存库，可用于Android 和Java。能够将你的缓存成需求转成一个接口
 
 ## 配置
 
