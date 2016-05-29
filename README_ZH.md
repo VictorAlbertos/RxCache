@@ -160,16 +160,15 @@ Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, Evic
 > 运行时的用法：
 
 ```java
-//Hit observable evicting all mocks 
+//驱逐所有morks
 getMocksEvictProvider(oMocks, new EvictProvider(true))
-
-//This line throws an IllegalArgumentException: "EvictDynamicKey was provided but not was provided any DynamicKey"
+//这一行抛出一个异常IllegalArgumentException:"EvictDynamicKey已经提供但是却少DynamicKey"
 getMocksEvictProvider(oMocks, new EvictDynamicKey(true))
 ```
 
 ### List 过滤
 
-List filtering without evicting:
+List 过滤不驱逐:
 ```java
 Observable<List<Mock>> getMocksFiltered(Observable<List<Mock>> oMocks, DynamicKey filter);
 ```
@@ -180,52 +179,52 @@ List 过滤驱逐:
 Observable<List<Mock>> getMocksFilteredEvict(Observable<List<Mock>> oMocks, DynamicKey filter, EvictProvider evictDynamicKey);
 ```
 
-> Runtime usage:
+> 运行时使用：
 
 ```java
-//Hit observable evicting all mocks using EvictProvider
+// 驱逐所有 mocks使用EvictProvider
 getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictProvider(true))
-
-//Hit observable evicting mocks of one filter using EvictDynamicKey
+//一个过滤器使用EvictDynamicKey的驱逐
 getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictDynamicKey(true))
 
-//This line throws an IllegalArgumentException: "EvictDynamicKeyGroup was provided but not was provided any Group"
+//这一行抛出异常 IllegalArgumentException: "EvictDynamicKeyGroup提供 但是却少EvictDynamicKey"
 getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictDynamicKeyGroup(true))
 ```		
 		
-### List Paginated with filters
+###List分页带过滤器
 
-List paginated with filters without evicting:
+List分页带过滤器不驱逐数据:
 ```java
 Observable<List<Mock>> getMocksFilteredPaginate(Observable<List<Mock>> oMocks, DynamicKey filterAndPage);
 ```
 
 
-List paginated with filters evicting:
+List分页带过滤器驱逐：
 ```java
 Observable<List<Mock>> getMocksFilteredPaginateEvict(Observable<List<Mock>> oMocks, DynamicKeyGroup filterAndPage, EvictProvider evictProvider);
 ```
 
-> Runtime usage:
+> 运行时使用:
 
 ```java
-//Hit observable evicting all mocks using EvictProvider
+// 驱逐所有的 mocks 使用 EvictProvider
 getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictProvider(true))
 
-//Hit observable evicting all mocks pages of one filter using EvictDynamicKey
+//驱逐所有的morks一个过滤器使用evictdynamickey页
 getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictDynamicKey(true))
 
-//Hit observable evicting one page mocks of one filter using EvictDynamicKeyGroup
+//驱逐一个过滤器使用EvictDynamicKeyGroup的一页morks
 getMocksFilteredPaginateInvalidate(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictDynamicKeyGroup(true))
-```		
+```
 
-As you may already notice, the whole point of using `DynamicKey` or `DynamicKeyGroup` along with `Evict` classes is to play with several scopes when evicting objects.
+正如你可能已经注意到，使用`DynamicKey`或`DynamicKeyGroup`用`Evict`类一起整点驱逐对象时，有几个领域发挥。
 
-The above examples declare providers which their method signature accepts `EvictProvider` in order to be able to concrete more specifics types of `EvictProvider` at runtime.
+上面的例子，其方法签名声明供应商接受` EvictProvider `为了能够具体的更多细节的类型在运行时` EvictProvider `。
 
-But I have done that for demonstration purposes, you always should narrow the evicting classes in your method signature to the type which you really need. For the last example, I would use `EvictDynamicKey` in production code, because this way I would be able to paginate the filtered items and evict them per its filter, triggered by a pull to refresh for instance.
+但我这样做，是出于演示的目的，你总是应该缩小你的方法签名驱逐类，你真正需要的类型。对于最后一个例子，我在生产代码使用`EvictDynamicKey`，因为这样我就能够分页经过滤项，并驱逐他们每它的过滤，通过拉触发刷新实例。
+
 	
-Nevertheless, there are complete examples for [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).			
+不过，也有完整的例子 [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).			
 		
 ## Actionable API RxCache:
 
