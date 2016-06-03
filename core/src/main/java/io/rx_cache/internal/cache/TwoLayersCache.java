@@ -34,12 +34,12 @@ public final class TwoLayersCache {
         this.saveRecord = saveRecord;
     }
 
-    public  <T> Record<T> retrieve(String providerKey, String dynamicKey, String dynamicKeyGroup, boolean useExpiredDataIfLoaderNotAvailable, Long lifeTime) {
-        return retrieveRecord.retrieveRecord(providerKey, dynamicKey, dynamicKeyGroup, useExpiredDataIfLoaderNotAvailable, lifeTime);
+    public  <T> Record<T> retrieve(String providerKey, String dynamicKey, String dynamicKeyGroup, boolean useExpiredDataIfLoaderNotAvailable, Long lifeTime, boolean isEncrypted) {
+        return retrieveRecord.retrieveRecord(providerKey, dynamicKey, dynamicKeyGroup, useExpiredDataIfLoaderNotAvailable, lifeTime, isEncrypted);
     }
 
-    public void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data, Long lifeTime, boolean isExpirable) {
-        saveRecord.save(providerKey, dynamicKey, dynamicKeyGroup, data, lifeTime, isExpirable);
+    public void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data, Long lifeTime, boolean isExpirable, boolean isEncrypted) {
+        saveRecord.save(providerKey, dynamicKey, dynamicKeyGroup, data, lifeTime, isExpirable, isEncrypted);
     }
 
     public void evictProviderKey(final String providerKey) {

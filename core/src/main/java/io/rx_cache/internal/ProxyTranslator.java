@@ -22,6 +22,7 @@ import javax.inject.Inject;
 
 import io.rx_cache.DynamicKey;
 import io.rx_cache.DynamicKeyGroup;
+import io.rx_cache.Encrypt;
 import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
@@ -41,7 +42,7 @@ public final class ProxyTranslator {
         this.objectsMethod = objectsMethod;
 
         ConfigProvider configProvider = new ConfigProvider(getProviderKey(), getDynamicKey(), getDynamicKeyGroup(), getLoaderObservable(),
-                getLifeTimeCache(), requiredDetailResponse(), evictProvider(), getExpirable());
+                getLifeTimeCache(), requiredDetailResponse(), evictProvider(), getExpirable(), isEncrypted());
         checkIntegrityConfiguration(configProvider);
 
         processMethodHasBeenCalled = true;
@@ -85,6 +86,12 @@ public final class ProxyTranslator {
         Expirable expirable = method.getAnnotation(Expirable.class);
         if (expirable != null) return expirable.value();
         return true;
+    }
+
+    protected boolean isEncrypted() {
+        Encrypt encrypt = method.getAnnotation(Encrypt.class);
+        if (encrypt != null) return true;
+        return false;
     }
 
     protected boolean requiredDetailResponse() {
@@ -142,8 +149,9 @@ public final class ProxyTranslator {
         private final boolean requiredDetailedResponse;
         private final EvictProvider evictProvider;
         private final boolean expirable;
+        private final boolean encrypted;
 
-        public ConfigProvider(String providerKey, String dynamicKey, String group, Observable loaderObservable, Long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider, boolean expirable) {
+        public ConfigProvider(String providerKey, String dynamicKey, String group, Observable loaderObservable, Long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider, boolean expirable, boolean encrypted) {
             this.providerKey = providerKey;
             this.dynamicKey = dynamicKey;
             this.dynamicKeyGroup = group;
@@ -152,6 +160,7 @@ public final class ProxyTranslator {
             this.evictProvider = evictProvider;
             this.requiredDetailedResponse = requiredDetailedResponse;
             this.expirable = expirable;
+            this.encrypted = encrypted;
         }
 
         public String getProviderKey() {
@@ -184,6 +193,10 @@ public final class ProxyTranslator {
 
         public boolean isExpirable() {
             return expirable;
+        }
+
+        public boolean isEncrypted() {
+            return encrypted;
         }
     }
 

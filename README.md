@@ -69,21 +69,27 @@ interface Providers {
 }
 ```
 
-
 RxCache accepts as argument a set of classes to indicate how the provider needs to handle the cached data:
 
-* `Observable` is the only object required to create a provider. `Observable` type must be equal to the one specified by the returning value of the provider. 
-* [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/LifeCache.java) sets the amount of time before the data would be evicted. If `@LifeCache` is not supplied, the data will be never evicted unless it is required explicitly using [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) .
-* [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java) allows to explicitly evict all the data associated with the provider. 
+* `Observable` is the only object required to create a provider. `Observable` type must be equal to the one specified by the returning value of the provider.
+* [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java) allows to explicitly evict all the data associated with the provider.
 * [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) allows to explicitly evict the data of an specific [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java).
 * [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) allows to explicitly evict the data of an specific [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java).
-* [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java) is a wrapper around the key object for those providers which need to handle multiple records, so they need to provide multiple keys, such us endpoints with pagination, ordering or filtering requirements. To evict the data associated with one particular key use `EvictDynamicKey`.  
-* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java) is a wrapper around the key and the group for those providers which need to handle multiple records grouped, so they need to provide multiple keys organized in groups, such us endpoints with filtering AND pagination requirements. To evict the data associated with the key of one particular group, use `EvictDynamicKeyGroup`. 
+* [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKey.java) is a wrapper around the key object for those providers which need to handle multiple records, so they need to provide multiple keys, such us endpoints with pagination, ordering or filtering requirements. To evict the data associated with one particular key use `EvictDynamicKey`.
+* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/DynamicKeyGroup.java) is a wrapper around the key and the group for those providers which need to handle multiple records grouped, so they need to provide multiple keys organized in groups, such us endpoints with filtering AND pagination requirements. To evict the data associated with the key of one particular group, use `EvictDynamicKeyGroup`.
 
+
+Supported annotations:
+
+* [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/LifeCache.java) sets the amount of time before the data would be evicted. If `@LifeCache` is not supplied, the data will be never evicted unless it is required explicitly using [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) .
+* [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Actionable.java) offers an easy way to perform write operations using providers. More details [here](#actionable_section)
+* [@SchemeMigration](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/SchemeMigration.java) and [@Migration](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Migration.java) provides a simple mechanism for handling migrations between releases. More details [here](#migrations_section)
+* [@Expirable](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Expirable.java) determines if that provider will be excluded from the evicting process or not. More details [here](#expirable_section)
+* [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EncryptKey.java) and [@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Encrypt.java) provides a simple way to encrypt/decrypt the data on persistence layer. More details [here](#encryption_section)
 
 ### Build an instance of Providers and use it
 
-Finally, instantiate the Providers `interface` using `RxCache.Builder` and supplying a valid file system path which would allow RxCache to write on disk. 
+Finally, instantiate the Providers `interface` using `RxCache.Builder` and supplying a valid file system path which would allow RxCache to write on disk.
 
 ```java
 File cacheDir = getFilesDir();
@@ -95,11 +101,11 @@ Providers providers = new RxCache.Builder()
 ### Putting It All Together
 
 ```java
-interface Providers {        
+interface Providers {
     Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, EvictProvider evictProvider);
-        
+
     Observable<List<Mock>> getMocksPaginateEvictingPerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
-    
+
     Observable<List<Mock>> getMocksPaginateWithFiltersEvictingPerFilter(Observable<List<Mock>> oMocks, DynamicKeyGroup filterPage, EvictDynamicKey evictFilter);
 }
 ```
@@ -142,7 +148,7 @@ public class Repository {
 
 
 ## Classic API RxCache:
-Following use cases illustrate some common scenarios which will help to understand the usage of `DynamicKey` and `DynamicKeyGroup` classes along with evicting scopes. 
+Following use cases illustrate some common scenarios which will help to understand the usage of `DynamicKey` and `DynamicKeyGroup` classes along with evicting scopes.
 
 ### List
 
@@ -159,7 +165,7 @@ Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, Evic
 > Runtime usage:
 
 ```java
-//Hit observable evicting all mocks 
+//Hit observable evicting all mocks
 getMocksEvictProvider(oMocks, new EvictProvider(true))
 
 //This line throws an IllegalArgumentException: "EvictDynamicKey was provided but not was provided any DynamicKey"
@@ -190,8 +196,8 @@ getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictDynamicKey(tru
 
 //This line throws an IllegalArgumentException: "EvictDynamicKeyGroup was provided but not was provided any Group"
 getMocksFilteredEvict(oMocks, new DynamicKey("actives"), new EvictDynamicKeyGroup(true))
-```		
-		
+```
+
 ### List Paginated with filters
 
 List paginated with filters without evicting:
@@ -216,17 +222,17 @@ getMocksFilteredPaginateEvict(oMocks, new DynamicKeyGroup("actives", "page1"), n
 
 //Hit observable evicting one page mocks of one filter using EvictDynamicKeyGroup
 getMocksFilteredPaginateInvalidate(oMocks, new DynamicKeyGroup("actives", "page1"), new EvictDynamicKeyGroup(true))
-```		
+```
 
 As you may already notice, the whole point of using `DynamicKey` or `DynamicKeyGroup` along with `Evict` classes is to play with several scopes when evicting objects.
 
 The above examples declare providers which their method signature accepts `EvictProvider` in order to be able to concrete more specifics types of `EvictProvider` at runtime.
 
 But I have done that for demonstration purposes, you always should narrow the evicting classes in your method signature to the type which you really need. For the last example, I would use `EvictDynamicKey` in production code, because this way I would be able to paginate the filtered items and evict them per its filter, triggered by a pull to refresh for instance.
-	
-Nevertheless, there are complete examples for [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).			
-		
-## Actionable API RxCache:
+
+Nevertheless, there are complete examples for [Android and Java projects](https://github.com/VictorAlbertos/RxCacheSamples).
+
+## <a name="actionable_section"></a>Actionable API RxCache:
 
 This actionable api offers an easy way to perform write operations using providers. Although write operations could be achieved using the classic api too, it's much complex and error-prone. Indeed, the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Actions.java) class it's a wrapper around the classic api which play with evicting scopes and lists.
 
@@ -252,7 +258,7 @@ dependencies {
     apt "com.github.VictorAlbertos.RxCache:compiler:1.4.7"
 }
 ```
-		
+
 After this configuration, every provider annotated with [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Actionable.java) `annotation` will generate an accessor method in the `ActionsProviders` class.
 
 The order in the params supplies must be as in the following example:
@@ -270,7 +276,7 @@ public interface RxProviders {
 }
 ```
 
-The observable value must be a `List`, otherwise an error will be thrown. 
+The observable value must be a `List`, otherwise an error will be thrown.
 
 The previous RxProviders `interface` will expose the next accessors methods in the `ActionsProviders` class.
 ```java
@@ -279,9 +285,9 @@ ActionsProviders.mocksDynamicKey(DynamicKey dynamicKey);
 ActionsProviders.mocksDynamicKeyGroup(DynamicKeyGroup dynamicKeyGroup);
 ```
 
-This methods return an instance of the `Actions` class, so now you are ready to use every write operation available in the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Actions.java) class. It is advisable to explore the [ActionsTest](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/test/java/io/rx_cache/internal/ActionsTest.java) class to see what action fits better for your case. If you feel that some action has been missed please don't hesitate to open an issue to request it.   
+This methods return an instance of the `Actions` class, so now you are ready to use every write operation available in the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Actions.java) class. It is advisable to explore the [ActionsTest](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/test/java/io/rx_cache/internal/ActionsTest.java) class to see what action fits better for your case. If you feel that some action has been missed please don't hesitate to open an issue to request it.
 
-Some actions examples: 
+Some actions examples:
 
 ```java
 ActionsProviders.mocks()
@@ -289,24 +295,24 @@ ActionsProviders.mocks()
     .addLast(new Mock())
     //Add a new mock at 5 position
     .add((position, count) -> position == 5, new Mock())
-    
+
     .evictFirst()
     //Evict first element if the cache has already 300 records
     .evictFirst(count -> count > 300)
     .evictLast()
     //Evict last element if the cache has already 300 records
     .evictLast(count -> count > 300)
-    //Evict all inactive elements 
+    //Evict all inactive elements
     .evictIterable((position, count, mock) -> mock.isInactive())
     .evictAll()
-   
+
     //Update the mock with id 5
     .update(mock -> mock.getId() == 5, mock -> {
         mock.setActive();
         return mock;
     })
     //Update all inactive mocks
-    .updateIterable(mock -> mock.isInactive(), mock -> { 
+    .updateIterable(mock -> mock.isInactive(), mock -> {
         mock.setActive();
         return mock;
     })
@@ -316,9 +322,9 @@ ActionsProviders.mocks()
 
 Every one of the previous actions will be execute only after the composed observable receives a subscription. This way, the underliyng provider cache will be modified its elements without effort at all.
 
-## Migrations
+## <a name="migrations_section"></a>Migrations
 
-RxCache provides a simple mechanism for handling migrations between releases. 
+RxCache provides a simple mechanism for handling migrations between releases.
 
 You need to annotate your providers `interface` with [@SchemeMigration](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/SchemeMigration.java). This `annotation` accepts an array of [@Migration](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Migration.java) annotations, and, in turn, `@Migration` annotation accepts both, a version number and an array of `Class`es which will be deleted from persistence layer.
 
@@ -331,9 +337,9 @@ You need to annotate your providers `interface` with [@SchemeMigration](https://
 interface Providers {}
 ```
 
-You want to annotate a new migration only when a new field has been added in a class model used by RxCache. 
+You want to annotate a new migration only when a new field has been added in a class model used by RxCache.
 
-Deleting classes or deleting fields of classes would be handle automatically by RxCache, so you don't need to annotate a new migration when a field or an entire class has been deleted. 
+Deleting classes or deleting fields of classes would be handle automatically by RxCache, so you don't need to annotate a new migration when a field or an entire class has been deleted.
 
 For instance:
 
@@ -358,11 +364,29 @@ interface Providers {}
 
 Because RxCache has an internal process to clean memory when it is required, the data will be evicted eventually.
 
+## <a name="encryption_section"></a>Encryption
+
+RxCache provides a simple mechanism to encrypt the data.
+
+You need to annotate your providers `interface` with [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EncryptKey.java). This `annotation` accepts a string as the `key` necessary to encrypt/decrypt the data. But you will need to annotate your provider's records with [@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Encrypt.java) in order to saved the data encrypted. If no [@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Encrypt.java) is set, then no encryption will be held. 
+
+**Important:** If the value of the `key` supplied on [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/EncryptKey.java) is modified between compilations, then the previous persisted data will not be able to be evicted/retrieved by RxCache. 
+
+```java
+@EncryptKey("myStrongKey-1234")
+interface Providers {
+        @Encrypt
+        Observable<List<Mock>> getMocksEncrypted(Observable<List<Mock>> oMocks);
+
+        Observable<List<Mock>> getMocksNotEncrypted(Observable<List<Mock>> oMocks);
+}
+```
+
 ## Configure general behaviour
 
 RxCache allows to set certain parameters when building the providers instance:
 
-### Configure the limit in megabytes for the data to be persisted 
+### <a name="expirable_section"></a>Configure the limit in megabytes for the data to be persisted
 
 By default, RxCache sets the limit in 100 megabytes, but you can change this value by calling setMaxMBPersistenceCache method when building the provider instance.
 
@@ -377,7 +401,7 @@ This limit ensure that the disk will no grow up limitless in case you have provi
 
 When this limit is reached, RxCache will not be able to persist in disk new data. That's why RxCache has an automated process to evict any record when the threshold memory assigned to the persistence layer is close to be reached, even if the record life time has not been fulfilled.
 
-But provider's record annotated with [@Expirable](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Expirable.java) annotation and set its value to false will be exclude from the process.
+But provider's record annotated with [@Expirable](https://github.com/VictorAlbertos/RxCache/blob/master/rx_cache/src/main/java/io/rx_cache/Expirable.java) annotation and set its value to false will be excluded from the process.
 
 ```java
 interface Providers {

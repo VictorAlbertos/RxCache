@@ -4,11 +4,13 @@ import org.junit.Test;
 
 import java.util.List;
 
+import io.rx_cache.internal.ProvidersRxCache;
 import io.rx_cache.internal.Record;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Mock;
 import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
 import io.rx_cache.internal.common.BaseTest;
+import io.rx_cache.internal.encrypt.GetEncryptKey;
 import rx.observers.TestSubscriber;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,24 +22,27 @@ import static org.hamcrest.core.Is.is;
 public class EvictExpiredRecordsPersistenceTest extends BaseTest {
     private EvictExpiredRecordsPersistence evictExpiredRecordsPersistenceUT;
     private HasRecordExpired hasRecordExpired;
+    private GetEncryptKey getEncryptKey;
     private TwoLayersCache twoLayersCache;
-    private final Memory memory = new ReferenceMapMemory();
+    private Memory memory;
     private static final long ONE_SECOND_LIFE = 1000, THIRTY_SECOND_LIFE = 30000, MORE_THAN_ONE_SECOND_LIFE = 1250;
 
     @Override public void setUp() {
         super.setUp();
 
+        memory = new ReferenceMapMemory();
+        getEncryptKey = new GetEncryptKey(ProvidersRxCache.class);
         twoLayersCache = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
         hasRecordExpired = new HasRecordExpired();
-        evictExpiredRecordsPersistenceUT = new EvictExpiredRecordsPersistence(memory, disk, hasRecordExpired);
+        evictExpiredRecordsPersistenceUT = new EvictExpiredRecordsPersistence(memory, disk, hasRecordExpired, getEncryptKey);
     }
 
     @Test public void Evict_Just_Expired_Records() {
         int recordsCount = 100;
 
         for (int i = 0; i < recordsCount/2; i++) {
-            twoLayersCache.save(i+"_expired", "", "", new Mock(i+"_expired"), ONE_SECOND_LIFE, true);
-            twoLayersCache.save(i+"_live", "", "", new Mock(i+"_live"), THIRTY_SECOND_LIFE, true);
+            twoLayersCache.save(i+"_expired", "", "", new Mock(i+"_expired"), ONE_SECOND_LIFE, true, false);
+            twoLayersCache.save(i+"_live", "", "", new Mock(i+"_live"), THIRTY_SECOND_LIFE, true, false);
         }
 
         waitTime(MORE_THAN_ONE_SECOND_LIFE);
@@ -54,14 +59,14 @@ public class EvictExpiredRecordsPersistenceTest extends BaseTest {
 
         for (String key : allKeys) {
             key = key.substring(0, key.indexOf("$"));
-            Record<Mock> record = twoLayersCache.retrieve(key, "", "", false, THIRTY_SECOND_LIFE);
+            Record<Mock> record = twoLayersCache.retrieve(key, "", "", false, THIRTY_SECOND_LIFE, false);
             assert(record.getData().getMessage().contains("live"));
             assert(!record.getData().getMessage().contains("expired"));
         }
     }
 
     private SaveRecord saveRecord(Memory memory) {
-        return new SaveRecord(memory, disk, 100, new EvictExpirableRecordsPersistence(memory, disk, 100));
+        return new SaveRecord(memory, disk, 100, new EvictExpirableRecordsPersistence(memory, disk, 100, getEncryptKey), getEncryptKey);
     }
 
     private EvictRecord evictRecord(Memory memory) {
@@ -69,6 +74,6 @@ public class EvictExpiredRecordsPersistenceTest extends BaseTest {
     }
 
     private RetrieveRecord retrieveRecord(Memory memory) {
-        return new RetrieveRecord(memory, disk, new EvictRecord(memory, disk), new HasRecordExpired());
+        return new RetrieveRecord(memory, disk, new EvictRecord(memory, disk), new HasRecordExpired(), getEncryptKey);
     }
 }

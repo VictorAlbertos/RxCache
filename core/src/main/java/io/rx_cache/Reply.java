@@ -26,10 +26,12 @@ package io.rx_cache;
 public final class Reply<T> {
     private final T data;
     private final Source source;
+    private final boolean isEncrypted;
 
-    public Reply(T data, Source source) {
+    public Reply(T data, Source source, boolean isEncrypted) {
         this.data = data;
         this.source = source;
+        this.isEncrypted = isEncrypted;
     }
 
     public T getData() {
@@ -38,5 +40,9 @@ public final class Reply<T> {
 
     public Source getSource() {
         return source;
+    }
+
+    public boolean isEncrypted() {
+        return isEncrypted;
     }
 }

@@ -103,11 +103,11 @@ public final class ProxyProviders implements InvocationHandler {
     }
 
     private Observable<Object> getData(final ProxyTranslator.ConfigProvider configProvider) {
-        return Observable.just(twoLayersCache.retrieve(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), useExpiredDataIfLoaderNotAvailable, configProvider.getLifeTimeMillis()))
+        return Observable.just(twoLayersCache.retrieve(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), useExpiredDataIfLoaderNotAvailable, configProvider.getLifeTimeMillis(), configProvider.isEncrypted()))
                 .map(new Func1<Record, Observable<Reply>>() {
                     @Override public Observable<Reply> call(final Record record) {
                         if (record != null && !configProvider.evictProvider().evict())
-                            return Observable.just(new Reply(record.getData(), record.getSource()));
+                            return Observable.just(new Reply(record.getData(), record.getSource(), configProvider.isEncrypted()));
 
                         return getDataFromLoader(configProvider, record);
                     }
@@ -128,7 +128,7 @@ public final class ProxyProviders implements InvocationHandler {
         return configProvider.getLoaderObservable().map(new Func1() {
             @Override public Reply call(Object data) {
                 if (data == null && useExpiredDataIfLoaderNotAvailable && record != null) {
-                    return new Reply(record.getData(), record.getSource());
+                    return new Reply(record.getData(), record.getSource(), configProvider.isEncrypted());
                 }
 
                 clearKeyIfNeeded(configProvider);
@@ -136,15 +136,15 @@ public final class ProxyProviders implements InvocationHandler {
                 if (data == null)
                     throw new RxCacheException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey());
 
-                twoLayersCache.save(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), data, configProvider.getLifeTimeMillis(), configProvider.isExpirable());
-                return new Reply(data, Source.CLOUD);
+                twoLayersCache.save(configProvider.getProviderKey(), configProvider.getDynamicKey(), configProvider.getDynamicKeyGroup(), data, configProvider.getLifeTimeMillis(), configProvider.isExpirable(), configProvider.isEncrypted());
+                return new Reply(data, Source.CLOUD, configProvider.isEncrypted());
             }
         }).onErrorReturn(new Func1() {
             @Override public Object call(Object o) {
                 clearKeyIfNeeded(configProvider);
 
                 if (useExpiredDataIfLoaderNotAvailable && record != null) {
-                    return new Reply(record.getData(), record.getSource());
+                    return new Reply(record.getData(), record.getSource(), configProvider.isEncrypted());
                 }
 
                 throw new RxCacheException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER + " " + configProvider.getProviderKey(), (Throwable) o);
@@ -168,7 +168,7 @@ public final class ProxyProviders implements InvocationHandler {
         Object data = getDeepCopy.deepCopy(reply.getData());
 
         if (configProvider.requiredDetailedResponse()) {
-            return new Reply<>(data, reply.getSource());
+            return new Reply<>(data, reply.getSource(), configProvider.isEncrypted());
         } else {
             return data;
         }

@@ -21,6 +21,8 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
 import io.rx_cache.internal.Disk;
+import io.rx_cache.internal.encrypt.BuiltInEncryptor;
+import io.rx_cache.internal.encrypt.FileEncryptor;
 
 
 public class BaseTest {
@@ -28,7 +30,7 @@ public class BaseTest {
     @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Before public void setUp() {
-        disk = new Disk(temporaryFolder.getRoot());
+        disk = new Disk(temporaryFolder.getRoot(), new FileEncryptor(new BuiltInEncryptor()));
     }
 
     protected void waitTime(long millis) {

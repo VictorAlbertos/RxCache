@@ -19,22 +19,25 @@ package io.rx_cache.internal.cache;
 
 import javax.inject.Inject;
 
-import io.rx_cache.internal.Persistence;
-import io.rx_cache.internal.Record;
 import io.rx_cache.internal.Locale;
 import io.rx_cache.internal.Memory;
+import io.rx_cache.internal.Persistence;
+import io.rx_cache.internal.Record;
+import io.rx_cache.internal.encrypt.GetEncryptKey;
 
 public final class SaveRecord extends Action {
     private final Integer maxMgPersistenceCache;
     private final EvictExpirableRecordsPersistence evictExpirableRecordsPersistence;
+    private final GetEncryptKey getEncryptKey;
 
-    @Inject public SaveRecord(Memory memory, Persistence persistence, Integer maxMgPersistenceCache, EvictExpirableRecordsPersistence evictExpirableRecordsPersistence) {
+    @Inject public SaveRecord(Memory memory, Persistence persistence, Integer maxMgPersistenceCache, EvictExpirableRecordsPersistence evictExpirableRecordsPersistence, GetEncryptKey getEncryptKey) {
         super(memory, persistence);
         this.maxMgPersistenceCache = maxMgPersistenceCache;
         this.evictExpirableRecordsPersistence = evictExpirableRecordsPersistence;
+        this.getEncryptKey = getEncryptKey;
     }
 
-    void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data, Long lifeTime, boolean isExpirable) {
+    void save(final String providerKey, final String dynamicKey,final  String dynamicKeyGroup, final Object data, final Long lifeTime, final boolean isExpirable, final boolean isEncrypted) {
         String composedKey = composeKey(providerKey, dynamicKey, dynamicKeyGroup);
 
         Record record = new Record(data, isExpirable, lifeTime);
@@ -43,9 +46,9 @@ public final class SaveRecord extends Action {
         if (persistence.storedMB() >= maxMgPersistenceCache) {
             System.out.println(Locale.RECORD_CAN_NOT_BE_PERSISTED_BECAUSE_WOULD_EXCEED_THRESHOLD_LIMIT);
         } else {
-            persistence.saveRecord(composedKey, record);
+            persistence.saveRecord(composedKey, record, isEncrypted, getEncryptKey.getKey());
         }
 
-        evictExpirableRecordsPersistence.startTaskIfNeeded();
+        evictExpirableRecordsPersistence.startTaskIfNeeded(isEncrypted);
     }
 }

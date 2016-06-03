@@ -23,6 +23,8 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
+import io.rx_cache.internal.encrypt.Encryptor;
+import io.rx_cache.internal.encrypt.BuiltInEncryptor;
 
 @Module
 public final class RxCacheModule {
@@ -56,6 +58,11 @@ public final class RxCacheModule {
 
     @Singleton @Provides Integer maxMbPersistenceCache() {
         return maxMgPersistenceCache != null ? maxMgPersistenceCache : 100;
+    }
+
+    @Singleton @Provides
+    Encryptor provideEncryptor() {
+        return new BuiltInEncryptor();
     }
 
     @Singleton @Provides Class provideClassProviders() {

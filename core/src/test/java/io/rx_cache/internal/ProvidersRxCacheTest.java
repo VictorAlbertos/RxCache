@@ -264,7 +264,7 @@ public class ProvidersRxCacheTest {
         subscriber.awaitTerminalEvent();
         Reply<Mock[]> reply = subscriber.getOnNextEvents().get(0);
         assertThat(reply.getData().length, is(SIZE));
-        reply = new Reply<>(Arrays.copyOf(reply.getData(), reply.getData().length - 1),reply.getSource());
+        reply = new Reply<>(Arrays.copyOf(reply.getData(), reply.getData().length - 1),reply.getSource(), false);
         assertThat(reply.getData().length, is(SIZE - 1));
 
         subscriber = new TestSubscriber<>();

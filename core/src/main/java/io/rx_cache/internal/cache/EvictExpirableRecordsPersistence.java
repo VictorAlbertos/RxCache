@@ -25,6 +25,7 @@ import io.rx_cache.internal.Locale;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Persistence;
 import io.rx_cache.internal.Record;
+import io.rx_cache.internal.encrypt.GetEncryptKey;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action1;
@@ -33,25 +34,32 @@ import rx.schedulers.Schedulers;
 @Singleton
 public class EvictExpirableRecordsPersistence extends Action {
     private final Integer maxMgPersistenceCache;
+    private final GetEncryptKey getEncryptKey;
     private static final float PERCENTAGE_MEMORY_STORED_TO_START = 0.95f;
     //VisibleForTesting
     public static final float PERCENTAGE_MEMORY_STORED_TO_STOP = 0.7f;
     private final Observable<String> oEvictingTask;
-    private boolean couldBeExpirableRecords;
+    private boolean couldBeExpirableRecords, isEncrypted;
 
-    @Inject public EvictExpirableRecordsPersistence(Memory memory, Persistence persistence, Integer maxMgPersistenceCache) {
+    @Inject public EvictExpirableRecordsPersistence(Memory memory, Persistence persistence, Integer maxMgPersistenceCache, GetEncryptKey getEncryptKey) {
         super(memory, persistence);
         this.maxMgPersistenceCache = maxMgPersistenceCache;
+        this.getEncryptKey = getEncryptKey;
         this.couldBeExpirableRecords = true;
         this.oEvictingTask = oEvictingTask();
     }
 
-    Observable<String> startTaskIfNeeded() {
+    Observable<String> startTaskIfNeeded(boolean isEncrypted) {
+        this.isEncrypted = isEncrypted;
         oEvictingTask.subscribe();
         return oEvictingTask;
     }
 
     private Observable<String> oEvictingTask() {
+        return oEvictingTask(getEncryptKey.getKey());
+    }
+
+    private Observable<String> oEvictingTask(final String encryptKey) {
         Observable<String> oEvictingTask = Observable.create(new Observable.OnSubscribe<String>() {
             @Override public void call(Subscriber<? super String> subscriber) {
                 if (!couldBeExpirableRecords) {
@@ -75,7 +83,7 @@ public class EvictExpirableRecordsPersistence extends Action {
                         break;
                     }
 
-                    Record record = persistence.retrieveRecord(key);
+                    Record record = persistence.retrieveRecord(key, isEncrypted, encryptKey);
                     if (record == null) continue;
                     if (!record.isExpirable()) continue;
 
@@ -90,11 +98,12 @@ public class EvictExpirableRecordsPersistence extends Action {
             }
         }).subscribeOn((Schedulers.io()))
           .observeOn(Schedulers.io())
-                .doOnError(new Action1<Throwable>() {
+          .doOnError(new Action1<Throwable>() {
                     @Override public void call(Throwable throwable) {
                         throwable.printStackTrace();
                     }
                 });
+
         return oEvictingTask.share();
     }
 
