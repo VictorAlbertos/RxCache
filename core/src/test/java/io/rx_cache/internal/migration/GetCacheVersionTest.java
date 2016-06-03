@@ -44,7 +44,7 @@ public class GetCacheVersionTest extends BaseTest {
     }
 
     @Test public void When_Version_Specified_Then_Get_It() {
-        disk.save(GetCacheVersion.KEY_CACHE_VERSION, 5);
+        disk.save(GetCacheVersion.KEY_CACHE_VERSION, 5, false, null);
 
         getCacheVersionUT.react().subscribe(versionTestSubscriber);
         versionTestSubscriber.awaitTerminalEvent();

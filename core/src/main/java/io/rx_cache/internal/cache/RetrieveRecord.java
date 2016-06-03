@@ -22,18 +22,21 @@ import io.rx_cache.internal.Persistence;
 import io.rx_cache.internal.Record;
 import io.rx_cache.Source;
 import io.rx_cache.internal.Memory;
+import io.rx_cache.internal.encrypt.GetEncryptKey;
 
 public final class RetrieveRecord extends Action {
     private final EvictRecord evictRecord;
     private final HasRecordExpired hasRecordExpired;
+    private final GetEncryptKey getEncryptKey;
 
-    @Inject public RetrieveRecord(Memory memory, Persistence persistence, EvictRecord evictRecord, HasRecordExpired hasRecordExpired) {
+    @Inject public RetrieveRecord(Memory memory, Persistence persistence, EvictRecord evictRecord, HasRecordExpired hasRecordExpired, GetEncryptKey getEncryptKey) {
         super(memory, persistence);
         this.evictRecord = evictRecord;
         this.hasRecordExpired = hasRecordExpired;
+        this.getEncryptKey = getEncryptKey;
     }
 
-    <T> Record<T> retrieveRecord(String providerKey, String dynamicKey, String dynamicKeyGroup, boolean useExpiredDataIfLoaderNotAvailable, Long lifeTime) {
+    <T> Record<T> retrieveRecord(String providerKey, String dynamicKey, String dynamicKeyGroup, boolean useExpiredDataIfLoaderNotAvailable, Long lifeTime, boolean isEncrypted) {
         String composedKey = composeKey(providerKey, dynamicKey, dynamicKeyGroup);
 
         Record<T> record = memory.getIfPresent(composedKey);
@@ -42,7 +45,7 @@ public final class RetrieveRecord extends Action {
             record.setSource(Source.MEMORY);
         } else {
             try {
-                record = persistence.retrieveRecord(composedKey);
+                record = persistence.retrieveRecord(composedKey, isEncrypted, getEncryptKey.getKey());
                 record.setSource(Source.PERSISTENCE);
                 memory.put(composedKey, record);
             } catch (Exception ignore) {

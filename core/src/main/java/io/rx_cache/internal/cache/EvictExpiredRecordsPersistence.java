@@ -21,35 +21,38 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import io.rx_cache.internal.Record;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Persistence;
+import io.rx_cache.internal.Record;
+import io.rx_cache.internal.encrypt.GetEncryptKey;
 import rx.Observable;
-import rx.functions.Func0;
 
 @Singleton
 public final class EvictExpiredRecordsPersistence extends Action {
     private final HasRecordExpired hasRecordExpired;
+    private final GetEncryptKey getEncryptKey;
 
-    @Inject public EvictExpiredRecordsPersistence(Memory memory, Persistence persistence, HasRecordExpired hasRecordExpired) {
+    @Inject public EvictExpiredRecordsPersistence(Memory memory, Persistence persistence, HasRecordExpired hasRecordExpired, GetEncryptKey getEncryptKey) {
         super(memory, persistence);
         this.hasRecordExpired = hasRecordExpired;
+        this.getEncryptKey = getEncryptKey;
     }
 
     public Observable<Void> startEvictingExpiredRecords() {
-        return Observable.defer(new Func0<Observable<Void>>() {
-            @Override public Observable<Void> call() {
-                List<String> allKeys = persistence.allKeys();
+        List<String> allKeys = persistence.allKeys();
 
-                for (String key : allKeys) {
-                    Record record = persistence.retrieveRecord(key);
-                    if (record != null && hasRecordExpired.hasRecordExpired(record)) {
-                        persistence.evict(key);
-                    }
-                }
+        for (String key : allKeys) {
+            Record record = persistence.retrieveRecord(key, false, getEncryptKey.getKey());
 
-                return Observable.just(null);
+            if (record == null) {
+                record = persistence.retrieveRecord(key, true, getEncryptKey.getKey());
             }
-        });
+
+            if (record != null && hasRecordExpired.hasRecordExpired(record)) {
+                persistence.evict(key);
+            }
+        }
+
+        return Observable.just(null);
     }
 }

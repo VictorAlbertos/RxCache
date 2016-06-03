@@ -23,14 +23,20 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
 
+import java.io.File;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import io.rx_cache.DynamicKey;
+import io.rx_cache.Encrypt;
+import io.rx_cache.EncryptKey;
+import io.rx_cache.LifeCache;
 import io.rx_cache.internal.common.BaseTestEvictingTask;
+import rx.Observable;
 import rx.observers.TestSubscriber;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Created by victor on 03/03/16.
@@ -46,8 +52,8 @@ public class ProvidersRxCacheEvictExpiredRecordsTest extends BaseTestEvictingTas
                 .using(ProvidersRxCache.class);
     }
 
-    @Test public void _1_Populate_Disk_With_Expired_Records_And_No_Retrievable_Keys() {
-        assert getSizeMB(temporaryFolder.getRoot()) == 0;
+    @Test public void _1_Populate_Disk_With_Expired_Records() {
+        assertEquals(0, getSizeMB(temporaryFolder.getRoot()));
 
         for (int i = 0; i < 50; i++) {
             waitTime(50);
@@ -57,16 +63,18 @@ public class ProvidersRxCacheEvictExpiredRecordsTest extends BaseTestEvictingTas
             subscriber.awaitTerminalEvent();
         }
 
-        assert getSizeMB(temporaryFolder.getRoot()) > 0;
+        assertNotEquals(0, getSizeMB(temporaryFolder.getRoot()));
     }
 
     @Test public void _2_Perform_Evicting_Task_And_Check_Results() {
         waitTime(1000);
-        assertThat(getSizeMB(temporaryFolder.getRoot()), is(0));
+        assertEquals(0, temporaryFolder.getRoot().listFiles().length);
+        assertEquals(0, getSizeMB(temporaryFolder.getRoot()));
     }
 
-    @Test public void _3_Populate_Disk_With_No_Expired_Records_And_No_Retrievable_Keys() {
-        assertThat(getSizeMB(temporaryFolder.getRoot()), is(0));
+    @Test public void _3_Populate_Disk_With_No_Expired_Records() {
+        deleteAllFiles();
+        assertEquals(0, getSizeMB(temporaryFolder.getRoot()));
 
         for (int i = 0; i < 50; i++) {
             waitTime(50);
@@ -76,11 +84,55 @@ public class ProvidersRxCacheEvictExpiredRecordsTest extends BaseTestEvictingTas
             subscriber.awaitTerminalEvent();
         }
 
-        assert getSizeMB(temporaryFolder.getRoot()) > 0;
+        assertNotEquals(0, getSizeMB(temporaryFolder.getRoot()));
     }
 
     @Test public void _4_Perform_Evicting_Task_And_Check_Results() {
         waitTime(1000);
-        assert getSizeMB(temporaryFolder.getRoot()) > 0;
+        assertNotEquals(0, getSizeMB(temporaryFolder.getRoot()));
     }
+
+    @Test public void _5_Populate_Disk_With_Expired_Encrypted_Records() {
+        deleteAllFiles();
+        assertEquals(0, temporaryFolder.getRoot().listFiles().length);
+
+        for (int i = 0; i < 50; i++) {
+            waitTime(50);
+            TestSubscriber<List<Mock>> subscriber = new TestSubscriber<>();
+            String key = System.currentTimeMillis() + i + "";
+            providersRxCache.getEphemeralEncryptedMocksPaginate(createObservableMocks(), new DynamicKey(key)).subscribe(subscriber);
+            subscriber.awaitTerminalEvent();
+        }
+
+        assertNotEquals(0, getSizeMB(temporaryFolder.getRoot()));
+    }
+
+    @Test public void _6_Perform_Evicting_Task_And_Check_Results() {
+        waitTime(1000);
+        assertEquals(0, temporaryFolder.getRoot().listFiles().length);
+        assertEquals(0, getSizeMB(temporaryFolder.getRoot()));
+    }
+
+    private void deleteAllFiles() {
+        File[] files = temporaryFolder.getRoot().listFiles();
+
+        for (File file : files) {
+            file.delete();
+            waitTime(100);
+        }
+    }
+
+
+    @EncryptKey("myStrongKey-1234")
+    private interface ProvidersRxCache {
+        Observable<List<Mock>> getMocksPaginate(Observable<List<Mock>> mocks, DynamicKey page);
+
+        @LifeCache(duration = 1, timeUnit = TimeUnit.MILLISECONDS)
+        Observable<List<Mock>> getEphemeralMocksPaginate(Observable<List<Mock>> mocks, DynamicKey page);
+
+        @Encrypt
+        @LifeCache(duration = 1, timeUnit = TimeUnit.MILLISECONDS)
+        Observable<List<Mock>> getEphemeralEncryptedMocksPaginate(Observable<List<Mock>> mocks, DynamicKey page);
+    }
+
 }

@@ -41,7 +41,7 @@ final class UpgradeCacheVersion extends CacheVersion {
         if (migrations.isEmpty()) return Observable.just(null);
 
         Migration migration = migrations.get(migrations.size() - 1);
-        persistence.save(KEY_CACHE_VERSION, migration.version());
+        persistence.save(KEY_CACHE_VERSION, migration.version(), false, null);
 
         return Observable.just(null);
     }

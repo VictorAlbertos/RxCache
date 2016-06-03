@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -32,22 +33,28 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import io.rx_cache.internal.encrypt.FileEncryptor;
+
 /**
  * Save objects in disk and evict them too. It uses Gson as json parser.
  */
 public final class Disk implements Persistence {
     private final File cacheDirectory;
+    private final FileEncryptor fileEncryptor;
 
-    @Inject public Disk(File cacheDirectory) {
+    @Inject public Disk(File cacheDirectory, FileEncryptor fileEncryptor) {
         this.cacheDirectory = cacheDirectory;
+        this.fileEncryptor = fileEncryptor;
     }
 
     /** Save in disk the Record passed.
      * @param key the key whereby the Record could be retrieved/deleted later. @see evict and @see retrieve.
      * @param record the record to be persisted.
+     * @param isEncrypted If the persisted record is encrypted or not. See {@link io.rx_cache.Encrypt}
+     * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * */
-    @Override public void saveRecord(String key, Record record) {
-        save(key, record);
+    @Override public void saveRecord(String key, Record record, boolean isEncrypted, String encryptKey) {
+        save(key, record, isEncrypted, encryptKey);
     }
 
     /**
@@ -89,18 +96,35 @@ public final class Disk implements Persistence {
     /** Save in disk the object passed.
      * @param key the key whereby the object could be retrieved/deleted later. @see evict and @see retrieve.
      * @param data the object to be persisted.
+     * @param isEncrypted If the persisted record is encrypted or not. See {@link io.rx_cache.Encrypt}
+     * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * */
-    public void save(String key, Object data) {
+    public void save(String key, Object data, boolean isEncrypted, String encryptKey) {
         String wrapperJSONSerialized = new Gson().toJson(data);
+        FileWriter fileWriter = null;
+
         try {
             File file = new File(cacheDirectory, key);
-
-            FileWriter fileWriter = new FileWriter(file, false);
+            fileWriter = new FileWriter(file, false);
             fileWriter.write(wrapperJSONSerialized);
             fileWriter.flush();
             fileWriter.close();
+            fileWriter = null;
+
+            if (isEncrypted)
+                fileEncryptor.encrypt(encryptKey, new File(cacheDirectory, key));
+
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
+        } finally {
+            try {
+                if (fileWriter != null) {
+                    fileWriter.flush();
+                    fileWriter.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -108,7 +132,7 @@ public final class Disk implements Persistence {
      * @param key the key whereby the object could be deleted.
      * */
     @Override public void evict(String key) {
-        File file = new File(cacheDirectory, key);
+        final File file = new File(cacheDirectory, key);
         file.delete();
     }
 
@@ -123,32 +147,59 @@ public final class Disk implements Persistence {
     /** Retrieve the object previously saved.
      * @param key the key whereby the object could be retrieved.
      * @param clazz the type of class against the object need to be serialized
+     * @param isEncrypted If the persisted record is encrypted or not. See {@link io.rx_cache.Encrypt}
+     * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * */
-    public <T> T retrieve(String key, Class<T> clazz) {
-        try {
-            File file = new File(cacheDirectory, key);
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
+    public <T> T retrieve(String key, final Class<T> clazz, boolean isEncrypted, String encryptKey) {
+        File file = new File(cacheDirectory, key);
+        BufferedReader bufferedReader = null;
 
+        if (isEncrypted)
+            file = fileEncryptor.decrypt(encryptKey, file);
+
+        try {
+            bufferedReader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
             T data = new Gson().fromJson(bufferedReader, clazz);
 
-            bufferedReader.close();
+            if (isEncrypted)
+                file.delete();
+
             return data;
         } catch (Exception ignore) {
             return null;
+        } finally {
+            if (isEncrypted)
+                file.delete();
+
+            try {
+                if (bufferedReader != null) {
+                    bufferedReader.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     /** Retrieve the Record previously saved.
-     * @param key the key whereby the object could be retrieved.*/
-    @Override public <T> Record<T> retrieveRecord(String key) {
-        try {
-            File file = new File(cacheDirectory, key);
+     * @param key the key whereby the object could be retrieved.
+     * @param isEncrypted If the persisted record is encrypted or not. See {@link io.rx_cache.Encrypt}
+     * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
+     * */
+    @Override public <T> Record<T> retrieveRecord(String key, boolean isEncrypted, String encryptKey) {
+        BufferedReader readerTempRecord = null;
+        BufferedReader reader = null;
+        File file = new File(cacheDirectory, key);
 
-            BufferedReader readerTempRecord = new BufferedReader(new FileReader(file.getAbsoluteFile()));
+        try {
+            if (isEncrypted)
+                file = fileEncryptor.decrypt(encryptKey, file);
+
+            readerTempRecord = new BufferedReader(new FileReader(file.getAbsoluteFile()));
             Record tempDiskRecord = new Gson().fromJson(readerTempRecord, Record.class);
             readerTempRecord.close();
 
-            BufferedReader reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
+            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
             Class classData = Class.forName(tempDiskRecord.getDataClassName());
             Class classCollectionData = tempDiskRecord.getDataCollectionClassName() == null
                     ? Object.class : Class.forName(tempDiskRecord.getDataCollectionClassName());
@@ -175,12 +226,52 @@ public final class Disk implements Persistence {
                 diskRecord = new Gson().fromJson(reader, type);
             }
 
-            reader.close();
             diskRecord.setSizeOnMb(file.length()/1024f/1024f);
+
             return diskRecord;
         } catch (Exception ignore) {
             return null;
+        } finally {
+            try {
+                if (readerTempRecord != null) {
+                    readerTempRecord.close();
+                }
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (isEncrypted)
+                file.delete();
         }
+    }
+    private String getFileContent(File file) {
+        StringBuilder builder = new StringBuilder();
+        BufferedReader reader = null;
+
+        try {
+            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
+            String aux;
+
+            while ((aux = reader.readLine()) != null) {
+                builder.append(aux);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return builder.toString();
     }
 
     /** Retrieve a collection previously saved.
@@ -189,18 +280,27 @@ public final class Disk implements Persistence {
      * @param classData type class contained by the collection, not the collection itself
      * */
     public <C extends Collection<T>, T> C retrieveCollection(String key, Class<C> classCollection, Class<T> classData) {
+        BufferedReader reader = null;
+
         try {
             File file = new File(cacheDirectory, key);
-            BufferedReader reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
+            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
 
             Type typeCollection = $Gson$Types.newParameterizedTypeWithOwner(null, classCollection, classData);
             T data = new Gson().fromJson(reader, typeCollection);
 
-            reader.close();
             return (C) data;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -211,18 +311,27 @@ public final class Disk implements Persistence {
      * @param classMapValue type class of the Map value
      * */
     public <M extends Map<K,V>, K, V> M retrieveMap(String key, Class classMap, Class<K> classMapKey, Class<V> classMapValue) {
+        BufferedReader reader = null;
+
         try {
             File file = new File(cacheDirectory, key);
-            BufferedReader reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
+            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
 
             Type typeMap = $Gson$Types.newParameterizedTypeWithOwner(null, classMap, classMapKey, classMapValue);
             Object data = new Gson().fromJson(reader, typeMap);
 
-            reader.close();
             return (M) data;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -231,18 +340,27 @@ public final class Disk implements Persistence {
      * @param classData type class contained by the Array
      * */
     public <T> T[] retrieveArray(String key, Class<T> classData) {
+        BufferedReader reader = null;
+
         try {
             File file = new File(cacheDirectory, key);
-            BufferedReader reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
+            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
 
             Class<?> clazzArray = Array.newInstance(classData, 1).getClass();
             Object data = new Gson().fromJson(reader, clazzArray);
 
-            reader.close();
             return (T[]) data;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

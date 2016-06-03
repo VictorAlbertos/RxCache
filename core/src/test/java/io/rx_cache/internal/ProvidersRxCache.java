@@ -33,7 +33,7 @@ import rx.Observable;
 /**
  * Provided to test as an integration test the library RxCache
  */
-interface ProvidersRxCache {
+public interface ProvidersRxCache {
     Observable<List<Mock>> getMocks(Observable<List<Mock>> mocks);
 
     Observable<Reply<List<Mock>>> getMocksWithDetailResponse(Observable<List<Mock>> mocks);

@@ -34,6 +34,7 @@ import io.rx_cache.internal.cache.SaveRecord;
 import io.rx_cache.internal.cache.TwoLayersCache;
 import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
 import io.rx_cache.internal.common.BaseTest;
+import io.rx_cache.internal.encrypt.GetEncryptKey;
 import io.rx_cache.internal.migration.DoMigrations;
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -50,6 +51,7 @@ public class ProxyProvidersTest extends BaseTest {
     private ProxyProviders proxyProvidersUT;
     private TwoLayersCache twoLayersCacheMock;
     private HasRecordExpired hasRecordExpired;
+    private GetEncryptKey getEncryptKey;
     private EvictExpiredRecordsPersistence evictExpiredRecordsPersistence;
     private GetDeepCopy getDeepCopy;
     private DoMigrations doMigrations;
@@ -58,13 +60,14 @@ public class ProxyProvidersTest extends BaseTest {
         super.setUp();
 
         hasRecordExpired = new HasRecordExpired();
+        getEncryptKey = new GetEncryptKey(ProvidersRxCache.class);
 
         Memory memory = new ReferenceMapMemory();
         EvictRecord evictRecord =  new EvictRecord(memory,disk);
-        SaveRecord saveRecord = new SaveRecord(memory, disk, 100, new EvictExpirableRecordsPersistence(memory, disk, 100));
-        RetrieveRecord retrieveRecord = new RetrieveRecord(memory,disk, evictRecord, hasRecordExpired);
+        SaveRecord saveRecord = new SaveRecord(memory, disk, 100, new EvictExpirableRecordsPersistence(memory, disk, 100, getEncryptKey), getEncryptKey);
+        RetrieveRecord retrieveRecord = new RetrieveRecord(memory,disk, evictRecord, hasRecordExpired, getEncryptKey);
 
-        evictExpiredRecordsPersistence = new EvictExpiredRecordsPersistence(memory, disk, hasRecordExpired);
+        evictExpiredRecordsPersistence = new EvictExpiredRecordsPersistence(memory, disk, hasRecordExpired, getEncryptKey);
         twoLayersCacheMock = new TwoLayersCache(evictRecord, retrieveRecord, saveRecord);
         getDeepCopy = new GetDeepCopy(memory, disk);
         doMigrations = new DoMigrations(disk, Mock.class);
@@ -149,9 +152,9 @@ public class ProxyProvidersTest extends BaseTest {
                 break;
         }
 
-        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", observable, null, detailResponse, new EvictProvider(evictCache), true);
+        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", observable, null, detailResponse, new EvictProvider(evictCache), true, false);
 
-        if (hasCache) twoLayersCacheMock.save("mockKey", "", "", new Mock("message"), configProvider.getLifeTimeMillis(), configProvider.isExpirable());
+        if (hasCache) twoLayersCacheMock.save("mockKey", "", "", new Mock("message"), configProvider.getLifeTimeMillis(), configProvider.isExpirable(), configProvider.isEncrypted());
 
         TestSubscriber subscriberMock = new TestSubscriber<>();
         proxyProvidersUT = new ProxyProviders(null, twoLayersCacheMock, useExpiredDataIfLoaderNotAvailable, evictExpiredRecordsPersistence, getDeepCopy, doMigrations);
@@ -181,5 +184,4 @@ public class ProxyProvidersTest extends BaseTest {
     enum Loader {
         VALID, NULL, EXCEPTION
     }
-
 }

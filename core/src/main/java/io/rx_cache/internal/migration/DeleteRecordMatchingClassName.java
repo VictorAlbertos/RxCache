@@ -23,29 +23,39 @@ import javax.inject.Inject;
 
 import io.rx_cache.internal.Persistence;
 import io.rx_cache.internal.Record;
+import io.rx_cache.internal.encrypt.GetEncryptKey;
 import rx.Observable;
 
-final class DeleteRecordMatchingClassName {
+public final class DeleteRecordMatchingClassName {
     private final Persistence persistence;
+    private final GetEncryptKey getEncryptKey;
     private List<Class> classes;
 
-    @Inject public DeleteRecordMatchingClassName(Persistence persistence) {
+    @Inject public DeleteRecordMatchingClassName(Persistence persistence, GetEncryptKey getEncryptKey) {
         this.persistence = persistence;
+        this.getEncryptKey = getEncryptKey;
     }
 
-    DeleteRecordMatchingClassName with(List<Class> classes) {
+    public DeleteRecordMatchingClassName with(List<Class> classes) {
         this.classes = classes;
         return this;
     }
 
-    Observable<Void> react() {
+    public Observable<Void> react() {
         if (classes.isEmpty()) return Observable.just(null);
 
         List<String> allKeys = persistence.allKeys();
 
         for (String key : allKeys) {
-            Record record = persistence.retrieveRecord(key);
-            if (evictRecord(record)) persistence.evict(key);
+            Record record = persistence.retrieveRecord(key, false, getEncryptKey.getKey());
+
+            if (record == null) {
+                record = persistence.retrieveRecord(key, true, getEncryptKey.getKey());
+            }
+
+            if (evictRecord(record)) {
+                persistence.evict(key);
+            }
         }
 
         return Observable.just(null);

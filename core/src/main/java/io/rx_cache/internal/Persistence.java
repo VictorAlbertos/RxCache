@@ -29,16 +29,20 @@ public interface Persistence {
      * Save the data supplied based on a certain mechanism which provides persistence somehow
      * @param key The key associated with the object to be persisted
      * @param object The object to be persisted
+     * @param isEncrypted If the persisted record is encrypted or not. See {@link io.rx_cache.Encrypt}
+     * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      */
-    void save(String key, Object object);
+    void save(String key, Object object, boolean isEncrypted, String encryptKey);
 
 
     /**
      * Save the data supplied based on a certain mechanism which provides persistence somehow
      * @param key The key associated with the record to be persisted
      * @param record The record to be persisted
+     * @param isEncrypted If the persisted record is encrypted or not. See {@link io.rx_cache.Encrypt}
+     * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      */
-    void saveRecord(String key, Record record);
+    void saveRecord(String key, Record record, boolean isEncrypted, String encryptKey);
 
     /**
      * Delete the data associated with its particular key
@@ -63,17 +67,20 @@ public interface Persistence {
 
     /**
      * Retrieve the object associated with its particular key
-     * @param <T> The data to be retrieved
      * @param key The key associated with the object to be retrieved from persistence
+     * @param <T> The data to be retrieved
+     * @param isEncrypted If the persisted record is encrypted or not. See {@link io.rx_cache.Encrypt}
+     * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * @see Record
      */
-    <T> T retrieve(String key, Class<T> clazz);
+    <T> T retrieve(String key, Class<T> clazz, boolean isEncrypted, String encryptKey);
 
     /**
      * Retrieve the record associated with its particular key
-     * @param <T> The actual data to be persisted encapsulated inside a Record object
      * @param key The key associated with the Record to be retrieved from persistence
+     * @param isEncrypted If the persisted record is encrypted or not. See {@link io.rx_cache.Encrypt}
+     * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * @see Record
      */
-    <T> Record<T> retrieveRecord(String key);
+    <T> Record<T> retrieveRecord(String key, boolean isEncrypted, String encryptKey);
 }

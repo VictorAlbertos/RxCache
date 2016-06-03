@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package io.rx_cache.internal.migration;
-
+package io.rx_cache.internal.encrypt;
 
 import javax.inject.Inject;
 
-import io.rx_cache.internal.Persistence;
-import rx.Observable;
+import io.rx_cache.EncryptKey;
 
-final class GetCacheVersion extends CacheVersion {
+public final class GetEncryptKey {
+    private final Class providersClass;
 
-    @Inject public GetCacheVersion(Persistence persistence) {
-        super(persistence);
+    @Inject public GetEncryptKey(Class providersClass) {
+        this.providersClass = providersClass;
     }
 
-    Observable<Integer> react() {
-        Integer currentVersion = persistence.retrieve(KEY_CACHE_VERSION, Integer.class, false, null);
-        currentVersion = currentVersion == null ? 0 : currentVersion;
-        return Observable.just(currentVersion);
+    public String getKey() {
+        EncryptKey encryptKey = (EncryptKey) providersClass.getAnnotation(EncryptKey.class);
+
+        if (encryptKey == null) return null;
+        return encryptKey.value();
     }
 }
