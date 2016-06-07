@@ -5,6 +5,7 @@
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-RxCache-green.svg?style=true)](https://android-arsenal.com/details/1/3016)
 
 # RxCache
+[中文版](https://github.com/sungerk/RxCache/blob/master/README_ZH.md)
 
 _For the `swift` version go [here](https://github.com/FuckBoilerplate/RxCache)_.
 
