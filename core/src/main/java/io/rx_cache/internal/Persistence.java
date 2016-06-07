@@ -26,51 +26,51 @@ import java.util.List;
 public interface Persistence {
 
     /**
-     * Save the data supplied based on a certain mechanism which provides persistence somehow
-     * @param key The key associated with the object to be persisted
-     * @param object The object to be persisted
+     * 基于某种数据持久化保存数据
+     * @param 数据的键
+     * @param 需要保存的数据
      */
     void save(String key, Object object);
 
 
     /**
-     * Save the data supplied based on a certain mechanism which provides persistence somehow
+     * 持久化保存纪录
      * @param key The key associated with the record to be persisted
      * @param record The record to be persisted
      */
     void saveRecord(String key, Record record);
 
     /**
-     * Delete the data associated with its particular key
-     * @param key The key associated with the object to be deleted from persistence
+     * 通过指定键删除已保存的持久化数据
+     * @param 被持久化对象的键
      */
     void evict(String key);
 
     /**
-     * Delete all the data
+     * 删除所有数据
      */
     void evictAll();
 
     /**
-     * Retrieve the keys from all records persisted
+     * 检索所有数据
      */
     List<String> allKeys();
 
     /**
-     * Retrieve accumulated memory records in megabytes
+     * 持久化数据文件的大小，单位MB
      */
     int storedMB();
 
     /**
-     * Retrieve the object associated with its particular key
-     * @param <T> The data to be retrieved
-     * @param key The key associated with the object to be retrieved from persistence
+     * 根据特定key检索数据
+     * @param <T> 返回数据的class
+     * @param key 指定key
      * @see Record
      */
     <T> T retrieve(String key, Class<T> clazz);
 
     /**
-     * Retrieve the record associated with its particular key
+     * 更加特殊key检索纪录
      * @param <T> The actual data to be persisted encapsulated inside a Record object
      * @param key The key associated with the Record to be retrieved from persistence
      * @see Record
