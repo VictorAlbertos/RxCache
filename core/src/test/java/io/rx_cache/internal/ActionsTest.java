@@ -39,7 +39,7 @@ public class ActionsTest {
 
     @Before public void setUp() {
         providersActions = new RxCache.Builder()
-                .persistence(temporaryFolder.getRoot())
+                .persistence(temporaryFolder.getRoot(), new JsonConverterGson())
                 .using(ProvidersActions.class);
     }
 

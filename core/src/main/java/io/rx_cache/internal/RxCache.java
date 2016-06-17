@@ -20,7 +20,7 @@ import java.io.File;
 import java.lang.reflect.Proxy;
 import java.security.InvalidParameterException;
 
-import io.rx_cache.internal.cache.TwoLayersCache;
+import io.rx_cache.JsonConverter;
 
 public final class RxCache {
     private final Builder builder;
@@ -32,7 +32,8 @@ public final class RxCache {
 
     public <T> T using(final Class<T> classProviders) {
         ProxyProviders proxyProviders = DaggerRxCacheComponent.builder()
-                .rxCacheModule(new RxCacheModule(builder.cacheDirectory, builder.useExpiredDataIfLoaderNotAvailable, builder.maxMBPersistenceCache, classProviders))
+                .rxCacheModule(new RxCacheModule(builder.cacheDirectory, builder.useExpiredDataIfLoaderNotAvailable,
+                        builder.maxMBPersistenceCache, classProviders, builder.jsonConverter))
                 .build().proxyRepository();
 
         T proxy = (T) Proxy.newProxyInstance(
@@ -60,6 +61,7 @@ public final class RxCache {
         private boolean useExpiredDataIfLoaderNotAvailable;
         private Integer maxMBPersistenceCache;
         private File cacheDirectory;
+        private JsonConverter jsonConverter;
 
         /**
          * If true RxCache will serve Records already expired, instead of evict them and throw an exception
@@ -82,15 +84,19 @@ public final class RxCache {
         }
 
         /**
-         * Sets the File cache system used by Cache
+         * Sets the File cache system and the {@link JsonConverter} to serialise and deserialize objects
          * @param cacheDirectory The File system used by the persistence implementation of Disk
-         * @see TwoLayersCache
+         * @param jsonConverter A concrete implementation of JsonConverter
          */
-        public RxCache persistence(File cacheDirectory) {
+        public RxCache persistence(File cacheDirectory, JsonConverter jsonConverter) {
             if (cacheDirectory == null)
                 throw new InvalidParameterException(Locale.REPOSITORY_DISK_ADAPTER_CAN_NOT_BE_NULL);
 
+            if (jsonConverter == null)
+                throw new InvalidParameterException(Locale.JSON_CONVERTER_CAN_NOT_BE_NULL);
+
             this.cacheDirectory = cacheDirectory;
+            this.jsonConverter = jsonConverter;
 
             return new RxCache(this);
         }

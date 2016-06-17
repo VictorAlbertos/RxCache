@@ -29,6 +29,7 @@ import io.rx_cache.Encrypt;
 import io.rx_cache.EncryptKey;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
+import io.rx_cache.internal.JsonConverterGson;
 import io.rx_cache.internal.Mock;
 import io.rx_cache.internal.RxCache;
 import rx.Observable;
@@ -48,7 +49,7 @@ public class ProvidersRxCacheEncryptedTest {
 
     private void initProviders() {
         providersRxCache = new RxCache.Builder()
-                .persistence(temporaryFolder.getRoot())
+                .persistence(temporaryFolder.getRoot(), new JsonConverterGson())
                 .using(ProvidersRxCache.class);
     }
 

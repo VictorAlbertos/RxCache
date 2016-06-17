@@ -16,8 +16,6 @@
 
 package io.rx_cache.internal;
 
-import com.google.gson.Gson;
-import com.google.gson.internal.$Gson$Types;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,6 +31,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import io.rx_cache.JsonConverter;
 import io.rx_cache.internal.encrypt.FileEncryptor;
 
 /**
@@ -41,10 +40,12 @@ import io.rx_cache.internal.encrypt.FileEncryptor;
 public final class Disk implements Persistence {
     private final File cacheDirectory;
     private final FileEncryptor fileEncryptor;
+    private final JsonConverter jsonConverter;
 
-    @Inject public Disk(File cacheDirectory, FileEncryptor fileEncryptor) {
+    @Inject public Disk(File cacheDirectory, FileEncryptor fileEncryptor, JsonConverter jsonConverter) {
         this.cacheDirectory = cacheDirectory;
         this.fileEncryptor = fileEncryptor;
+        this.jsonConverter = jsonConverter;
     }
 
     /** Save in disk the Record passed.
@@ -100,7 +101,7 @@ public final class Disk implements Persistence {
      * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * */
     public void save(String key, Object data, boolean isEncrypted, String encryptKey) {
-        String wrapperJSONSerialized = new Gson().toJson(data);
+        String wrapperJSONSerialized = jsonConverter.toJson(data);
         FileWriter fileWriter = null;
 
         try {
@@ -159,7 +160,7 @@ public final class Disk implements Persistence {
 
         try {
             bufferedReader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
-            T data = new Gson().fromJson(bufferedReader, clazz);
+            T data = jsonConverter.fromJson(bufferedReader, clazz);
 
             if (isEncrypted)
                 file.delete();
@@ -196,7 +197,8 @@ public final class Disk implements Persistence {
                 file = fileEncryptor.decrypt(encryptKey, file);
 
             readerTempRecord = new BufferedReader(new FileReader(file.getAbsoluteFile()));
-            Record tempDiskRecord = new Gson().fromJson(readerTempRecord, Record.class);
+
+            Record tempDiskRecord = jsonConverter.fromJson(readerTempRecord, Record.class);
             readerTempRecord.close();
 
             reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
@@ -210,20 +212,20 @@ public final class Disk implements Persistence {
             Record<T> diskRecord;
 
             if (isCollection) {
-                Type typeCollection = $Gson$Types.newParameterizedTypeWithOwner(null, classCollectionData, classData);
-                Type typeRecord = $Gson$Types.newParameterizedTypeWithOwner(null, Record.class, typeCollection, classData);
-                diskRecord = new Gson().fromJson(reader, typeRecord);
+                Type typeCollection = jsonConverter.parameterizedTypeWithOwner(null, classCollectionData, classData);
+                Type typeRecord = jsonConverter.parameterizedTypeWithOwner(null, Record.class, typeCollection, classData);
+                diskRecord = jsonConverter.fromJson(reader, typeRecord);
             } else if (isArray) {
-                Type typeRecord = $Gson$Types.newParameterizedTypeWithOwner(null, Record.class, classCollectionData);
-                diskRecord = new Gson().fromJson(reader, typeRecord);
+                Type typeRecord = jsonConverter.parameterizedTypeWithOwner(null, Record.class, classCollectionData);
+                diskRecord = jsonConverter.fromJson(reader, typeRecord);
             } else if (isMap) {
                 Class classKeyMap = Class.forName(tempDiskRecord.getDataKeyMapClassName());
-                Type typeMap = $Gson$Types.newParameterizedTypeWithOwner(null, classCollectionData, classKeyMap, classData);
-                Type typeRecord = $Gson$Types.newParameterizedTypeWithOwner(null, Record.class, typeMap, classData);
-                diskRecord = new Gson().fromJson(reader, typeRecord);
+                Type typeMap = jsonConverter.parameterizedTypeWithOwner(null, classCollectionData, classKeyMap, classData);
+                Type typeRecord = jsonConverter.parameterizedTypeWithOwner(null, Record.class, typeMap, classData);
+                diskRecord = jsonConverter.fromJson(reader, typeRecord);
             } else {
-                Type type = $Gson$Types.newParameterizedTypeWithOwner(null, Record.class, classData);
-                diskRecord = new Gson().fromJson(reader, type);
+                Type type = jsonConverter.parameterizedTypeWithOwner(null, Record.class, classData);
+                diskRecord = jsonConverter.fromJson(reader, type);
             }
 
             diskRecord.setSizeOnMb(file.length()/1024f/1024f);
@@ -286,8 +288,8 @@ public final class Disk implements Persistence {
             File file = new File(cacheDirectory, key);
             reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
 
-            Type typeCollection = $Gson$Types.newParameterizedTypeWithOwner(null, classCollection, classData);
-            T data = new Gson().fromJson(reader, typeCollection);
+            Type typeCollection = jsonConverter.parameterizedTypeWithOwner(null, classCollection, classData);
+            T data = jsonConverter.fromJson(reader, typeCollection);
 
             return (C) data;
         } catch (Exception e) {
@@ -317,8 +319,8 @@ public final class Disk implements Persistence {
             File file = new File(cacheDirectory, key);
             reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
 
-            Type typeMap = $Gson$Types.newParameterizedTypeWithOwner(null, classMap, classMapKey, classMapValue);
-            Object data = new Gson().fromJson(reader, typeMap);
+            Type typeMap = jsonConverter.parameterizedTypeWithOwner(null, classMap, classMapKey, classMapValue);
+            Object data = jsonConverter.fromJson(reader, typeMap);
 
             return (M) data;
         } catch (Exception e) {
@@ -347,7 +349,7 @@ public final class Disk implements Persistence {
             reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
 
             Class<?> clazzArray = Array.newInstance(classData, 1).getClass();
-            Object data = new Gson().fromJson(reader, clazzArray);
+            Object data = jsonConverter.fromJson(reader, clazzArray);
 
             return (T[]) data;
         } catch (Exception e) {

@@ -9,6 +9,7 @@ import java.util.List;
 
 import io.rx_cache.Migration;
 import io.rx_cache.SchemeMigration;
+import io.rx_cache.internal.JsonConverterGson;
 import io.rx_cache.internal.ProxyProviders;
 import io.rx_cache.internal.RxCache;
 import rx.Observable;
@@ -29,7 +30,7 @@ public class ProvidersRxCacheMigrations {
         assert countFiles > 0;
 
         ProvidersMigrations providersMigrations = new RxCache.Builder()
-                .persistence(temporaryFolder.getRoot())
+                .persistence(temporaryFolder.getRoot(), new JsonConverterGson())
                 .using(ProvidersMigrations.class);
 
         TestSubscriber<List<Mock1>> testSubscriber = new TestSubscriber<>();
@@ -41,7 +42,7 @@ public class ProvidersRxCacheMigrations {
 
     private void populateMocks() {
         Providers providers = new RxCache.Builder()
-                .persistence(temporaryFolder.getRoot())
+                .persistence(temporaryFolder.getRoot(), new JsonConverterGson())
                 .using(Providers.class);
 
         TestSubscriber<List<Mock1>> testSubscriber = new TestSubscriber<>();

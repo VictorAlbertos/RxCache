@@ -43,7 +43,7 @@ public class ProvidersRxCacheEvictExpirableRecordsTest extends BaseTestEvictingT
     @Before public void setUp() {
         providersRxCache = new RxCache.Builder()
                 .setMaxMBPersistenceCache(maxMgPersistenceCache)
-                .persistence(temporaryFolder.getRoot())
+                .persistence(temporaryFolder.getRoot(), new JsonConverterGson())
                 .using(ProvidersRxCache.class);
     }
 

@@ -48,7 +48,7 @@ public class ProvidersRxCacheEvictExpiredRecordsTest extends BaseTestEvictingTas
 
     @Before public void setUp() {
         providersRxCache = new RxCache.Builder()
-                .persistence(temporaryFolder.getRoot())
+                .persistence(temporaryFolder.getRoot(), new JsonConverterGson())
                 .using(ProvidersRxCache.class);
     }
 

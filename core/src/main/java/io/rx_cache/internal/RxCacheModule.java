@@ -22,6 +22,7 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import io.rx_cache.JsonConverter;
 import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
 import io.rx_cache.internal.encrypt.Encryptor;
 import io.rx_cache.internal.encrypt.BuiltInEncryptor;
@@ -32,12 +33,14 @@ public final class RxCacheModule {
     private final boolean useExpiredDataIfLoaderNotAvailable;
     private final Integer maxMgPersistenceCache;
     private final Class classProviders;
+    private final JsonConverter jsonConverter;
 
-    public RxCacheModule(File cacheDirectory, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache, Class classProviders) {
+    public RxCacheModule(File cacheDirectory, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache, Class classProviders, JsonConverter jsonConverter) {
         this.cacheDirectory = cacheDirectory;
         this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
         this.maxMgPersistenceCache = maxMgPersistenceCache;
         this.classProviders = classProviders;
+        this.jsonConverter = jsonConverter;
     }
 
     @Singleton @Provides File provideCacheDirectory() {
@@ -68,4 +71,10 @@ public final class RxCacheModule {
     @Singleton @Provides Class provideClassProviders() {
         return classProviders;
     }
+
+    @Singleton @Provides
+    JsonConverter provideJsonConverter() {
+        return jsonConverter;
+    }
+
 }

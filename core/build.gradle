@@ -59,7 +59,7 @@ dependencies {
     compile "org.glassfish:javax.annotation:10.0-b28"
 
     compile "io.reactivex:rxjava:1.1.5"
-    compile 'com.google.code.gson:gson:2.5'
 
+    testCompile 'com.google.code.gson:gson:2.5'
     testCompile "junit:junit:4.12"
 }
