@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.rx_cache.internal.RxCache;
+import io.victoralbertos.jolyglot.GsonSpeaker;
 import rx.Observable;
 
 /**
@@ -22,7 +23,7 @@ public class MainActivity extends Activity {
 
        final RxProviders rxProviders = new RxCache.Builder()
                 .setMaxMBPersistenceCache(50)
-                .persistence(getApplicationContext().getFilesDir())
+                .persistence(getApplicationContext().getFilesDir(), new GsonSpeaker())
                 .using(RxProviders.class);
 
         /* for (int i = 0; i < 1000; i++) {

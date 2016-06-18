@@ -1,8 +1,5 @@
 package io.rx_cache.internal.cache;
 
-import com.google.gson.Gson;
-import com.google.gson.internal.$Gson$Types;
-
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
@@ -11,11 +8,14 @@ import javax.inject.Inject;
 
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Persistence;
+import io.victoralbertos.jolyglot.Jolyglot;
 
 public class GetDeepCopy extends Action {
+    private final Jolyglot jolyglot;
 
-    @Inject public GetDeepCopy(Memory memory, Persistence persistence) {
+    @Inject public GetDeepCopy(Memory memory, Persistence persistence, Jolyglot jolyglot) {
         super(memory, persistence);
+        this.jolyglot = jolyglot;
     }
 
     public <T> T deepCopy(T data) {
@@ -45,10 +45,10 @@ public class GetDeepCopy extends Action {
 
         Class classData = data.getClass();
         Class classItemCollection = collection.toArray()[0].getClass();
-        Type typeCollection = $Gson$Types.newParameterizedTypeWithOwner(null, classData, classItemCollection);
-        String dataString = new Gson().toJson(data);
+        Type typeCollection = jolyglot.newParameterizedType(classData, classItemCollection);
+        String dataString = jolyglot.toJson(data);
 
-        return new Gson().fromJson(dataString, typeCollection);
+        return jolyglot.fromJson(dataString, typeCollection);
     }
 
     private <T> T getDeepCopyArray(T data) {
@@ -56,10 +56,10 @@ public class GetDeepCopy extends Action {
         if (array.length == 0) return data;
 
         Class classItemArray = array[0].getClass();
-        Type typeRecord = $Gson$Types.arrayOf(classItemArray);
-        String dataString = new Gson().toJson(data);
+        Type typeRecord = jolyglot.arrayOf(classItemArray);
+        String dataString = jolyglot.toJson(data);
 
-        return new Gson().fromJson(dataString, typeRecord);
+        return jolyglot.fromJson(dataString, typeRecord);
     }
 
     private <T, K, V> T getDeepCopyMap(T data) {
@@ -69,19 +69,19 @@ public class GetDeepCopy extends Action {
         Class classData = data.getClass();
         Class classValueMap = map.values().toArray()[0].getClass();
         Class classKeyMap = map.keySet().toArray()[0].getClass();
-        Type typeMap = $Gson$Types.newParameterizedTypeWithOwner(null, classData, classKeyMap, classValueMap);
-        String dataString = new Gson().toJson(data);
+        Type typeMap = jolyglot.newParameterizedType(classData, classKeyMap, classValueMap);
+        String dataString = jolyglot.toJson(data);
 
-        return new Gson().fromJson(dataString, typeMap);
+        return jolyglot.fromJson(dataString, typeMap);
     }
 
     private <T> T getDeepCopyObject(T data) {
         if (data == null) return data;
 
         Class classData = data.getClass();
-        Type type = $Gson$Types.newParameterizedTypeWithOwner(null, classData);
-        String dataString = new Gson().toJson(data);
+        Type type = jolyglot.newParameterizedType(classData);
+        String dataString = jolyglot.toJson(data);
 
-        return new Gson().fromJson(dataString, type);
+        return jolyglot.fromJson(dataString, type);
     }
 }

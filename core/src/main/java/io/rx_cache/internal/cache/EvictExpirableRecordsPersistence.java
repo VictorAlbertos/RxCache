@@ -85,7 +85,7 @@ public class EvictExpirableRecordsPersistence extends Action {
 
                     Record record = persistence.retrieveRecord(key, isEncrypted, encryptKey);
                     if (record == null) continue;
-                    if (!record.isExpirable()) continue;
+                    if (!record.getExpirable()) continue;
 
                     persistence.evict(key);
                     subscriber.onNext(key);

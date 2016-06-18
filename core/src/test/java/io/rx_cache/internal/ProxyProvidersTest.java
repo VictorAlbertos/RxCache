@@ -69,7 +69,7 @@ public class ProxyProvidersTest extends BaseTest {
 
         evictExpiredRecordsPersistence = new EvictExpiredRecordsPersistence(memory, disk, hasRecordExpired, getEncryptKey);
         twoLayersCacheMock = new TwoLayersCache(evictRecord, retrieveRecord, saveRecord);
-        getDeepCopy = new GetDeepCopy(memory, disk);
+        getDeepCopy = new GetDeepCopy(memory, disk, Jolyglot$.newInstance());
         doMigrations = new DoMigrations(disk, Mock.class);
     }
 

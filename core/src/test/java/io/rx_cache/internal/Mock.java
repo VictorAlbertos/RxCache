@@ -26,6 +26,11 @@ public class Mock {
         this.message = message;
     }
 
+    public Mock() {
+        this.message = null;
+    }
+
+
     public String getMessage() {
         return message;
     }

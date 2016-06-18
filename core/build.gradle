@@ -52,14 +52,16 @@ artifacts {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-
     apt "com.google.dagger:dagger-compiler:2.4"
     compile "com.google.dagger:dagger:2.4"
     compile "org.glassfish:javax.annotation:10.0-b28"
 
     compile "io.reactivex:rxjava:1.1.5"
-    compile 'com.google.code.gson:gson:2.5'
+    compile 'com.github.VictorAlbertos.Jolyglot:api:0.0.1'
+
+    testCompile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.1'
+    testCompile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.1'
+    testCompile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.1'
 
     testCompile "junit:junit:4.12"
 }

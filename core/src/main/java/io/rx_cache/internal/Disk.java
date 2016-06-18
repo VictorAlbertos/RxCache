@@ -16,8 +16,6 @@
 
 package io.rx_cache.internal;
 
-import com.google.gson.Gson;
-import com.google.gson.internal.$Gson$Types;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,6 +32,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import io.rx_cache.internal.encrypt.FileEncryptor;
+import io.victoralbertos.jolyglot.Jolyglot;
 
 /**
  * Save objects in disk and evict them too. It uses Gson as json parser.
@@ -41,10 +40,12 @@ import io.rx_cache.internal.encrypt.FileEncryptor;
 public final class Disk implements Persistence {
     private final File cacheDirectory;
     private final FileEncryptor fileEncryptor;
+    private final Jolyglot jolyglot;
 
-    @Inject public Disk(File cacheDirectory, FileEncryptor fileEncryptor) {
+    @Inject public Disk(File cacheDirectory, FileEncryptor fileEncryptor, Jolyglot jolyglot) {
         this.cacheDirectory = cacheDirectory;
         this.fileEncryptor = fileEncryptor;
+        this.jolyglot = jolyglot;
     }
 
     /** Save in disk the Record passed.
@@ -100,7 +101,7 @@ public final class Disk implements Persistence {
      * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * */
     public void save(String key, Object data, boolean isEncrypted, String encryptKey) {
-        String wrapperJSONSerialized = new Gson().toJson(data);
+        String wrapperJSONSerialized = jolyglot.toJson(data);
         FileWriter fileWriter = null;
 
         try {
@@ -115,7 +116,7 @@ public final class Disk implements Persistence {
                 fileEncryptor.encrypt(encryptKey, new File(cacheDirectory, key));
 
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         } finally {
             try {
                 if (fileWriter != null) {
@@ -152,32 +153,18 @@ public final class Disk implements Persistence {
      * */
     public <T> T retrieve(String key, final Class<T> clazz, boolean isEncrypted, String encryptKey) {
         File file = new File(cacheDirectory, key);
-        BufferedReader bufferedReader = null;
 
         if (isEncrypted)
             file = fileEncryptor.decrypt(encryptKey, file);
 
         try {
-            bufferedReader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
-            T data = new Gson().fromJson(bufferedReader, clazz);
-
-            if (isEncrypted)
-                file.delete();
-
+            T data = jolyglot.fromJson(file, clazz);
             return data;
         } catch (Exception ignore) {
             return null;
         } finally {
             if (isEncrypted)
                 file.delete();
-
-            try {
-                if (bufferedReader != null) {
-                    bufferedReader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -187,19 +174,18 @@ public final class Disk implements Persistence {
      * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * */
     @Override public <T> Record<T> retrieveRecord(String key, boolean isEncrypted, String encryptKey) {
-        BufferedReader readerTempRecord = null;
-        BufferedReader reader = null;
         File file = new File(cacheDirectory, key);
 
         try {
             if (isEncrypted)
                 file = fileEncryptor.decrypt(encryptKey, file);
 
-            readerTempRecord = new BufferedReader(new FileReader(file.getAbsoluteFile()));
-            Record tempDiskRecord = new Gson().fromJson(readerTempRecord, Record.class);
-            readerTempRecord.close();
+/*            Scanner scanner = new Scanner(file);
+            String text = scanner.useDelimiter("\\A").next();
+            scanner.close();*/
 
-            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
+            Record tempDiskRecord = jolyglot.fromJson(file, Record.class);
+
             Class classData = Class.forName(tempDiskRecord.getDataClassName());
             Class classCollectionData = tempDiskRecord.getDataCollectionClassName() == null
                     ? Object.class : Class.forName(tempDiskRecord.getDataCollectionClassName());
@@ -210,20 +196,20 @@ public final class Disk implements Persistence {
             Record<T> diskRecord;
 
             if (isCollection) {
-                Type typeCollection = $Gson$Types.newParameterizedTypeWithOwner(null, classCollectionData, classData);
-                Type typeRecord = $Gson$Types.newParameterizedTypeWithOwner(null, Record.class, typeCollection, classData);
-                diskRecord = new Gson().fromJson(reader, typeRecord);
+                Type typeCollection = jolyglot.newParameterizedType(classCollectionData, classData);
+                Type typeRecord = jolyglot.newParameterizedType(Record.class, typeCollection);
+                diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), typeRecord);
             } else if (isArray) {
-                Type typeRecord = $Gson$Types.newParameterizedTypeWithOwner(null, Record.class, classCollectionData);
-                diskRecord = new Gson().fromJson(reader, typeRecord);
+                Type typeRecord = jolyglot.newParameterizedType(Record.class, classCollectionData);
+                diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), typeRecord);
             } else if (isMap) {
                 Class classKeyMap = Class.forName(tempDiskRecord.getDataKeyMapClassName());
-                Type typeMap = $Gson$Types.newParameterizedTypeWithOwner(null, classCollectionData, classKeyMap, classData);
-                Type typeRecord = $Gson$Types.newParameterizedTypeWithOwner(null, Record.class, typeMap, classData);
-                diskRecord = new Gson().fromJson(reader, typeRecord);
+                Type typeMap = jolyglot.newParameterizedType(classCollectionData, classKeyMap, classData);
+                Type typeRecord = jolyglot.newParameterizedType(Record.class, typeMap);
+                diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), typeRecord);
             } else {
-                Type type = $Gson$Types.newParameterizedTypeWithOwner(null, Record.class, classData);
-                diskRecord = new Gson().fromJson(reader, type);
+                Type type = jolyglot.newParameterizedType(Record.class, classData);
+                diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), type);
             }
 
             diskRecord.setSizeOnMb(file.length()/1024f/1024f);
@@ -232,17 +218,6 @@ public final class Disk implements Persistence {
         } catch (Exception ignore) {
             return null;
         } finally {
-            try {
-                if (readerTempRecord != null) {
-                    readerTempRecord.close();
-                }
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
             if (isEncrypted)
                 file.delete();
         }
@@ -280,27 +255,13 @@ public final class Disk implements Persistence {
      * @param classData type class contained by the collection, not the collection itself
      * */
     public <C extends Collection<T>, T> C retrieveCollection(String key, Class<C> classCollection, Class<T> classData) {
-        BufferedReader reader = null;
-
         try {
             File file = new File(cacheDirectory, key);
-            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
-
-            Type typeCollection = $Gson$Types.newParameterizedTypeWithOwner(null, classCollection, classData);
-            T data = new Gson().fromJson(reader, typeCollection);
-
+            Type typeCollection = jolyglot.newParameterizedType(classCollection, classData);
+            T data = jolyglot.fromJson(file, typeCollection);
             return (C) data;
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -311,27 +272,15 @@ public final class Disk implements Persistence {
      * @param classMapValue type class of the Map value
      * */
     public <M extends Map<K,V>, K, V> M retrieveMap(String key, Class classMap, Class<K> classMapKey, Class<V> classMapValue) {
-        BufferedReader reader = null;
-
         try {
             File file = new File(cacheDirectory, key);
-            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
 
-            Type typeMap = $Gson$Types.newParameterizedTypeWithOwner(null, classMap, classMapKey, classMapValue);
-            Object data = new Gson().fromJson(reader, typeMap);
+            Type typeMap = jolyglot.newParameterizedType(classMap, classMapKey, classMapValue);
+            Object data = jolyglot.fromJson(file, typeMap);
 
             return (M) data;
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -340,27 +289,15 @@ public final class Disk implements Persistence {
      * @param classData type class contained by the Array
      * */
     public <T> T[] retrieveArray(String key, Class<T> classData) {
-        BufferedReader reader = null;
-
         try {
             File file = new File(cacheDirectory, key);
-            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
 
             Class<?> clazzArray = Array.newInstance(classData, 1).getClass();
-            Object data = new Gson().fromJson(reader, clazzArray);
+            Object data = jolyglot.fromJson(file, clazzArray);
 
             return (T[]) data;
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 

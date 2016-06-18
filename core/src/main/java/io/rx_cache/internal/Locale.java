@@ -20,7 +20,7 @@ public interface Locale {
     String INVALID_RETURN_TYPE = " needs to return an Observable<T> or Observable<Reply<T>>" ;
     String NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER = "The Loader provided did not return any data and there is not data to load from the Cache";
     String REPOSITORY_DISK_ADAPTER_CAN_NOT_BE_NULL = "File cache directory can not be null";
-    String PERSISTENCE_CAN_NOT_BE_NULL = "Persistence can not be null";
+    String JSON_CONVERTER_CAN_NOT_BE_NULL = "JsonConverter can not be null";
     String NOT_OBSERVABLE_LOADER_FOUND = " requires an instance of type observable";
     String JUST_ONE_INSTANCE = " requires just one instance of type ";
     String EVICT_DYNAMIC_KEY_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY = " EvictDynamicKey was provided but not was provided any DynamicKey";

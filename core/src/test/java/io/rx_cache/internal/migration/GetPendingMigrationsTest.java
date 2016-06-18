@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package io.rx_cache.internal.migration;
 
 import org.junit.Before;

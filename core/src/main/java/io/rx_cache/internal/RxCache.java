@@ -20,7 +20,7 @@ import java.io.File;
 import java.lang.reflect.Proxy;
 import java.security.InvalidParameterException;
 
-import io.rx_cache.internal.cache.TwoLayersCache;
+import io.victoralbertos.jolyglot.Jolyglot;
 
 public final class RxCache {
     private final Builder builder;
@@ -32,7 +32,8 @@ public final class RxCache {
 
     public <T> T using(final Class<T> classProviders) {
         ProxyProviders proxyProviders = DaggerRxCacheComponent.builder()
-                .rxCacheModule(new RxCacheModule(builder.cacheDirectory, builder.useExpiredDataIfLoaderNotAvailable, builder.maxMBPersistenceCache, classProviders))
+                .rxCacheModule(new RxCacheModule(builder.cacheDirectory, builder.useExpiredDataIfLoaderNotAvailable,
+                        builder.maxMBPersistenceCache, classProviders, builder.jolyglot))
                 .build().proxyRepository();
 
         T proxy = (T) Proxy.newProxyInstance(
@@ -60,6 +61,7 @@ public final class RxCache {
         private boolean useExpiredDataIfLoaderNotAvailable;
         private Integer maxMBPersistenceCache;
         private File cacheDirectory;
+        private Jolyglot jolyglot;
 
         /**
          * If true RxCache will serve Records already expired, instead of evict them and throw an exception
@@ -82,15 +84,19 @@ public final class RxCache {
         }
 
         /**
-         * Sets the File cache system used by Cache
+         * Sets the File cache system and the implementation of {@link Jolyglot} to serialise and deserialize objects
          * @param cacheDirectory The File system used by the persistence implementation of Disk
-         * @see TwoLayersCache
+         * @param jolyglot A concrete implementation of {@link Jolyglot}
          */
-        public RxCache persistence(File cacheDirectory) {
+        public RxCache persistence(File cacheDirectory, Jolyglot jolyglot) {
             if (cacheDirectory == null)
                 throw new InvalidParameterException(Locale.REPOSITORY_DISK_ADAPTER_CAN_NOT_BE_NULL);
 
+            if (jolyglot == null)
+                throw new InvalidParameterException(Locale.JSON_CONVERTER_CAN_NOT_BE_NULL);
+
             this.cacheDirectory = cacheDirectory;
+            this.jolyglot = jolyglot;
 
             return new RxCache(this);
         }

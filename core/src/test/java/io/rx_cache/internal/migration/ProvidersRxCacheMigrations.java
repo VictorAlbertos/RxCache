@@ -9,6 +9,7 @@ import java.util.List;
 
 import io.rx_cache.Migration;
 import io.rx_cache.SchemeMigration;
+import io.rx_cache.internal.Jolyglot$;
 import io.rx_cache.internal.ProxyProviders;
 import io.rx_cache.internal.RxCache;
 import rx.Observable;
@@ -29,7 +30,7 @@ public class ProvidersRxCacheMigrations {
         assert countFiles > 0;
 
         ProvidersMigrations providersMigrations = new RxCache.Builder()
-                .persistence(temporaryFolder.getRoot())
+                .persistence(temporaryFolder.getRoot(), Jolyglot$.newInstance())
                 .using(ProvidersMigrations.class);
 
         TestSubscriber<List<Mock1>> testSubscriber = new TestSubscriber<>();
@@ -41,7 +42,7 @@ public class ProvidersRxCacheMigrations {
 
     private void populateMocks() {
         Providers providers = new RxCache.Builder()
-                .persistence(temporaryFolder.getRoot())
+                .persistence(temporaryFolder.getRoot(), Jolyglot$.newInstance())
                 .using(Providers.class);
 
         TestSubscriber<List<Mock1>> testSubscriber = new TestSubscriber<>();
@@ -71,10 +72,18 @@ public class ProvidersRxCacheMigrations {
         Observable<List<Mock1>> getMocks(Observable<List<Mock1>> mocks);
     }
 
-    private class Mock1 {
+    public static class Mock1 {
         private final String payload = "Lorem Ipsum is simply dummy text of the printing and " +
                 "typesetting industry. Lorem Ipsum has been the industry's standard dummy text " +
                 "ever since the 1500s, when an unknown printer took a galley of type and scrambled " +
                 "it to make a type specimen book. It has survived not only five centuries";
+
+        public Mock1() {
+
+        }
+
+        public String getPayload() {
+            return payload;
+        }
     }
 }

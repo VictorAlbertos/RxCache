@@ -43,7 +43,7 @@ public class ProvidersRxCacheEvictExpirableRecordsTest extends BaseTestEvictingT
     @Before public void setUp() {
         providersRxCache = new RxCache.Builder()
                 .setMaxMBPersistenceCache(maxMgPersistenceCache)
-                .persistence(temporaryFolder.getRoot())
+                .persistence(temporaryFolder.getRoot(), Jolyglot$.newInstance())
                 .using(ProvidersRxCache.class);
     }
 
@@ -58,7 +58,7 @@ public class ProvidersRxCacheEvictExpirableRecordsTest extends BaseTestEvictingT
             subscriber.awaitTerminalEvent();
         }
 
-        waitTime(1000);
+        waitTime(5000);
         int expectedStoredMB = (int) (maxMgPersistenceCache * EvictExpirableRecordsPersistence.PERCENTAGE_MEMORY_STORED_TO_STOP);
         assertThat(getSizeMB(temporaryFolder.getRoot()), is(expectedStoredMB));
     }
