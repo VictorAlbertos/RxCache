@@ -43,7 +43,6 @@ public interface JsonConverter {
      * the fields of the specified object are generics, just the object itself should not be a
      * generic type. For the cases when the object is of generic type, invoke
      * {@link #fromJson(String, Type)}. If you have the Json in a {@link Reader} instead of
-     * a String, use {@link #fromJson(Reader, Class)} instead.
      * @param <T> the type of the desired object
      * @param json the string from which the object is to be deserialized
      * @param classOfT the class of T
@@ -55,7 +54,6 @@ public interface JsonConverter {
      * This method deserializes the specified Json into an object of the specified type. This method
      * is useful if the specified object is a generic type. For non-generic objects, use
      * {@link #fromJson(String, Class)} instead. If you have the Json in a {@link Reader} instead of
-     * a String, use {@link #fromJson(Reader, Type)} instead.
      */
     <T> T fromJson(String json, Type type) throws RuntimeException;
 
@@ -99,5 +97,5 @@ public interface JsonConverter {
      *
      * @return a {@link java.io.Serializable serializable} parameterized type.
      */
-    ParameterizedType parameterizedTypeWithOwner(Type ownerType, Type rawType, Type... typeArguments);
+    ParameterizedType parameterizedTypeWithOwner(Type rawType, Type... typeArguments);
 }

@@ -192,19 +192,19 @@ public final class Disk implements Persistence {
             Record<T> diskRecord;
 
             if (isCollection) {
-                Type typeCollection = jsonConverter.parameterizedTypeWithOwner(null, classCollectionData, classData);
-                Type typeRecord = jsonConverter.parameterizedTypeWithOwner(null, Record.class, typeCollection, classData);
+                Type typeCollection = jsonConverter.parameterizedTypeWithOwner(classCollectionData, classData);
+                Type typeRecord = jsonConverter.parameterizedTypeWithOwner(Record.class, typeCollection, classData);
                 diskRecord = jsonConverter.fromJson(file.getAbsoluteFile(), typeRecord);
             } else if (isArray) {
-                Type typeRecord = jsonConverter.parameterizedTypeWithOwner(null, Record.class, classCollectionData);
+                Type typeRecord = jsonConverter.parameterizedTypeWithOwner(Record.class, classCollectionData);
                 diskRecord = jsonConverter.fromJson(file.getAbsoluteFile(), typeRecord);
             } else if (isMap) {
                 Class classKeyMap = Class.forName(tempDiskRecord.getDataKeyMapClassName());
-                Type typeMap = jsonConverter.parameterizedTypeWithOwner(null, classCollectionData, classKeyMap, classData);
-                Type typeRecord = jsonConverter.parameterizedTypeWithOwner(null, Record.class, typeMap, classData);
+                Type typeMap = jsonConverter.parameterizedTypeWithOwner(classCollectionData, classKeyMap, classData);
+                Type typeRecord = jsonConverter.parameterizedTypeWithOwner(Record.class, typeMap, classData);
                 diskRecord = jsonConverter.fromJson(file.getAbsoluteFile(), typeRecord);
             } else {
-                Type type = jsonConverter.parameterizedTypeWithOwner(null, Record.class, classData);
+                Type type = jsonConverter.parameterizedTypeWithOwner(Record.class, classData);
                 diskRecord = jsonConverter.fromJson(file.getAbsoluteFile(), type);
             }
 
@@ -253,7 +253,7 @@ public final class Disk implements Persistence {
     public <C extends Collection<T>, T> C retrieveCollection(String key, Class<C> classCollection, Class<T> classData) {
         try {
             File file = new File(cacheDirectory, key);
-            Type typeCollection = jsonConverter.parameterizedTypeWithOwner(null, classCollection, classData);
+            Type typeCollection = jsonConverter.parameterizedTypeWithOwner(classCollection, classData);
             T data = jsonConverter.fromJson(file, typeCollection);
             return (C) data;
         } catch (Exception e) {
@@ -271,7 +271,7 @@ public final class Disk implements Persistence {
         try {
             File file = new File(cacheDirectory, key);
 
-            Type typeMap = jsonConverter.parameterizedTypeWithOwner(null, classMap, classMapKey, classMapValue);
+            Type typeMap = jsonConverter.parameterizedTypeWithOwner(classMap, classMapKey, classMapValue);
             Object data = jsonConverter.fromJson(file, typeMap);
 
             return (M) data;

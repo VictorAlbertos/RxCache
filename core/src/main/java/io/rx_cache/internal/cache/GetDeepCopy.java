@@ -45,7 +45,7 @@ public class GetDeepCopy extends Action {
 
         Class classData = data.getClass();
         Class classItemCollection = collection.toArray()[0].getClass();
-        Type typeCollection = jsonConverter.parameterizedTypeWithOwner(null, classData, classItemCollection);
+        Type typeCollection = jsonConverter.parameterizedTypeWithOwner(classData, classItemCollection);
         String dataString = jsonConverter.toJson(data);
 
         return jsonConverter.fromJson(dataString, typeCollection);
@@ -69,7 +69,7 @@ public class GetDeepCopy extends Action {
         Class classData = data.getClass();
         Class classValueMap = map.values().toArray()[0].getClass();
         Class classKeyMap = map.keySet().toArray()[0].getClass();
-        Type typeMap = jsonConverter.parameterizedTypeWithOwner(null, classData, classKeyMap, classValueMap);
+        Type typeMap = jsonConverter.parameterizedTypeWithOwner(classData, classKeyMap, classValueMap);
         String dataString = jsonConverter.toJson(data);
 
         return jsonConverter.fromJson(dataString, typeMap);
@@ -79,7 +79,7 @@ public class GetDeepCopy extends Action {
         if (data == null) return data;
 
         Class classData = data.getClass();
-        Type type = jsonConverter.parameterizedTypeWithOwner(null, classData);
+        Type type = jsonConverter.parameterizedTypeWithOwner(classData);
         String dataString = jsonConverter.toJson(data);
 
         return jsonConverter.fromJson(dataString, type);

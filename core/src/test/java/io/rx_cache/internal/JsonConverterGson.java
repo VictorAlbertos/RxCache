@@ -83,8 +83,8 @@ public class JsonConverterGson implements JsonConverter {
         return $Gson$Types.arrayOf(componentType);
     }
 
-    @Override public ParameterizedType parameterizedTypeWithOwner(Type ownerType, Type rawType, Type... typeArguments) {
-        return $Gson$Types.newParameterizedTypeWithOwner(ownerType, rawType, typeArguments);
+    @Override public ParameterizedType parameterizedTypeWithOwner(Type rawType, Type... typeArguments) {
+        return $Gson$Types.newParameterizedTypeWithOwner(null, rawType, typeArguments);
     }
 
 }
