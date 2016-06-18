@@ -31,8 +31,8 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import io.rx_cache.JsonConverter;
 import io.rx_cache.internal.encrypt.FileEncryptor;
+import io.victoralbertos.jolyglot.Jolyglot;
 
 /**
  * Save objects in disk and evict them too. It uses Gson as json parser.
@@ -40,12 +40,12 @@ import io.rx_cache.internal.encrypt.FileEncryptor;
 public final class Disk implements Persistence {
     private final File cacheDirectory;
     private final FileEncryptor fileEncryptor;
-    private final JsonConverter jsonConverter;
+    private final Jolyglot jolyglot;
 
-    @Inject public Disk(File cacheDirectory, FileEncryptor fileEncryptor, JsonConverter jsonConverter) {
+    @Inject public Disk(File cacheDirectory, FileEncryptor fileEncryptor, Jolyglot jolyglot) {
         this.cacheDirectory = cacheDirectory;
         this.fileEncryptor = fileEncryptor;
-        this.jsonConverter = jsonConverter;
+        this.jolyglot = jolyglot;
     }
 
     /** Save in disk the Record passed.
@@ -101,7 +101,7 @@ public final class Disk implements Persistence {
      * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * */
     public void save(String key, Object data, boolean isEncrypted, String encryptKey) {
-        String wrapperJSONSerialized = jsonConverter.toJson(data);
+        String wrapperJSONSerialized = jolyglot.toJson(data);
         FileWriter fileWriter = null;
 
         try {
@@ -158,7 +158,7 @@ public final class Disk implements Persistence {
             file = fileEncryptor.decrypt(encryptKey, file);
 
         try {
-            T data = jsonConverter.fromJson(file, clazz);
+            T data = jolyglot.fromJson(file, clazz);
             return data;
         } catch (Exception ignore) {
             return null;
@@ -180,7 +180,11 @@ public final class Disk implements Persistence {
             if (isEncrypted)
                 file = fileEncryptor.decrypt(encryptKey, file);
 
-            Record tempDiskRecord = jsonConverter.fromJson(file, Record.class);
+/*            Scanner scanner = new Scanner(file);
+            String text = scanner.useDelimiter("\\A").next();
+            scanner.close();*/
+
+            Record tempDiskRecord = jolyglot.fromJson(file, Record.class);
 
             Class classData = Class.forName(tempDiskRecord.getDataClassName());
             Class classCollectionData = tempDiskRecord.getDataCollectionClassName() == null
@@ -192,20 +196,20 @@ public final class Disk implements Persistence {
             Record<T> diskRecord;
 
             if (isCollection) {
-                Type typeCollection = jsonConverter.parameterizedTypeWithOwner(classCollectionData, classData);
-                Type typeRecord = jsonConverter.parameterizedTypeWithOwner(Record.class, typeCollection, classData);
-                diskRecord = jsonConverter.fromJson(file.getAbsoluteFile(), typeRecord);
+                Type typeCollection = jolyglot.newParameterizedType(classCollectionData, classData);
+                Type typeRecord = jolyglot.newParameterizedType(Record.class, typeCollection);
+                diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), typeRecord);
             } else if (isArray) {
-                Type typeRecord = jsonConverter.parameterizedTypeWithOwner(Record.class, classCollectionData);
-                diskRecord = jsonConverter.fromJson(file.getAbsoluteFile(), typeRecord);
+                Type typeRecord = jolyglot.newParameterizedType(Record.class, classCollectionData);
+                diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), typeRecord);
             } else if (isMap) {
                 Class classKeyMap = Class.forName(tempDiskRecord.getDataKeyMapClassName());
-                Type typeMap = jsonConverter.parameterizedTypeWithOwner(classCollectionData, classKeyMap, classData);
-                Type typeRecord = jsonConverter.parameterizedTypeWithOwner(Record.class, typeMap, classData);
-                diskRecord = jsonConverter.fromJson(file.getAbsoluteFile(), typeRecord);
+                Type typeMap = jolyglot.newParameterizedType(classCollectionData, classKeyMap, classData);
+                Type typeRecord = jolyglot.newParameterizedType(Record.class, typeMap);
+                diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), typeRecord);
             } else {
-                Type type = jsonConverter.parameterizedTypeWithOwner(Record.class, classData);
-                diskRecord = jsonConverter.fromJson(file.getAbsoluteFile(), type);
+                Type type = jolyglot.newParameterizedType(Record.class, classData);
+                diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), type);
             }
 
             diskRecord.setSizeOnMb(file.length()/1024f/1024f);
@@ -253,8 +257,8 @@ public final class Disk implements Persistence {
     public <C extends Collection<T>, T> C retrieveCollection(String key, Class<C> classCollection, Class<T> classData) {
         try {
             File file = new File(cacheDirectory, key);
-            Type typeCollection = jsonConverter.parameterizedTypeWithOwner(classCollection, classData);
-            T data = jsonConverter.fromJson(file, typeCollection);
+            Type typeCollection = jolyglot.newParameterizedType(classCollection, classData);
+            T data = jolyglot.fromJson(file, typeCollection);
             return (C) data;
         } catch (Exception e) {
             return null;
@@ -271,8 +275,8 @@ public final class Disk implements Persistence {
         try {
             File file = new File(cacheDirectory, key);
 
-            Type typeMap = jsonConverter.parameterizedTypeWithOwner(classMap, classMapKey, classMapValue);
-            Object data = jsonConverter.fromJson(file, typeMap);
+            Type typeMap = jolyglot.newParameterizedType(classMap, classMapKey, classMapValue);
+            Object data = jolyglot.fromJson(file, typeMap);
 
             return (M) data;
         } catch (Exception e) {
@@ -289,7 +293,7 @@ public final class Disk implements Persistence {
             File file = new File(cacheDirectory, key);
 
             Class<?> clazzArray = Array.newInstance(classData, 1).getClass();
-            Object data = jsonConverter.fromJson(file, clazzArray);
+            Object data = jolyglot.fromJson(file, clazzArray);
 
             return (T[]) data;
         } catch (Exception e) {

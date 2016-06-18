@@ -72,11 +72,29 @@ public class DeleteRecordMatchingClassNameTest extends BaseTest {
         assertThat(disk.allKeys().size(), is(0));
     }
 
-    private class Mock1 {
+    public static class Mock1 {
         private static final String KEY = "Mock1";
+        private final String s1;
+
+        public Mock1() {
+            s1 = null;
+        }
+
+        public Mock1(String s1) {
+            this.s1 = s1;
+        }
     }
 
-    private class Mock2 {
+    public static class Mock2 {
         private static final String KEY = "Mock2";
+        private final String s1;
+
+        public Mock2() {
+            s1 = null;
+        }
+
+        public String getS1() {
+            return s1;
+        }
     }
 }

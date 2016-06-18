@@ -79,7 +79,7 @@ public class DiskTest extends BaseTest {
         mockArrayList.add(new Mock(VALUE + 1));
 
         disk.save(KEY, mockArrayList, false, null);
-        mockArrayList = disk.retrieveCollection(KEY, ArrayList.class, Mock.class);
+        mockArrayList = disk.retrieveCollection(KEY, List.class, Mock.class);
 
         assertThat(mockArrayList.get(0).getMessage(), is(VALUE));
         assertThat(mockArrayList.get(1).getMessage(), is(VALUE + 1));

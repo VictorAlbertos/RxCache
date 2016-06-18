@@ -21,7 +21,7 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
 import io.rx_cache.internal.Disk;
-import io.rx_cache.internal.JsonConverterGson;
+import io.rx_cache.internal.Jolyglot$;
 import io.rx_cache.internal.encrypt.BuiltInEncryptor;
 import io.rx_cache.internal.encrypt.FileEncryptor;
 
@@ -32,7 +32,7 @@ public class BaseTest {
 
     @Before public void setUp() {
         disk = new Disk(temporaryFolder.getRoot(),
-                new FileEncryptor(new BuiltInEncryptor()), new JsonConverterGson());
+                new FileEncryptor(new BuiltInEncryptor()), Jolyglot$.newInstance());
     }
 
     protected void waitTime(long millis) {

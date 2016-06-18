@@ -59,6 +59,9 @@ dependencies {
     compile "io.reactivex:rxjava:1.1.5"
     compile 'com.github.VictorAlbertos.Jolyglot:api:0.0.1'
 
-    testCompile 'com.google.code.gson:gson:2.5'
+    testCompile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.1'
+    testCompile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.1'
+    testCompile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.1'
+
     testCompile "junit:junit:4.12"
 }

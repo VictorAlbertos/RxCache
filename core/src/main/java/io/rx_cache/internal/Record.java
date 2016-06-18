@@ -31,7 +31,7 @@ public final class Record<T> {
     private final T data;
     private final long timeAtWhichWasPersisted;
     private final String dataClassName, dataCollectionClassName, dataKeyMapClassName;
-    private final Boolean isExpirable;
+    private Boolean expirable;
 
     //LifeTime requires to be stored to be evicted by EvictExpiredRecordsTask when no life time is available without a config provider
     private Long lifeTime;
@@ -44,9 +44,18 @@ public final class Record<T> {
         this(data, true, null);
     }
 
-    public Record(T data, Boolean isExpirable, Long lifeTime) {
+    public Record() {
+        data = null;
+        timeAtWhichWasPersisted = 0;
+        dataClassName = null;
+        dataCollectionClassName = null;
+        dataKeyMapClassName = null;
+        expirable = true;
+    }
+
+    public Record(T data, Boolean expirable, Long lifeTime) {
         this.data = data;
-        this.isExpirable = isExpirable;
+        this.expirable = expirable;
         this.lifeTime = lifeTime;
         this.timeAtWhichWasPersisted = System.currentTimeMillis();
         this.source = Source.MEMORY;
@@ -59,7 +68,7 @@ public final class Record<T> {
             dataKeyMapClassName = null;
             List list = (List) data;
             if (list.size() > 0) {
-                dataCollectionClassName = data.getClass().getName();
+                dataCollectionClassName = List.class.getName();;
                 dataClassName = list.get(0).getClass().getName();
             } else {
                 dataClassName = null;
@@ -130,15 +139,19 @@ public final class Record<T> {
         return dataClassName;
     }
 
-    String getDataCollectionClassName() {
+    public String getDataCollectionClassName() {
         return dataCollectionClassName;
     }
 
-    String getDataKeyMapClassName() {
+    public String getDataKeyMapClassName() {
         return dataKeyMapClassName;
     }
 
-    public Boolean isExpirable() {
-        return isExpirable == null ? true : isExpirable;
+    public Boolean getExpirable() {
+        return expirable;
+    }
+
+    public void setExpirable(Boolean expirable) {
+        this.expirable = expirable;
     }
 }

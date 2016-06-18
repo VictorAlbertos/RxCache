@@ -56,7 +56,7 @@ public class ProvidersRxCacheTest {
     private void initProviders(boolean useExpiredDataIfLoaderNotAvailable) {
         providersRxCache = new RxCache.Builder()
                 .useExpiredDataIfLoaderNotAvailable(useExpiredDataIfLoaderNotAvailable)
-                .persistence(temporaryFolder.getRoot(), new JsonConverterGson())
+                .persistence(temporaryFolder.getRoot(), Jolyglot$.newInstance())
                 .using(ProvidersRxCache.class);
     }
 

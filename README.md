@@ -43,10 +43,26 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos.RxCache:core:1.4.8"
+    compile "com.github.VictorAlbertos.RxCache:core:1.5.0"
     compile "io.reactivex:rxjava:1.1.5"
 }
 ```
+
+Because RxCache uses internally [Jolyglot](https://github.com/VictorAlbertos/Jolyglot) to serialize and deserialize objects, you need to add the next dependency to gradle in case you want RxCache uses Gson as its json library.  
+```gradle
+dependencies {
+    compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.1'
+}
+```
+
+If you prefer that RxCache uses Jackson, add this other dependency:
+```gradle
+dependencies {
+    compile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.1'
+}
+```
+
+Moshi is not supported for now.
 
 ## Usage
 
@@ -94,7 +110,7 @@ Finally, instantiate the Providers `interface` using `RxCache.Builder` and suppl
 ```java
 File cacheDir = getFilesDir();
 Providers providers = new RxCache.Builder()
-                            .persistence(cacheDir)
+                            .persistence(cacheDir, new GsonSpeaker())
                             .using(Providers.class);
 ```
 
@@ -116,7 +132,7 @@ public class Repository {
 
     public Repository(File cacheDir) {
         providers = new RxCache.Builder()
-                .persistence(cacheDir)
+                .persistence(cacheDir, new GsonSpeaker())
                 .using(Providers.class);
     }
 
@@ -140,14 +156,12 @@ public class Repository {
 }
 ```
 
-
 ## Use cases
-
 * Using classic API RxCache for read actions with little write needs.
 * Using actionable API RxCache, exclusive for write actions.
 
-
 ## Classic API RxCache:
+
 Following use cases illustrate some common scenarios which will help to understand the usage of `DynamicKey` and `DynamicKeyGroup` classes along with evicting scopes.
 
 ### List
@@ -255,7 +269,7 @@ apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
     // apt command comes from the android-apt plugin
-    apt "com.github.VictorAlbertos.RxCache:compiler:1.4.8"
+    apt "com.github.VictorAlbertos.RxCache:compiler:1.5.0"
 }
 ```
 
@@ -444,7 +458,7 @@ You can check an [example](https://github.com/VictorAlbertos/RxCacheSamples/blob
 RxCache serves the data from one of its three layers:
 
 * A memory layer -> Powered by [Apache ReferenceMap](https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/map/ReferenceMap.html).
-* A persisting layer -> RxCache uses internally [Gson](https://github.com/google/gson) for serialize and deserialize objects.
+* A persisting layer -> RxCache uses internally [Jolyglot](https://github.com/VictorAlbertos/Jolyglot) for serialize and deserialize objects.
 * A loader layer (the observable supplied by the client library)
 
 The policy is very simple: 

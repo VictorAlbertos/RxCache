@@ -6,16 +6,16 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import io.rx_cache.JsonConverter;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Persistence;
+import io.victoralbertos.jolyglot.Jolyglot;
 
 public class GetDeepCopy extends Action {
-    private final JsonConverter jsonConverter;
+    private final Jolyglot jolyglot;
 
-    @Inject public GetDeepCopy(Memory memory, Persistence persistence, JsonConverter jsonConverter) {
+    @Inject public GetDeepCopy(Memory memory, Persistence persistence, Jolyglot jolyglot) {
         super(memory, persistence);
-        this.jsonConverter = jsonConverter;
+        this.jolyglot = jolyglot;
     }
 
     public <T> T deepCopy(T data) {
@@ -45,10 +45,10 @@ public class GetDeepCopy extends Action {
 
         Class classData = data.getClass();
         Class classItemCollection = collection.toArray()[0].getClass();
-        Type typeCollection = jsonConverter.parameterizedTypeWithOwner(classData, classItemCollection);
-        String dataString = jsonConverter.toJson(data);
+        Type typeCollection = jolyglot.newParameterizedType(classData, classItemCollection);
+        String dataString = jolyglot.toJson(data);
 
-        return jsonConverter.fromJson(dataString, typeCollection);
+        return jolyglot.fromJson(dataString, typeCollection);
     }
 
     private <T> T getDeepCopyArray(T data) {
@@ -56,10 +56,10 @@ public class GetDeepCopy extends Action {
         if (array.length == 0) return data;
 
         Class classItemArray = array[0].getClass();
-        Type typeRecord = jsonConverter.arrayOf(classItemArray);
-        String dataString = jsonConverter.toJson(data);
+        Type typeRecord = jolyglot.arrayOf(classItemArray);
+        String dataString = jolyglot.toJson(data);
 
-        return jsonConverter.fromJson(dataString, typeRecord);
+        return jolyglot.fromJson(dataString, typeRecord);
     }
 
     private <T, K, V> T getDeepCopyMap(T data) {
@@ -69,19 +69,19 @@ public class GetDeepCopy extends Action {
         Class classData = data.getClass();
         Class classValueMap = map.values().toArray()[0].getClass();
         Class classKeyMap = map.keySet().toArray()[0].getClass();
-        Type typeMap = jsonConverter.parameterizedTypeWithOwner(classData, classKeyMap, classValueMap);
-        String dataString = jsonConverter.toJson(data);
+        Type typeMap = jolyglot.newParameterizedType(classData, classKeyMap, classValueMap);
+        String dataString = jolyglot.toJson(data);
 
-        return jsonConverter.fromJson(dataString, typeMap);
+        return jolyglot.fromJson(dataString, typeMap);
     }
 
     private <T> T getDeepCopyObject(T data) {
         if (data == null) return data;
 
         Class classData = data.getClass();
-        Type type = jsonConverter.parameterizedTypeWithOwner(classData);
-        String dataString = jsonConverter.toJson(data);
+        Type type = jolyglot.newParameterizedType(classData);
+        String dataString = jolyglot.toJson(data);
 
-        return jsonConverter.fromJson(dataString, type);
+        return jolyglot.fromJson(dataString, type);
     }
 }

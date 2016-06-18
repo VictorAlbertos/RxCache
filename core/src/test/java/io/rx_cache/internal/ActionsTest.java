@@ -39,7 +39,7 @@ public class ActionsTest {
 
     @Before public void setUp() {
         providersActions = new RxCache.Builder()
-                .persistence(temporaryFolder.getRoot(), new JsonConverterGson())
+                .persistence(temporaryFolder.getRoot(), Jolyglot$.newInstance())
                 .using(ProvidersActions.class);
     }
 
