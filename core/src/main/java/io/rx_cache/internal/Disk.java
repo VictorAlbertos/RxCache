@@ -116,7 +116,7 @@ public final class Disk implements Persistence {
                 fileEncryptor.encrypt(encryptKey, new File(cacheDirectory, key));
 
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         } finally {
             try {
                 if (fileWriter != null) {
@@ -153,32 +153,18 @@ public final class Disk implements Persistence {
      * */
     public <T> T retrieve(String key, final Class<T> clazz, boolean isEncrypted, String encryptKey) {
         File file = new File(cacheDirectory, key);
-        BufferedReader bufferedReader = null;
 
         if (isEncrypted)
             file = fileEncryptor.decrypt(encryptKey, file);
 
         try {
-            bufferedReader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
-            T data = jsonConverter.fromJson(bufferedReader, clazz);
-
-            if (isEncrypted)
-                file.delete();
-
+            T data = jsonConverter.fromJson(file, clazz);
             return data;
         } catch (Exception ignore) {
             return null;
         } finally {
             if (isEncrypted)
                 file.delete();
-
-            try {
-                if (bufferedReader != null) {
-                    bufferedReader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -188,20 +174,14 @@ public final class Disk implements Persistence {
      * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * */
     @Override public <T> Record<T> retrieveRecord(String key, boolean isEncrypted, String encryptKey) {
-        BufferedReader readerTempRecord = null;
-        BufferedReader reader = null;
         File file = new File(cacheDirectory, key);
 
         try {
             if (isEncrypted)
                 file = fileEncryptor.decrypt(encryptKey, file);
 
-            readerTempRecord = new BufferedReader(new FileReader(file.getAbsoluteFile()));
+            Record tempDiskRecord = jsonConverter.fromJson(file, Record.class);
 
-            Record tempDiskRecord = jsonConverter.fromJson(readerTempRecord, Record.class);
-            readerTempRecord.close();
-
-            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
             Class classData = Class.forName(tempDiskRecord.getDataClassName());
             Class classCollectionData = tempDiskRecord.getDataCollectionClassName() == null
                     ? Object.class : Class.forName(tempDiskRecord.getDataCollectionClassName());
@@ -214,18 +194,18 @@ public final class Disk implements Persistence {
             if (isCollection) {
                 Type typeCollection = jsonConverter.parameterizedTypeWithOwner(null, classCollectionData, classData);
                 Type typeRecord = jsonConverter.parameterizedTypeWithOwner(null, Record.class, typeCollection, classData);
-                diskRecord = jsonConverter.fromJson(reader, typeRecord);
+                diskRecord = jsonConverter.fromJson(file.getAbsoluteFile(), typeRecord);
             } else if (isArray) {
                 Type typeRecord = jsonConverter.parameterizedTypeWithOwner(null, Record.class, classCollectionData);
-                diskRecord = jsonConverter.fromJson(reader, typeRecord);
+                diskRecord = jsonConverter.fromJson(file.getAbsoluteFile(), typeRecord);
             } else if (isMap) {
                 Class classKeyMap = Class.forName(tempDiskRecord.getDataKeyMapClassName());
                 Type typeMap = jsonConverter.parameterizedTypeWithOwner(null, classCollectionData, classKeyMap, classData);
                 Type typeRecord = jsonConverter.parameterizedTypeWithOwner(null, Record.class, typeMap, classData);
-                diskRecord = jsonConverter.fromJson(reader, typeRecord);
+                diskRecord = jsonConverter.fromJson(file.getAbsoluteFile(), typeRecord);
             } else {
                 Type type = jsonConverter.parameterizedTypeWithOwner(null, Record.class, classData);
-                diskRecord = jsonConverter.fromJson(reader, type);
+                diskRecord = jsonConverter.fromJson(file.getAbsoluteFile(), type);
             }
 
             diskRecord.setSizeOnMb(file.length()/1024f/1024f);
@@ -234,17 +214,6 @@ public final class Disk implements Persistence {
         } catch (Exception ignore) {
             return null;
         } finally {
-            try {
-                if (readerTempRecord != null) {
-                    readerTempRecord.close();
-                }
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
             if (isEncrypted)
                 file.delete();
         }
@@ -282,27 +251,13 @@ public final class Disk implements Persistence {
      * @param classData type class contained by the collection, not the collection itself
      * */
     public <C extends Collection<T>, T> C retrieveCollection(String key, Class<C> classCollection, Class<T> classData) {
-        BufferedReader reader = null;
-
         try {
             File file = new File(cacheDirectory, key);
-            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
-
             Type typeCollection = jsonConverter.parameterizedTypeWithOwner(null, classCollection, classData);
-            T data = jsonConverter.fromJson(reader, typeCollection);
-
+            T data = jsonConverter.fromJson(file, typeCollection);
             return (C) data;
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -313,27 +268,15 @@ public final class Disk implements Persistence {
      * @param classMapValue type class of the Map value
      * */
     public <M extends Map<K,V>, K, V> M retrieveMap(String key, Class classMap, Class<K> classMapKey, Class<V> classMapValue) {
-        BufferedReader reader = null;
-
         try {
             File file = new File(cacheDirectory, key);
-            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
 
             Type typeMap = jsonConverter.parameterizedTypeWithOwner(null, classMap, classMapKey, classMapValue);
-            Object data = jsonConverter.fromJson(reader, typeMap);
+            Object data = jsonConverter.fromJson(file, typeMap);
 
             return (M) data;
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -342,27 +285,15 @@ public final class Disk implements Persistence {
      * @param classData type class contained by the Array
      * */
     public <T> T[] retrieveArray(String key, Class<T> classData) {
-        BufferedReader reader = null;
-
         try {
             File file = new File(cacheDirectory, key);
-            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
 
             Class<?> clazzArray = Array.newInstance(classData, 1).getClass();
-            Object data = jsonConverter.fromJson(reader, clazzArray);
+            Object data = jsonConverter.fromJson(file, clazzArray);
 
             return (T[]) data;
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 

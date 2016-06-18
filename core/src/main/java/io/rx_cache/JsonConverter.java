@@ -16,6 +16,7 @@
 
 package io.rx_cache;
 
+import java.io.File;
 import java.io.Reader;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
@@ -65,26 +66,24 @@ public interface JsonConverter {
      * Therefore, this method should not be used if the desired type is a generic type. Note that
      * this method works fine if the any of the fields of the specified object are generics, just the
      * object itself should not be a generic type. For the cases when the object is of generic type,
-     * invoke {@link #fromJson(Reader, Type)}. If you have the Json in a String form instead of a
      * {@link Reader}, use {@link #fromJson(String, Class)} instead.
      * @param <T> the type of the desired object
-     * @param json the reader producing the Json from which the object is to be deserialized.
+     * @param file the reader producing the Json from which the object is to be deserialized.
      * @param classOfT the class of T
      * @return an object of type T from the string.
      */
-    <T> T fromJson(Reader json, Class<T> classOfT) throws RuntimeException;
+    <T> T fromJson(File file, Class<T> classOfT) throws RuntimeException;
 
     /**
      * This method deserializes the Json read from the specified reader into an object of the
      * specified type. This method is useful if the specified object is a generic type. For
-     * non-generic objects, use {@link #fromJson(Reader, Class)} instead. If you have the Json in a
      * String form instead of a {@link Reader}, use {@link #fromJson(String, Type)} instead.
      * @param <T> the type of the desired object
-     * @param json the reader producing Json from which the object is to be deserialized
+     * @param file the reader producing Json from which the object is to be deserialized
      * @param typeOfT The specific genericized type of src.
      * @return an object of type T from the json.
      */
-    <T> T fromJson(Reader json, Type typeOfT) throws RuntimeException;
+    <T> T fromJson(File file, Type typeOfT) throws RuntimeException;
 
     /**
      * Returns an array type whose elements are all instances of

@@ -40,10 +40,6 @@ public class BuiltInEncryptor implements Encryptor {
     private Cipher encryptCipher;
     private Cipher decryptCipher;
 
-
-    public BuiltInEncryptor() {
-    }
-
     @Override public void encrypt(String key, File decryptedFile, File encryptedFile) {
         initCiphers(key);
 

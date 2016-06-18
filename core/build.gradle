@@ -52,8 +52,6 @@ artifacts {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-
     apt "com.google.dagger:dagger-compiler:2.4"
     compile "com.google.dagger:dagger:2.4"
     compile "org.glassfish:javax.annotation:10.0-b28"
