@@ -2,6 +2,7 @@ package io.rx_cache.internal.cache;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -44,6 +45,8 @@ public class GetDeepCopy extends Action {
         if (collection.isEmpty()) return data;
 
         Class classData = data.getClass();
+        if (List.class.isAssignableFrom(classData)) classData = List.class;
+
         Class classItemCollection = collection.toArray()[0].getClass();
         Type typeCollection = jolyglot.newParameterizedType(classData, classItemCollection);
         String dataString = jolyglot.toJson(data);
@@ -66,7 +69,7 @@ public class GetDeepCopy extends Action {
         Map<K,V> map = (Map<K,V>) data;
         if (map.isEmpty()) return data;
 
-        Class classData = data.getClass();
+        Class classData = Map.class;
         Class classValueMap = map.values().toArray()[0].getClass();
         Class classKeyMap = map.keySet().toArray()[0].getClass();
         Type typeMap = jolyglot.newParameterizedType(classData, classKeyMap, classValueMap);

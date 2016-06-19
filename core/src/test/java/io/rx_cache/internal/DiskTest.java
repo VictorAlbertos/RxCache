@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.Vector;
 
 import io.rx_cache.internal.common.BaseTest;
 
@@ -83,16 +81,6 @@ public class DiskTest extends BaseTest {
 
         assertThat(mockArrayList.get(0).getMessage(), is(VALUE));
         assertThat(mockArrayList.get(1).getMessage(), is(VALUE + 1));
-
-        Vector<Mock> mocksVector = new Vector(3, 2);
-        mocksVector.add(new Mock(VALUE));
-        mocksVector.add(new Mock(VALUE + 1));
-
-        disk.save(KEY, mocksVector, false, null);
-        mocksVector = disk.retrieveCollection(KEY, Vector.class, Mock.class);
-
-        assertThat(mocksVector.get(0).getMessage(), is(VALUE));
-        assertThat(mocksVector.get(1).getMessage(), is(VALUE+1));
     }
 
     @Test public void When_A_Map_Is_Supplied_Retrieve_It() {
@@ -102,7 +90,7 @@ public class DiskTest extends BaseTest {
 
         disk.save(KEY, mocksHashMap, false, null);
 
-        mocksHashMap = disk.retrieveMap(KEY, TreeMap.class, Integer.class, Mock.class);
+        mocksHashMap = disk.retrieveMap(KEY, Map.class, Integer.class, Mock.class);
         assertThat(mocksHashMap.get(1).getMessage(), is(VALUE));
         assertThat(mocksHashMap.get(2).getMessage(), is(VALUE+1));
     }

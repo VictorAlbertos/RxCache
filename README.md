@@ -48,21 +48,29 @@ dependencies {
 }
 ```
 
-Because RxCache uses internally [Jolyglot](https://github.com/VictorAlbertos/Jolyglot) to serialize and deserialize objects, you need to add the next dependency to gradle in case you want RxCache uses Gson as its json library.  
+Because RxCache uses internally [Jolyglot](https://github.com/VictorAlbertos/Jolyglot) to serialize and deserialize objects, you need to add one of the next dependency to gradle.
+ 
+To use Gson:  
 ```gradle
 dependencies {
     compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.1'
 }
 ```
 
-If you prefer that RxCache uses Jackson, add this other dependency:
+To use Jackson:
 ```gradle
 dependencies {
     compile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.1'
 }
 ```
 
-Moshi is not supported for now.
+To use Moshi:
+```gradle
+dependencies {
+    compile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.1'
+}
+```
+
 
 ## Usage
 

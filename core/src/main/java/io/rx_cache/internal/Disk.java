@@ -17,9 +17,7 @@
 package io.rx_cache.internal;
 
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -101,7 +99,15 @@ public final class Disk implements Persistence {
      * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * */
     public void save(String key, Object data, boolean isEncrypted, String encryptKey) {
-        String wrapperJSONSerialized = jolyglot.toJson(data);
+        String wrapperJSONSerialized;
+
+        if (data instanceof Record) {
+            Type type = jolyglot.newParameterizedType(data.getClass(), Object.class);
+            wrapperJSONSerialized = jolyglot.toJson(data, type);
+        } else {
+            wrapperJSONSerialized = jolyglot.toJson(data);
+        }
+
         FileWriter fileWriter = null;
 
         try {
@@ -180,11 +186,8 @@ public final class Disk implements Persistence {
             if (isEncrypted)
                 file = fileEncryptor.decrypt(encryptKey, file);
 
-/*            Scanner scanner = new Scanner(file);
-            String text = scanner.useDelimiter("\\A").next();
-            scanner.close();*/
-
-            Record tempDiskRecord = jolyglot.fromJson(file, Record.class);
+            Type partialType = jolyglot.newParameterizedType(Record.class, Object.class);
+            Record tempDiskRecord = jolyglot.fromJson(file, partialType);
 
             Class classData = Class.forName(tempDiskRecord.getDataClassName());
             Class classCollectionData = tempDiskRecord.getDataCollectionClassName() == null
@@ -221,32 +224,6 @@ public final class Disk implements Persistence {
             if (isEncrypted)
                 file.delete();
         }
-    }
-    private String getFileContent(File file) {
-        StringBuilder builder = new StringBuilder();
-        BufferedReader reader = null;
-
-        try {
-            reader = new BufferedReader(new FileReader(file.getAbsoluteFile()));
-            String aux;
-
-            while ((aux = reader.readLine()) != null) {
-                builder.append(aux);
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return builder.toString();
     }
 
     /** Retrieve a collection previously saved.

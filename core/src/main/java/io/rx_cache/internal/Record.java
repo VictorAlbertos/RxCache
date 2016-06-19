@@ -90,7 +90,7 @@ public final class Record<T> {
                 Map.Entry<Object, Object>  object = (Map.Entry<Object, Object>) map.entrySet().iterator().next();
                 dataClassName = object.getValue().getClass().getName();
                 dataKeyMapClassName = object.getKey().getClass().getName();
-                dataCollectionClassName = data.getClass().getName();
+                dataCollectionClassName = Map.class.getName();
             } else {
                 dataClassName = null;
                 dataCollectionClassName = null;
