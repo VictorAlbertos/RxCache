@@ -61,11 +61,11 @@ dependencies {
     compile "org.glassfish:javax.annotation:10.0-b28"
 
     compile "io.reactivex:rxjava:1.1.5"
-    compile 'com.github.VictorAlbertos.Jolyglot:api:0.0.1'
+    compile 'com.github.VictorAlbertos.Jolyglot:api:0.0.2'
 
-    testCompile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.1'
-    testCompile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.1'
-    testCompile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.1'
+    testCompile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.2'
+    testCompile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.2'
+    testCompile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.2'
 
     testCompile "junit:junit:4.12"
 }

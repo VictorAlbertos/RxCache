@@ -23,9 +23,9 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
-import io.rx_cache.internal.encrypt.Encryptor;
 import io.rx_cache.internal.encrypt.BuiltInEncryptor;
-import io.victoralbertos.jolyglot.Jolyglot;
+import io.rx_cache.internal.encrypt.Encryptor;
+import io.victoralbertos.jolyglot.JolyglotGenerics;
 
 @Module
 public final class RxCacheModule {
@@ -33,9 +33,9 @@ public final class RxCacheModule {
     private final boolean useExpiredDataIfLoaderNotAvailable;
     private final Integer maxMgPersistenceCache;
     private final Class classProviders;
-    private final Jolyglot jolyglot;
+    private final JolyglotGenerics jolyglot;
 
-    public RxCacheModule(File cacheDirectory, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache, Class classProviders, Jolyglot jolyglot) {
+    public RxCacheModule(File cacheDirectory, Boolean useExpiredDataIfLoaderNotAvailable, Integer maxMgPersistenceCache, Class classProviders, JolyglotGenerics jolyglot) {
         this.cacheDirectory = cacheDirectory;
         this.useExpiredDataIfLoaderNotAvailable = useExpiredDataIfLoaderNotAvailable;
         this.maxMgPersistenceCache = maxMgPersistenceCache;
@@ -73,7 +73,7 @@ public final class RxCacheModule {
     }
 
     @Singleton @Provides
-    Jolyglot provideJolyglot() {
+    JolyglotGenerics provideJolyglot() {
         return jolyglot;
     }
 }

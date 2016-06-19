@@ -30,7 +30,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import io.rx_cache.internal.encrypt.FileEncryptor;
-import io.victoralbertos.jolyglot.Jolyglot;
+import io.victoralbertos.jolyglot.JolyglotGenerics;
 
 /**
  * Save objects in disk and evict them too. It uses Gson as json parser.
@@ -38,9 +38,9 @@ import io.victoralbertos.jolyglot.Jolyglot;
 public final class Disk implements Persistence {
     private final File cacheDirectory;
     private final FileEncryptor fileEncryptor;
-    private final Jolyglot jolyglot;
+    private final JolyglotGenerics jolyglot;
 
-    @Inject public Disk(File cacheDirectory, FileEncryptor fileEncryptor, Jolyglot jolyglot) {
+    @Inject public Disk(File cacheDirectory, FileEncryptor fileEncryptor, JolyglotGenerics jolyglot) {
         this.cacheDirectory = cacheDirectory;
         this.fileEncryptor = fileEncryptor;
         this.jolyglot = jolyglot;

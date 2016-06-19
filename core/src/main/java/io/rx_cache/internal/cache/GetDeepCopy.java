@@ -9,12 +9,12 @@ import javax.inject.Inject;
 
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Persistence;
-import io.victoralbertos.jolyglot.Jolyglot;
+import io.victoralbertos.jolyglot.JolyglotGenerics;
 
 public class GetDeepCopy extends Action {
-    private final Jolyglot jolyglot;
+    private final JolyglotGenerics jolyglot;
 
-    @Inject public GetDeepCopy(Memory memory, Persistence persistence, Jolyglot jolyglot) {
+    @Inject public GetDeepCopy(Memory memory, Persistence persistence, JolyglotGenerics jolyglot) {
         super(memory, persistence);
         this.jolyglot = jolyglot;
     }

@@ -3,13 +3,13 @@ package io.rx_cache.internal;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import io.victoralbertos.jolyglot.GsonSpeaker;
 import io.victoralbertos.jolyglot.JacksonSpeaker;
-import io.victoralbertos.jolyglot.Jolyglot;
+import io.victoralbertos.jolyglot.JolyglotGenerics;
+import io.victoralbertos.jolyglot.MoshiSpeaker;
 
 public final class Jolyglot$ {
-    public static Jolyglot newInstance() {
-        return new GsonSpeaker();
+    public static JolyglotGenerics newInstance() {
+        return new MoshiSpeaker();
     }
 
     private static JacksonSpeaker jacksonSpeaker() {

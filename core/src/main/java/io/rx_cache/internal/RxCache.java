@@ -20,7 +20,7 @@ import java.io.File;
 import java.lang.reflect.Proxy;
 import java.security.InvalidParameterException;
 
-import io.victoralbertos.jolyglot.Jolyglot;
+import io.victoralbertos.jolyglot.JolyglotGenerics;
 
 public final class RxCache {
     private final Builder builder;
@@ -61,7 +61,7 @@ public final class RxCache {
         private boolean useExpiredDataIfLoaderNotAvailable;
         private Integer maxMBPersistenceCache;
         private File cacheDirectory;
-        private Jolyglot jolyglot;
+        private JolyglotGenerics jolyglot;
 
         /**
          * If true RxCache will serve Records already expired, instead of evict them and throw an exception
@@ -84,11 +84,11 @@ public final class RxCache {
         }
 
         /**
-         * Sets the File cache system and the implementation of {@link Jolyglot} to serialise and deserialize objects
+         * Sets the File cache system and the implementation of {@link JolyglotGenerics} to serialise and deserialize objects
          * @param cacheDirectory The File system used by the persistence implementation of Disk
-         * @param jolyglot A concrete implementation of {@link Jolyglot}
+         * @param jolyglot A concrete implementation of {@link JolyglotGenerics}
          */
-        public RxCache persistence(File cacheDirectory, Jolyglot jolyglot) {
+        public RxCache persistence(File cacheDirectory, JolyglotGenerics jolyglot) {
             if (cacheDirectory == null)
                 throw new InvalidParameterException(Locale.REPOSITORY_DISK_ADAPTER_CAN_NOT_BE_NULL);
 
