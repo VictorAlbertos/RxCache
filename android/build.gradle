@@ -38,7 +38,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':core')
     apt project(':compiler')
-    compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.1'
+    compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.2'
 
     testCompile 'junit:junit:4.12'
 
