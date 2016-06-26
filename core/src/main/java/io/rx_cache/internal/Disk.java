@@ -99,6 +99,8 @@ public final class Disk implements Persistence {
      * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * */
     public void save(String key, Object data, boolean isEncrypted, String encryptKey) {
+        key = safetyKey(key);
+
         String wrapperJSONSerialized;
 
         if (data instanceof Record) {
@@ -139,6 +141,7 @@ public final class Disk implements Persistence {
      * @param key the key whereby the object could be deleted.
      * */
     @Override public void evict(String key) {
+        key = safetyKey(key);
         final File file = new File(cacheDirectory, key);
         file.delete();
     }
@@ -158,6 +161,8 @@ public final class Disk implements Persistence {
      * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * */
     public <T> T retrieve(String key, final Class<T> clazz, boolean isEncrypted, String encryptKey) {
+        key = safetyKey(key);
+
         File file = new File(cacheDirectory, key);
 
         if (isEncrypted)
@@ -180,6 +185,8 @@ public final class Disk implements Persistence {
      * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
      * */
     @Override public <T> Record<T> retrieveRecord(String key, boolean isEncrypted, String encryptKey) {
+        key = safetyKey(key);
+
         File file = new File(cacheDirectory, key);
 
         try {
@@ -232,6 +239,8 @@ public final class Disk implements Persistence {
      * @param classData type class contained by the collection, not the collection itself
      * */
     public <C extends Collection<T>, T> C retrieveCollection(String key, Class<C> classCollection, Class<T> classData) {
+        key = safetyKey(key);
+
         try {
             File file = new File(cacheDirectory, key);
             Type typeCollection = jolyglot.newParameterizedType(classCollection, classData);
@@ -249,6 +258,8 @@ public final class Disk implements Persistence {
      * @param classMapValue type class of the Map value
      * */
     public <M extends Map<K,V>, K, V> M retrieveMap(String key, Class classMap, Class<K> classMapKey, Class<V> classMapValue) {
+        key = safetyKey(key);
+
         try {
             File file = new File(cacheDirectory, key);
 
@@ -266,6 +277,8 @@ public final class Disk implements Persistence {
      * @param classData type class contained by the Array
      * */
     public <T> T[] retrieveArray(String key, Class<T> classData) {
+        key = safetyKey(key);
+
         try {
             File file = new File(cacheDirectory, key);
 
@@ -278,4 +291,7 @@ public final class Disk implements Persistence {
         }
     }
 
+    private String safetyKey(String key) {
+        return key.replaceAll("/", "_");
+    }
 }

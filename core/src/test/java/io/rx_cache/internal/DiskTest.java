@@ -31,7 +31,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNull;
 
 public class DiskTest extends BaseTest {
-    private final static String KEY = "store";
+    private final static String KEY = "store/store";
     private final static String VALUE = "dummy";
 
     @Test public void When_A_Record_Is_Supplied_Retrieve_It() {
@@ -133,4 +133,5 @@ public class DiskTest extends BaseTest {
         Record<Mock> diskRecord = disk.retrieveRecord(KEY, true, "otherkey");
         assertNull(diskRecord);
     }
+
 }
