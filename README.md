@@ -1,7 +1,5 @@
 [![Build Status](https://travis-ci.org/VictorAlbertos/RxCache.svg?branch=master)](https://travis-ci.org/VictorAlbertos/RxCache)
 
-[![Android Gems](http://www.android-gems.com/badge/VictorAlbertos/RxCache.svg?branch=master)](http://www.android-gems.com/lib/VictorAlbertos/RxCache)
-
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-RxCache-green.svg?style=true)](https://android-arsenal.com/details/1/3016)
 
 # RxCache
@@ -43,7 +41,7 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos.RxCache:core:1.5.5"
+    compile "com.github.VictorAlbertos.RxCache:core:1.5.6"
     compile "io.reactivex:rxjava:1.1.5"
 }
 ```
@@ -268,7 +266,7 @@ apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
     // apt command comes from the android-apt plugin
-    apt "com.github.VictorAlbertos.RxCache:compiler:1.5.5"
+    apt "com.github.VictorAlbertos.RxCache:compiler:1.5.6"
 }
 ```
 
