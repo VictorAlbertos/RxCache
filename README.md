@@ -272,7 +272,8 @@ dependencies {
 }
 ```
 
-After this configuration, every provider annotated with [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Actionable.java) `annotation` will generate an accessor method in the `ActionsProviders` class.
+After this configuration, every provider annotated with [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Actionable.java) `annotation` 
+will expose an accessor method in a new generated class called with the same name as the interface, but appending an 'Actionable' suffix.
 
 The order in the params supplies must be as in the following example:
 
@@ -291,19 +292,19 @@ public interface RxProviders {
 
 The observable value must be a `List`, otherwise an error will be thrown.
 
-The previous RxProviders `interface` will expose the next accessors methods in the `ActionsProviders` class.
+The previous RxProviders `interface` will expose the next accessors methods in the generated `RxProvidersActionable` class.
 ```java
-ActionsProviders.mocks();
-ActionsProviders.mocksDynamicKey(DynamicKey dynamicKey);
-ActionsProviders.mocksDynamicKeyGroup(DynamicKeyGroup dynamicKeyGroup);
+RxProvidersActionable.mocks(RxProviders proxy);
+RxProvidersActionable.mocksDynamicKey(RxProviders proxy, DynamicKey dynamicKey);
+RxProvidersActionable.mocksDynamicKeyGroup(RxProviders proxy, DynamicKeyGroup dynamicKeyGroup);
 ```
 
-This methods return an instance of the `Actions` class, so now you are ready to use every write operation available in the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Actions.java) class. It is advisable to explore the [ActionsTest](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/test/java/io/rx_cache/internal/ActionsTest.java) class to see what action fits better for your case. If you feel that some action has been missed please don't hesitate to open an issue to request it.
+These methods return an instance of the `Actions` class, so now you are ready to use every write operation available in the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Actions.java) class. It is advisable to explore the [ActionsTest](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/test/java/io/rx_cache/internal/ActionsTest.java) class to see what action fits better for your case. If you feel that some action has been missed please don't hesitate to open an issue to request it.
 
 Some actions examples:
 
 ```java
-ActionsProviders.mocks()
+ActionsProviders.mocks(rxProviders)
     .addFirst(new Mock())
     .addLast(new Mock())
     //Add a new mock at 5 position
