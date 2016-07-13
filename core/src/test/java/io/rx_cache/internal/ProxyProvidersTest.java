@@ -152,7 +152,12 @@ public class ProxyProvidersTest extends BaseTest {
                 break;
         }
 
-        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", "", "", observable, null, detailResponse, new EvictProvider(evictCache), true, false);
+        ProxyTranslator.ConfigProvider configProvider = new ProxyTranslator.ConfigProvider("mockKey", null, detailResponse, true, false);
+        configProvider.dynamicKey = "";
+        configProvider.dynamicKeyGroup = "";
+        configProvider.loaderObservable = observable;
+        configProvider.evictProvider = new EvictProvider(evictCache);
+
 
         if (hasCache) twoLayersCacheMock.save("mockKey", "", "", new Mock("message"), configProvider.getLifeTimeMillis(), configProvider.isExpirable(), configProvider.isEncrypted());
 

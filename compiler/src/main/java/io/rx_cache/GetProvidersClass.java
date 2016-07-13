@@ -45,7 +45,7 @@ final class GetProvidersClass {
             if (!returnType.tsym.toString()
                     .equals(TypeName.get(Observable.class).toString())) {
                 throw new ValidationException(methodSymbol,
-                        "Error parsing @%s provider. Only Observable<List> type is supported as observable loader", nameMethod);
+                        "Error parsing %s provider. Only Observable<List> type is supported as observable loader", nameMethod);
             }
 
             Type enclosingTypeObservable = returnType.getTypeArguments().get(0);
@@ -53,7 +53,7 @@ final class GetProvidersClass {
             if (!enclosingTypeObservable.tsym.toString()
                     .equals(TypeName.get(List.class).toString())) {
                 throw new ValidationException(methodSymbol,
-                        "Error parsing @%s provider. Only Observable<List> type is supported as observable loader", nameMethod);
+                        "Error parsing %s provider. Only Observable<List> type is supported as observable loader", nameMethod);
             }
 
             List<Symbol.VarSymbol> params = methodSymbol.getParameters();
