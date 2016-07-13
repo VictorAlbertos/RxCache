@@ -16,92 +16,92 @@
 
 package io.rx_cache;
 
+import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.processing.Filer;
+import javax.annotation.Generated;
 import javax.lang.model.element.Modifier;
 
-import io.rx_cache.internal.RxCache;
+import io.rx_cache.ProvidersClass.Method;
+import rx.Observable;
 
-class GenerateActions {
-    private final List<ProviderScheme> providersScheme;
-    private final String nameProxyProviders;
-    private final Filer filer;
+final class BrewJavaFile {
 
-    GenerateActions(Filer filer, List<ProviderScheme> providersScheme, String nameProxyProviders) {
-        this.filer = filer;
-        this.providersScheme = providersScheme;
-        this.nameProxyProviders = nameProxyProviders;
-    }
-
-    void generate() throws IOException {
+    JavaFile from(ProvidersClass providersClass) throws IOException {
         List<MethodSpec> methodSpecs = new ArrayList<>();
 
-        for (ProviderScheme providerScheme : providersScheme) {
-            methodSpecs.add(getActionProvider(providerScheme));
+        for (Method method : providersClass.methods) {
+            methodSpecs.add(getActionProvider(providersClass.className, method));
         }
 
-        TypeSpec actionsProviders = TypeSpec.classBuilder("ActionsProviders")
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethods(methodSpecs)
-                .build();
+        TypeSpec typeSpec = classProviders(providersClass.className, methodSpecs);
 
-        JavaFile javaFile = JavaFile.builder("io.rx_cache", actionsProviders)
+        return JavaFile.builder(providersClass.className.packageName(), typeSpec)
                 .build();
-
-        javaFile.writeTo(filer);
     }
 
-    private MethodSpec getActionProvider(ProviderScheme providerScheme) {
-        String methodName = providerScheme.getNameMethod();
+    private MethodSpec getActionProvider(ClassName providersClassName, Method method) {
+        String methodName = method.name;
+        TypeName list = ClassName.get(method.enclosingTypeObservable);
+        TypeName enclosingTypeList = ClassName
+                .get(method.enclosingTypeObservable.getTypeArguments().get(0));
+        String enclosingTypeListName = enclosingTypeList.toString();
 
-        ClassName type = ClassName.get(providerScheme.getPackageNameTypeList(), providerScheme.getSimpleNameTypeList());
-        ParameterizedTypeName action = ParameterizedTypeName.get(ClassName.get("io.rx_cache", "Actions"), type);
-        ParameterizedTypeName list = ParameterizedTypeName.get(ClassName.get("java.util", "List"), type);
-        ParameterizedTypeName arrayList = ParameterizedTypeName.get(ClassName.get("java.util", "ArrayList"), type);
-        ParameterizedTypeName observable = ParameterizedTypeName.get(ClassName.get("rx", "Observable"), list);
+        ParameterizedTypeName action =
+                ParameterizedTypeName.get(ClassName.get(Actions.class), enclosingTypeList);
 
-        ParameterizedTypeName evict = ParameterizedTypeName.get(ClassName.get(Actions.Evict.class), type);
+        ParameterizedTypeName evict =
+                ParameterizedTypeName.get(ClassName.get(Actions.Evict.class), enclosingTypeList);
+
+        ParameterizedTypeName arrayList =
+                ParameterizedTypeName.get(ClassName.get(ArrayList.class), enclosingTypeList);
+
+        ParameterizedTypeName observable =
+                ParameterizedTypeName.get(ClassName.get(Observable.class), list);
+
+        ParameterSpec rxProvidersInstance = ParameterSpec
+                .builder(providersClassName, "proxy")
+                .addModifiers(Modifier.FINAL)
+                .build();
 
         MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addParameter(rxProvidersInstance)
                 .returns(action);
 
-        if (providerScheme.hasDynamicKey()) {
+        if (method.hasDynamicKey) {
             builder.addParameter(DynamicKey.class, "dynamicKey", Modifier.FINAL);
-        } else if (providerScheme.hasDynamicKeyGroup()) {
+        } else if (method.hasDynamicKeyGroup) {
             builder.addParameter(DynamicKeyGroup.class, "dynamicKeyGroup", Modifier.FINAL);
         }
 
-        ClassName proxyClass = ClassName.get(providerScheme.getPackageNameOwner(), providerScheme.getSimpleNameOwner());
-        builder.addStatement("final $T proxy = ($T) $T.retainedProxy()", proxyClass, proxyClass, RxCache.class);
-
         builder.beginControlFlow("$T evict = new $T()", evict, evict)
                 .beginControlFlow("@Override public $T call($T elements)", observable, observable);
-        if (providerScheme.hasDynamicKey()) {
+        if (method.hasDynamicKey) {
             setReturnEvictForEvictDynamicKey(builder, methodName);
-        } else if (providerScheme.hasDynamicKeyGroup()) {
+        } else if (method.hasDynamicKeyGroup) {
             setReturnEvictForEvictDynamicKeyGroup(builder, methodName);
         } else {
             setReturnEvictForEvictProvider(builder, methodName);
         }
-        builder.endControlFlow()
-                .endControlFlow(";");
+        builder.endControlFlow().endControlFlow(";");
 
-        if (providerScheme.hasDynamicKey()) {
-            setCacheForEvictDynamicKey(builder, observable, arrayList, methodName, providerScheme.getSimpleNameTypeList());
-        } else if (providerScheme.hasDynamicKeyGroup()) {
-            setCacheForEvictDynamicKeyGroup(builder, observable, arrayList, methodName, providerScheme.getSimpleNameTypeList());
+        if (method.hasDynamicKey) {
+            setCacheForEvictDynamicKey(builder, observable, arrayList, methodName, enclosingTypeListName);
+        } else if (method.hasDynamicKeyGroup) {
+            setCacheForEvictDynamicKeyGroup(builder, observable, arrayList, methodName, enclosingTypeListName);
         } else {
-            setCacheForEvictProvider(builder, observable, arrayList, methodName, providerScheme.getSimpleNameTypeList());
+            setCacheForEvictProvider(builder, observable, arrayList, methodName, enclosingTypeListName);
         }
 
         builder.addStatement("return Actions.with(evict, oCache)");
@@ -132,4 +132,17 @@ class GenerateActions {
     private void setCacheForEvictDynamicKeyGroup(MethodSpec.Builder builder, ParameterizedTypeName observable, ParameterizedTypeName arrayList, String methodName, String typeName) {
         builder.addStatement("$T oCache = proxy."+methodName+"(Observable.<List<"+typeName+">>just(new $T()), dynamicKeyGroup, new EvictDynamicKeyGroup(false))", observable, arrayList);
     }
+
+
+    private TypeSpec classProviders(ClassName className, List<MethodSpec> methodSpecs) {
+        return TypeSpec.classBuilder(className.simpleName() + "Actionable")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(AnnotationSpec.builder(Generated.class)
+                        .addMember("value", "$S", ActionsProcessor.class.getCanonicalName())
+                        .addMember("comments", "$S", "Generated code from RxCache. Don't modify. Or modify. It doesn't matter.")
+                        .build())
+                .addMethods(methodSpecs)
+                .build();
+    }
+
 }

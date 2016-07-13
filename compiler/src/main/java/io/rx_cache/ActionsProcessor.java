@@ -16,13 +16,11 @@
 
 package io.rx_cache;
 
-
 import com.google.auto.service.AutoService;
+import com.squareup.javapoet.JavaFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -37,44 +35,38 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
 @AutoService(Processor.class)
-public class ActionsProcessor extends AbstractProcessor {
+public final class ActionsProcessor extends AbstractProcessor {
     private Messager messager;
     private Filer filer;
-    private List<ProviderScheme> providerSchemes;
+    private GetProvidersClass getProvidersClass;
+    private BrewJavaFile brewJavaFile;
 
-    @Override public synchronized void init(ProcessingEnvironment processingEnv) {
-        super.init(processingEnv);
-        this.messager = processingEnv.getMessager();
-        this.filer = processingEnv.getFiler();
-        this.providerSchemes = new ArrayList<>();
+    @Override public synchronized void init(ProcessingEnvironment env) {
+        super.init(env);
+        this.messager = env.getMessager();
+        this.filer = env.getFiler();
+        this.getProvidersClass = new GetProvidersClass();
+        this.brewJavaFile = new BrewJavaFile();
     }
 
     @Override public SourceVersion getSupportedSourceVersion() {
         return SourceVersion.latestSupported();
     }
 
-    @Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        providerSchemes.clear();
-
-        for (Element element : roundEnv.getElementsAnnotatedWith(Actionable.class)) {
+    @Override public boolean process(Set<? extends TypeElement> elements, RoundEnvironment roundEnv) {
+        for (Element element : roundEnv.getRootElements()) {
             try {
-                ParseProviderScheme parseProviderScheme = new ParseProviderScheme(element);
-                ProviderScheme providerScheme = parseProviderScheme.getProviderScheme();
-                providerSchemes.add(providerScheme);
-            } catch (ParseProviderScheme.ParseException e) {
+                ProvidersClass testClass = getProvidersClass.from(element);
+                if (testClass == null) continue;
+                if (testClass.methods.isEmpty()) continue;
+
+                JavaFile javaFile = brewJavaFile.from(testClass);
+                javaFile.writeTo(filer);
+            } catch (GetProvidersClass.ValidationException e) {
                 messager.printMessage(Diagnostic.Kind.ERROR, e.getMessage(), e.getElement());
-                return true;
+            } catch (IOException e) {
+                messager.printMessage(Diagnostic.Kind.ERROR, e.getMessage(), element);
             }
-        }
-
-        if (providerSchemes.isEmpty()) return false;
-
-        GenerateActions generateActions = new GenerateActions(filer, providerSchemes, "");
-
-        try {
-            generateActions.generate();
-        } catch (IOException e) {
-            messager.printMessage(Diagnostic.Kind.ERROR, e.getMessage());
         }
 
         return false;

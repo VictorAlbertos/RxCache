@@ -24,7 +24,6 @@ import io.victoralbertos.jolyglot.JolyglotGenerics;
 
 public final class RxCache {
     private final Builder builder;
-    private static Object retainedProxy;
 
     private RxCache(Builder builder) {
         this.builder = builder;
@@ -41,17 +40,7 @@ public final class RxCache {
                 new Class<?>[]{classProviders},
                 proxyProviders);
 
-        retainedProxy = proxy;
-
         return proxy;
-    }
-
-    /**
-     * To be able to access from ActionsProviders auto-generated class.
-     * @return the current instance of the implemented providers interface.
-     */
-    public static Object retainedProxy() {
-        return retainedProxy;
     }
 
     /**

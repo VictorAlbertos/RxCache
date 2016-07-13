@@ -37,60 +37,71 @@ public class ActionsProcessorTest {
                 "import io.rx_cache.EvictDynamicKey;\n" +
                 "import io.rx_cache.EvictDynamicKeyGroup;\n" +
                 "import io.rx_cache.EvictProvider;\n" +
+                "import io.rx_cache.Mock;\n" +
                 "import rx.Observable;\n" +
-
+                "\n" +
                 "public interface RxProviders {\n" +
                 "    @Actionable\n" +
-                "    Observable<List<String>> mocks(Observable<List<String>> message, EvictProvider evictProvider);\n" +
-
+                "    Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks,\n" +
+                "                                                 EvictProvider evictProvider);\n" +
+                "\n" +
                 "    @Actionable\n" +
-                "    Observable<List<String>> mocksDynamicKey(Observable<List<String>> message, DynamicKey dynamicKey, EvictDynamicKey evictDynamicKey);\n" +
-
+                "    Observable<List<Mock>> getMocksEvictDynamicKey(Observable<List<Mock>> oMocks,\n" +
+                "                                                   DynamicKey dynamicKey,\n" +
+                "                                                   EvictDynamicKey evictDynamicKey);\n" +
+                "\n" +
                 "    @Actionable\n" +
-                "    Observable<List<String>> mocksDynamicKeyGroup(Observable<List<String>> message, DynamicKeyGroup dynamicKeyGroup, EvictDynamicKeyGroup evictDynamicKey);\n" +
+                "    Observable<List<Mock>> getMocksEvictDynamicKeyGroup(Observable<List<Mock>> oMocks,\n" +
+                "                                                        DynamicKeyGroup dynamicKeyGroup,\n" +
+                "                                                        EvictDynamicKeyGroup evictDynamicKeyGroup);\n" +
                 "}");
 
-        JavaFileObject expectedSource = JavaFileObjects.forSourceString("test/ActionsProviders", "" +
-                "package io.rx_cache;\n" +
-                "\n" +
-                "import io.rx_cache.internal.RxCache;\n" +
-                "import java.lang.String;\n" +
+        JavaFileObject expectedSource = JavaFileObjects.forSourceString("test/RxProvidersActionable", "" +
+                "package test;\n" +
+                "import io.rx_cache.Actions;\n" +
+                "import io.rx_cache.DynamicKey;\n" +
+                "import io.rx_cache.DynamicKeyGroup;\n" +
+                "import io.rx_cache.EvictDynamicKey;\n" +
+                "import io.rx_cache.EvictDynamicKeyGroup;\n" +
+                "import io.rx_cache.EvictProvider;\n" +
+                "import io.rx_cache.Mock;\n" +
                 "import java.util.ArrayList;\n" +
                 "import java.util.List;\n" +
+                "import javax.annotation.Generated;\n" +
                 "import rx.Observable;\n" +
-                "import test.RxProviders;\n" +
                 "\n" +
-                "public final class ActionsProviders {\n" +
-                "  public static Actions<String> mocks() {\n" +
-                "    final RxProviders proxy = (RxProviders) RxCache.retainedProxy();\n" +
-                "    Actions.Evict<String> evict = new Actions.Evict<String>() {\n" +
-                "      @Override public Observable<List<String>> call(Observable<List<String>> elements) {\n" +
-                "        return proxy.mocks(elements, new EvictProvider(true));\n" +
+                "@Generated(\n" +
+                "    value = \"io.rx_cache.ActionsProcessor\",\n" +
+                "    comments = \"Generated code from RxCache. Don't modify. Or modify. It doesn't matter.\"\n" +
+                ")\n" +
+                "public class RxProvidersActionable {\n" +
+                "  public static Actions<Mock> getMocksEvictProvider(final RxProviders proxy) {\n" +
+                "    Actions.Evict<Mock> evict = new Actions.Evict<Mock>() {\n" +
+                "      @Override public Observable<List<Mock>> call(Observable<List<Mock>> elements) {\n" +
+                "        return proxy.getMocksEvictProvider(elements, new EvictProvider(true));\n" +
                 "      }\n" +
                 "    } ;;\n" +
-                "    Observable<List<String>> oCache = proxy.mocks(Observable.<List<String>>just(new ArrayList<String>()), new EvictProvider(false));\n" +
+                "    Observable<List<Mock>> oCache = proxy.getMocksEvictProvider(Observable.<List<io.rx_cache.Mock>>just(new ArrayList<Mock>()), new EvictProvider(false));\n" +
                 "    return Actions.with(evict, oCache);\n" +
                 "  }\n" +
                 "\n" +
-                "  public static Actions<String> mocksDynamicKey(final DynamicKey dynamicKey) {\n" +
-                "    final RxProviders proxy = (RxProviders) RxCache.retainedProxy();\n" +
-                "    Actions.Evict<String> evict = new Actions.Evict<String>() {\n" +
-                "      @Override public Observable<List<String>> call(Observable<List<String>> elements) {\n" +
-                "        return proxy.mocksDynamicKey(elements, dynamicKey, new EvictDynamicKey(true));\n" +
+                "  public static Actions<Mock> getMocksEvictDynamicKey(final RxProviders proxy, final DynamicKey dynamicKey) {\n" +
+                "    Actions.Evict<Mock> evict = new Actions.Evict<Mock>() {\n" +
+                "      @Override public Observable<List<Mock>> call(Observable<List<Mock>> elements) {\n" +
+                "        return proxy.getMocksEvictDynamicKey(elements, dynamicKey, new EvictDynamicKey(true));\n" +
                 "      }\n" +
                 "    } ;;\n" +
-                "    Observable<List<String>> oCache = proxy.mocksDynamicKey(Observable.<List<String>>just(new ArrayList<String>()), dynamicKey, new EvictDynamicKey(false));\n" +
+                "    Observable<List<Mock>> oCache = proxy.getMocksEvictDynamicKey(Observable.<List<io.rx_cache.Mock>>just(new ArrayList<Mock>()), dynamicKey, new EvictDynamicKey(false));\n" +
                 "    return Actions.with(evict, oCache);\n" +
                 "  }\n" +
                 "\n" +
-                "  public static Actions<String> mocksDynamicKeyGroup(final DynamicKeyGroup dynamicKeyGroup) {\n" +
-                "    final RxProviders proxy = (RxProviders) RxCache.retainedProxy();\n" +
-                "    Actions.Evict<String> evict = new Actions.Evict<String>() {\n" +
-                "      @Override public Observable<List<String>> call(Observable<List<String>> elements) {\n" +
-                "        return proxy.mocksDynamicKeyGroup(elements, dynamicKeyGroup, new EvictDynamicKeyGroup(true));\n" +
+                "  public static Actions<Mock> getMocksEvictDynamicKeyGroup(final RxProviders proxy, final DynamicKeyGroup dynamicKeyGroup) {\n" +
+                "    Actions.Evict<Mock> evict = new Actions.Evict<Mock>() {\n" +
+                "      @Override public Observable<List<Mock>> call(Observable<List<Mock>> elements) {\n" +
+                "        return proxy.getMocksEvictDynamicKeyGroup(elements, dynamicKeyGroup, new EvictDynamicKeyGroup(true));\n" +
                 "      }\n" +
                 "    } ;;\n" +
-                "    Observable<List<String>> oCache = proxy.mocksDynamicKeyGroup(Observable.<List<String>>just(new ArrayList<String>()), dynamicKeyGroup, new EvictDynamicKeyGroup(false));\n" +
+                "    Observable<List<Mock>> oCache = proxy.getMocksEvictDynamicKeyGroup(Observable.<List<io.rx_cache.Mock>>just(new ArrayList<Mock>()), dynamicKeyGroup, new EvictDynamicKeyGroup(false));\n" +
                 "    return Actions.with(evict, oCache);\n" +
                 "  }\n" +
                 "}");
