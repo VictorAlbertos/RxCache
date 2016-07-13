@@ -17,6 +17,8 @@
 package io.rx_cache.internal;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -32,69 +34,72 @@ import io.rx_cache.Reply;
 import rx.Observable;
 
 public final class ProxyTranslator {
-    private Method method;
-    private Object[] objectsMethod;
+    private final Map<Method, ConfigProvider> configProviderMethodCache;
 
-    @Inject ProxyTranslator() {}
+    @Inject ProxyTranslator() {
+        configProviderMethodCache = new HashMap<>();
+    }
 
     ConfigProvider processMethod(Method method, Object[] objectsMethod) {
-        this.method = method;
-        this.objectsMethod = objectsMethod;
+        ConfigProvider configProvider = loadConfigProviderMethod(method);
 
-        ConfigProvider configProvider = new ConfigProvider(getProviderKey(), getDynamicKey(), getDynamicKeyGroup(), getLoaderObservable(),
-                getLifeTimeCache(), requiredDetailResponse(), evictProvider(), getExpirable(), isEncrypted());
-        checkIntegrityConfiguration(configProvider);
+        configProvider.dynamicKey = getDynamicKey(method, objectsMethod);
+        configProvider.dynamicKeyGroup = getDynamicKeyGroup(method, objectsMethod);
+        configProvider.loaderObservable = getLoaderObservable(method, objectsMethod);
+        configProvider.evictProvider = evictProvider(method, objectsMethod);
+
+        checkIntegrityConfiguration(method, configProvider);
 
         processMethodHasBeenCalled = true;
         return configProvider;
     }
 
-    protected String getProviderKey() {
+    private String getProviderKey(Method method) {
         return method.getName();
     }
 
-    protected String getDynamicKey() {
-        DynamicKey dynamicKey = getObjectFromMethodParam(DynamicKey.class);
+    private String getDynamicKey(Method method, Object[] objectsMethod) {
+        DynamicKey dynamicKey = getObjectFromMethodParam(method, DynamicKey.class, objectsMethod);
         if (dynamicKey != null) return dynamicKey.getDynamicKey().toString();
 
-        DynamicKeyGroup dynamicKeyGroup = getObjectFromMethodParam(DynamicKeyGroup.class);
+        DynamicKeyGroup dynamicKeyGroup = getObjectFromMethodParam(method, DynamicKeyGroup.class, objectsMethod);
         if (dynamicKeyGroup != null) return dynamicKeyGroup.getDynamicKey().toString();
 
         return "";
     }
 
-    protected String getDynamicKeyGroup() {
-        DynamicKeyGroup dynamicKeyGroup = getObjectFromMethodParam(DynamicKeyGroup.class);
+    private String getDynamicKeyGroup(Method method, Object[] objectsMethod) {
+        DynamicKeyGroup dynamicKeyGroup = getObjectFromMethodParam(method, DynamicKeyGroup.class, objectsMethod);
         return dynamicKeyGroup != null ? dynamicKeyGroup.getGroup().toString() : "";
     }
 
-    protected Observable getLoaderObservable() {
-        Observable observable = getObjectFromMethodParam(Observable.class);
+    private Observable getLoaderObservable(Method method, Object[] objectsMethod) {
+        Observable observable = getObjectFromMethodParam(method, Observable.class, objectsMethod);
         if (observable != null) return observable;
 
         String errorMessage = method.getName() + Locale.NOT_OBSERVABLE_LOADER_FOUND;
         throw new IllegalArgumentException(errorMessage);
     }
 
-    protected Long getLifeTimeCache() {
+    private Long getLifeTimeCache(Method method) {
         LifeCache lifeCache = method.getAnnotation(LifeCache.class);
         if (lifeCache == null) return null;
         return lifeCache.timeUnit().toMillis(lifeCache.duration());
     }
 
-    protected boolean getExpirable() {
+    private boolean getExpirable(Method method) {
         Expirable expirable = method.getAnnotation(Expirable.class);
         if (expirable != null) return expirable.value();
         return true;
     }
 
-    protected boolean isEncrypted() {
+    private boolean isEncrypted(Method method) {
         Encrypt encrypt = method.getAnnotation(Encrypt.class);
         if (encrypt != null) return true;
         return false;
     }
 
-    protected boolean requiredDetailResponse() {
+    private boolean requiredDetailResponse(Method method) {
         if (method.getReturnType() != Observable.class) {
             String errorMessage = method.getName() + Locale.INVALID_RETURN_TYPE;
             throw new IllegalArgumentException(errorMessage);
@@ -103,13 +108,13 @@ public final class ProxyTranslator {
         return method.getGenericReturnType().toString().contains(Reply.class.getName());
     }
 
-    protected EvictProvider evictProvider() {
-        EvictProvider evictProvider = getObjectFromMethodParam(EvictProvider.class);
+    private EvictProvider evictProvider(Method method, Object[] objectsMethod) {
+        EvictProvider evictProvider = getObjectFromMethodParam(method, EvictProvider.class, objectsMethod);
         if (evictProvider != null) return evictProvider;
         else return new EvictProvider(false);
     }
 
-    protected <T> T getObjectFromMethodParam(Class<T> expectedClass) {
+    private <T> T getObjectFromMethodParam(Method method, Class<T> expectedClass, Object[] objectsMethod) {
         int countSameObjectsType = 0;
         T expectedObject = null;
 
@@ -128,7 +133,7 @@ public final class ProxyTranslator {
         return expectedObject;
     }
 
-    private void checkIntegrityConfiguration(ConfigProvider configProvider) {
+    private void checkIntegrityConfiguration(Method method, ConfigProvider configProvider) {
         if (configProvider.evictProvider() instanceof EvictDynamicKeyGroup
                 && configProvider.getDynamicKeyGroup().isEmpty()) {
             String errorMessage = method.getName() + Locale.EVICT_DYNAMIC_KEY_GROUP_PROVIDED_BUT_NOT_PROVIDED_ANY_DYNAMIC_KEY_GROUP;
@@ -143,21 +148,18 @@ public final class ProxyTranslator {
     }
 
     public final static class ConfigProvider {
-        private final String providerKey, dynamicKey, dynamicKeyGroup;
-        private final Observable loaderObservable;
+        private final String providerKey;
         private final Long lifeTime;
         private final boolean requiredDetailedResponse;
-        private final EvictProvider evictProvider;
         private final boolean expirable;
         private final boolean encrypted;
+        String dynamicKey, dynamicKeyGroup;
+        Observable loaderObservable;
+        EvictProvider evictProvider;
 
-        public ConfigProvider(String providerKey, String dynamicKey, String group, Observable loaderObservable, Long lifeTime, boolean requiredDetailedResponse, EvictProvider evictProvider, boolean expirable, boolean encrypted) {
+        public ConfigProvider(String providerKey, Long lifeTime, boolean requiredDetailedResponse, boolean expirable, boolean encrypted) {
             this.providerKey = providerKey;
-            this.dynamicKey = dynamicKey;
-            this.dynamicKeyGroup = group;
-            this.loaderObservable = loaderObservable;
             this.lifeTime = lifeTime;
-            this.evictProvider = evictProvider;
             this.requiredDetailedResponse = requiredDetailedResponse;
             this.expirable = expirable;
             this.encrypted = encrypted;
@@ -205,4 +207,18 @@ public final class ProxyTranslator {
     public boolean processMethodHasBeenCalled() {
         return processMethodHasBeenCalled;
     }
+
+    private ConfigProvider loadConfigProviderMethod(Method method) {
+        ConfigProvider result;
+        synchronized (configProviderMethodCache) {
+            result = configProviderMethodCache.get(method);
+            if (result == null) {
+                result = new ConfigProvider(getProviderKey(method), getLifeTimeCache(method),
+                        requiredDetailResponse(method), getExpirable(method), isEncrypted(method));
+                configProviderMethodCache.put(method, result);
+            }
+        }
+        return result;
+    }
+
 }
