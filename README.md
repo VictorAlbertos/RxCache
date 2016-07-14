@@ -483,6 +483,7 @@ The policy is very simple:
 [RxCache](https://github.com/VictorAlbertos/RxSCache): Reactive caching library for Swift.
 
 ## Another author's libraries using RxJava:
-* [RxPaparazzo](https://github.com/FuckBoilerplate/RxPaparazzo): RxJava extension for Android to take images using camera and gallery.
-* [RxGcm](https://github.com/VictorAlbertos/RxGcm): A reactive wrapper for Android Google Cloud Messaging to get rid of Service(s) configuration, handling foreground and background notifications depending on application state.
+* [Mockery](https://github.com/VictorAlbertos/Mockery): Android and Java library for mocking and testing networking layers with built-in support for Retrofit.
 * [RxActivityResult](https://github.com/VictorAlbertos/RxActivityResult): A reactive-tiny-badass-vindictive library to break with the OnActivityResult implementation as it breaks the observables chain. 
+* [RxFcm](https://github.com/VictorAlbertos/RxFcm): RxJava extension for Android Firebase Cloud Messaging (aka fcm).
+* [RxSocialConnect](https://github.com/FuckBoilerplate/RxSocialConnect-Android): OAuth RxJava extension for Android.
