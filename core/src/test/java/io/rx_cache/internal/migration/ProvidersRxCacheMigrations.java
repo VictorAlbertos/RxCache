@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.rx_cache.Migration;
+import io.rx_cache.RxCacheException;
 import io.rx_cache.SchemeMigration;
 import io.rx_cache.internal.Jolyglot$;
-import io.rx_cache.internal.ProxyProviders;
 import io.rx_cache.internal.RxCache;
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -37,7 +37,7 @@ public class ProvidersRxCacheMigrations {
         providersMigrations.getMocks(Observable.<List<Mock1>>just(null)).subscribe(testSubscriber);
         testSubscriber.awaitTerminalEvent();
         testSubscriber.assertNoValues();
-        testSubscriber.assertError(ProxyProviders.RxCacheException.class);
+        testSubscriber.assertError(RxCacheException.class);
     }
 
     private void populateMocks() {

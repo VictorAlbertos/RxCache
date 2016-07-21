@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.Reply;
+import io.rx_cache.RxCacheException;
 import io.rx_cache.Source;
 import io.rx_cache.internal.cache.EvictExpiredRecordsPersistence;
 import io.rx_cache.internal.cache.GetDeepCopy;
@@ -172,17 +173,5 @@ public final class ProxyProviders implements InvocationHandler {
         } else {
             return data;
         }
-    }
-
-    public class RxCacheException extends RuntimeException {
-
-        public RxCacheException(String message) {
-            super(message);
-        }
-
-        public RxCacheException(String message, Throwable exception) {
-            super(message, exception);
-        }
-
     }
 }
