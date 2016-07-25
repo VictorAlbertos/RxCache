@@ -302,7 +302,7 @@ These methods return an instance of the `Actions` class, so now you are ready to
 Some actions examples:
 
 ```java
-ActionsProviders.mocks(rxProviders)
+RxProvidersActionable.mocks(rxProviders)
     .addFirst(new Mock())
     .addLast(new Mock())
     //Add a new mock at 5 position
