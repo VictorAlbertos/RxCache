@@ -88,18 +88,18 @@ RxCache accepts as argument a set of classes to indicate how the provider needs 
 
 * `Observable` is the only object required to create a provider. `Observable` type must be equal to the one specified by the returning value of the provider.
 * [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictProvider.java) allows to explicitly evict all the data associated with the provider.
-* [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKey.java) allows to explicitly evict the data of an specific [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/DynamicKey.java).
-* [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) allows to explicitly evict the data of an specific [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/DynamicKeyGroup.java).
-* [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/DynamicKey.java) is a wrapper around the key object for those providers which need to handle multiple records, so they need to provide multiple keys, such us endpoints with pagination, ordering or filtering requirements. To evict the data associated with one particular key use `EvictDynamicKey`.
-* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/DynamicKeyGroup.java) is a wrapper around the key and the group for those providers which need to handle multiple records grouped, so they need to provide multiple keys organized in groups, such us endpoints with filtering AND pagination requirements. To evict the data associated with the key of one particular group, use `EvictDynamicKeyGroup`.
+* [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKey.java) allows to explicitly evict the data of an specific [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/DynamicKey.java).
+* [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) allows to explicitly evict the data of an specific [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/DynamicKeyGroup.java).
+* [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/DynamicKey.java) is a wrapper around the key object for those providers which need to handle multiple records, so they need to provide multiple keys, such us endpoints with pagination, ordering or filtering requirements. To evict the data associated with one particular key use `EvictDynamicKey`.
+* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/DynamicKeyGroup.java) is a wrapper around the key and the group for those providers which need to handle multiple records grouped, so they need to provide multiple keys organized in groups, such us endpoints with filtering AND pagination requirements. To evict the data associated with the key of one particular group, use `EvictDynamicKeyGroup`.
 
 Supported annotations:
 
-* [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/LifeCache.java) sets the amount of time before the data would be evicted. If `@LifeCache` is not supplied, the data will be never evicted unless it is required explicitly using [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) .
-* [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Actionable.java) offers an easy way to perform write operations using providers. More details [here](#actionable_section)
-* [@SchemeMigration](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/SchemeMigration.java) and [@Migration](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Migration.java) provides a simple mechanism for handling migrations between releases. More details [here](#migrations_section)
-* [@Expirable](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Expirable.java) determines if that provider will be excluded from the evicting process or not. More details [here](#expirable_section)
-* [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EncryptKey.java) and [@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Encrypt.java) provides a simple way to encrypt/decrypt the data on persistence layer. More details [here](#encryption_section)
+* [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/LifeCache.java) sets the amount of time before the data would be evicted. If `@LifeCache` is not supplied, the data will be never evicted unless it is required explicitly using [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) .
+* [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Actionable.java) offers an easy way to perform write operations using providers. More details [here](#actionable_section)
+* [@SchemeMigration](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/SchemeMigration.java) and [@Migration](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Migration.java) provides a simple mechanism for handling migrations between releases. More details [here](#migrations_section)
+* [@Expirable](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Expirable.java) determines if that provider will be excluded from the evicting process or not. More details [here](#expirable_section)
+* [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/EncryptKey.java) and [@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Encrypt.java) provides a simple way to encrypt/decrypt the data on persistence layer. More details [here](#encryption_section)
 
 ### Build an instance of Providers and use it
 
@@ -246,7 +246,7 @@ Nevertheless, there are complete examples for [Android and Java projects](https:
 
 ## <a name="actionable_section"></a>Actionable API RxCache:
 
-This actionable api offers an easy way to perform write operations using providers. Although write operations could be achieved using the classic api too, it's much complex and error-prone. Indeed, the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Actions.java) class it's a wrapper around the classic api which play with evicting scopes and lists.
+This actionable api offers an easy way to perform write operations using providers. Although write operations could be achieved using the classic api too, it's much complex and error-prone. Indeed, the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/ActionsList.java) class it's a wrapper around the classic api which play with evicting scopes and lists.
 
 In order to use this actionable api, first you need to add the [repository compiler](https://github.com/VictorAlbertos/RxCache/tree/master/compiler) as a dependency to your project using an annotation processor. For Android, it would be as follows:
 
@@ -271,7 +271,7 @@ dependencies {
 }
 ```
 
-After this configuration, every provider annotated with [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Actionable.java) `annotation` 
+After this configuration, every provider annotated with [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Actionable.java) `annotation` 
 will expose an accessor method in a new generated class called with the same name as the interface, but appending an 'Actionable' suffix.
 
 The order in the params supplies must be as in the following example:
@@ -298,7 +298,7 @@ RxProvidersActionable.mocksDynamicKey(RxProviders proxy, DynamicKey dynamicKey);
 RxProvidersActionable.mocksDynamicKeyGroup(RxProviders proxy, DynamicKeyGroup dynamicKeyGroup);
 ```
 
-These methods return an instance of the `Actions` class, so now you are ready to use every write operation available in the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Actions.java) class. It is advisable to explore the [ActionsTest](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/test/java/io/rx_cache/internal/ActionsTest.java) class to see what action fits better for your case. If you feel that some action has been missed please don't hesitate to open an issue to request it.
+These methods return an instance of the `Actions` class, so now you are ready to use every write operation available in the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/ActionsList.java) class. It is advisable to explore the [ActionsTest](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/test/java/io/rx_cache/internal/ActionsListTest.java) class to see what action fits better for your case. If you feel that some action has been missed please don't hesitate to open an issue to request it.
 
 Some actions examples:
 
@@ -339,7 +339,7 @@ Every one of the previous actions will be execute only after the composed observ
 
 RxCache provides a simple mechanism for handling migrations between releases.
 
-You need to annotate your providers `interface` with [@SchemeMigration](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/SchemeMigration.java). This `annotation` accepts an array of [@Migration](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Migration.java) annotations, and, in turn, `@Migration` annotation accepts both, a version number and an array of `Class`es which will be deleted from persistence layer.
+You need to annotate your providers `interface` with [@SchemeMigration](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/SchemeMigration.java). This `annotation` accepts an array of [@Migration](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Migration.java) annotations, and, in turn, `@Migration` annotation accepts both, a version number and an array of `Class`es which will be deleted from persistence layer.
 
 ```java
 @SchemeMigration({
@@ -381,9 +381,9 @@ Because RxCache has an internal process to clean memory when it is required, the
 
 RxCache provides a simple mechanism to encrypt the data.
 
-You need to annotate your providers `interface` with [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EncryptKey.java). This `annotation` accepts a string as the `key` necessary to encrypt/decrypt the data. But you will need to annotate your provider's records with [@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Encrypt.java) in order to saved the data encrypted. If no [@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Encrypt.java) is set, then no encryption will be held. 
+You need to annotate your providers `interface` with [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/EncryptKey.java). This `annotation` accepts a string as the `key` necessary to encrypt/decrypt the data. But you will need to annotate your provider's records with [@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Encrypt.java) in order to saved the data encrypted. If no [@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Encrypt.java) is set, then no encryption will be held. 
 
-**Important:** If the value of the `key` supplied on [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EncryptKey.java) is modified between compilations, then the previous persisted data will not be able to be evicted/retrieved by RxCache. 
+**Important:** If the value of the `key` supplied on [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/EncryptKey.java) is modified between compilations, then the previous persisted data will not be able to be evicted/retrieved by RxCache. 
 
 ```java
 @EncryptKey("myStrongKey-1234")
@@ -414,7 +414,7 @@ This limit ensure that the disk will no grow up limitless in case you have provi
 
 When this limit is reached, RxCache will not be able to persist in disk new data. That's why RxCache has an automated process to evict any record when the threshold memory assigned to the persistence layer is close to be reached, even if the record life time has not been fulfilled.
 
-But provider's record annotated with [@Expirable](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/Expirable.java) annotation and set its value to false will be excluded from the process.
+But provider's record annotated with [@Expirable](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Expirable.java) annotation and set its value to false will be excluded from the process.
 
 ```java
 interface Providers {
