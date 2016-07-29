@@ -18,25 +18,22 @@ package io.rx_cache.internal;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
+import io.rx_cache.DynamicKey;
 import io.rx_cache.EvictProvider;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
-import org.hamcrest.CoreMatchers;
-import org.junit.ClassRule;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runners.MethodSorters;
-
-import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.hamcrest.CoreMatchers;
+import org.junit.ClassRule;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runners.MethodSorters;
 import rx.Observable;
 import rx.functions.Func1;
 import rx.observers.TestSubscriber;
@@ -52,12 +49,15 @@ import static org.junit.Assert.assertThat;
 public class ProvidersRxCacheTest {
   @ClassRule public static TemporaryFolder temporaryFolder = new TemporaryFolder();
   private ProvidersRxCache providersRxCache;
+  private RxCache rxCache;
   private final static int SIZE = 100;
 
   private void initProviders(boolean useExpiredDataIfLoaderNotAvailable) {
-    providersRxCache = new RxCache.Builder()
+    rxCache = new RxCache.Builder()
         .useExpiredDataIfLoaderNotAvailable(useExpiredDataIfLoaderNotAvailable)
-        .persistence(temporaryFolder.getRoot(), Jolyglot$.newInstance())
+        .persistence(temporaryFolder.getRoot(), Jolyglot$.newInstance());
+
+    providersRxCache = rxCache
         .using(ProvidersRxCache.class);
   }
 
@@ -455,6 +455,34 @@ public class ProvidersRxCacheTest {
 
     reply = subscriber.getOnNextEvents().get(0);
     assertThat(reply.getSource(), is(Source.CLOUD));
+  }
+
+  @Test public void _15_When_Evict_All_Evict_All() {
+    initProviders(false);
+
+    TestSubscriber<Void> subscriberEvict = new TestSubscriber<>();
+    rxCache.evictAll().subscribe(subscriberEvict);
+    subscriberEvict.awaitTerminalEvent();
+
+
+    for (int i = 0; i < SIZE; i++) {
+      TestSubscriber<List<Mock>> subscriber = new TestSubscriber<>();
+      providersRxCache.getMocksPaginate(createObservableMocks(1), new DynamicKey(i))
+          .subscribe(subscriber);
+      subscriber.awaitTerminalEvent();
+    }
+
+    assertThat(temporaryFolder.getRoot().listFiles().length, is(SIZE));
+
+    subscriberEvict = new TestSubscriber<>();
+    rxCache.evictAll().subscribe(subscriberEvict);
+    subscriberEvict.awaitTerminalEvent();
+
+    subscriberEvict.assertCompleted();
+    subscriberEvict.assertNoErrors();
+    subscriberEvict.assertValueCount(1);
+
+    assertThat(temporaryFolder.getRoot().listFiles().length, is(0));
   }
 
   private Object deepCopy(Object object, Type type) {

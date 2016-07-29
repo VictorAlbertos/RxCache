@@ -20,21 +20,27 @@ import io.victoralbertos.jolyglot.JolyglotGenerics;
 import java.io.File;
 import java.lang.reflect.Proxy;
 import java.security.InvalidParameterException;
+import rx.Observable;
 
 public final class RxCache {
   private final Builder builder;
+  private ProxyProviders proxyProviders;
 
   private RxCache(Builder builder) {
     this.builder = builder;
   }
 
   public <T> T using(final Class<T> classProviders) {
-    ProxyProviders proxyProviders = new ProxyProviders(builder, classProviders);
+    proxyProviders = new ProxyProviders(builder, classProviders);
 
     return (T) Proxy.newProxyInstance(
         classProviders.getClassLoader(),
         new Class<?>[] {classProviders},
         proxyProviders);
+  }
+
+  public Observable<Void> evictAll() {
+    return proxyProviders.evictAll();
   }
 
   /**

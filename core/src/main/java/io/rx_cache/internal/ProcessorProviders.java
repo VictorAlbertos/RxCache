@@ -31,4 +31,9 @@ public interface ProcessorProviders {
    * @return an observable based on the {@link ConfigProvider} specs.
    */
   <T> Observable<T> process(final ConfigProvider configProvider);
+
+  /**
+   * Destroy the entire cache
+   */
+  Observable<Void> evictAll();
 }

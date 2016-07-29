@@ -16,6 +16,8 @@
 
 package io.rx_cache.internal;
 
+import io.rx_cache.internal.encrypt.FileEncryptor;
+import io.victoralbertos.jolyglot.JolyglotGenerics;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,11 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
-
-import io.rx_cache.internal.encrypt.FileEncryptor;
-import io.victoralbertos.jolyglot.JolyglotGenerics;
 
 /**
  * Save objects in disk and evict them too. It uses Gson as json parser.
@@ -51,10 +49,8 @@ public final class Disk implements Persistence {
    * @param key the key whereby the Record could be retrieved/deleted later. @see evict and @see
    * retrieve.
    * @param record the record to be persisted.
-   * @param isEncrypted If the persisted record is encrypted or not. See {@link
-   * io.rx_cache.Encrypt}
-   * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link
-   * io.rx_cache.EncryptKey}
+   * @param isEncrypted If the persisted record is encrypted or not.
+   * @param encryptKey The key used to encrypt/decrypt the record to be persisted.
    */
   @Override public void saveRecord(String key, Record record, boolean isEncrypted,
       String encryptKey) {
@@ -102,10 +98,8 @@ public final class Disk implements Persistence {
    * @param key the key whereby the object could be retrieved/deleted later. @see evict and @see
    * retrieve.
    * @param data the object to be persisted.
-   * @param isEncrypted If the persisted record is encrypted or not. See {@link
-   * io.rx_cache.Encrypt}
-   * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link
-   * io.rx_cache.EncryptKey}
+   * @param isEncrypted If the persisted record is encrypted or not.
+   * @param encryptKey The key used to encrypt/decrypt the record to be persisted.
    */
   public void save(String key, Object data, boolean isEncrypted, String encryptKey) {
     key = safetyKey(key);
@@ -161,9 +155,15 @@ public final class Disk implements Persistence {
    * Delete all objects previously saved.
    */
   @Override public void evictAll() {
-    for (File file : cacheDirectory.listFiles()) {
-      file.delete();
+    File[] files = cacheDirectory.listFiles();
+
+    if (null != files) {
+      for (File file : files) {
+        if (file != null)
+          file.delete();
+      }
     }
+
   }
 
   /**
@@ -171,10 +171,8 @@ public final class Disk implements Persistence {
    *
    * @param key the key whereby the object could be retrieved.
    * @param clazz the type of class against the object need to be serialized
-   * @param isEncrypted If the persisted record is encrypted or not. See {@link
-   * io.rx_cache.Encrypt}
-   * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link
-   * io.rx_cache.EncryptKey}
+   * @param isEncrypted If the persisted record is encrypted or not.
+   * @param encryptKey The key used to encrypt/decrypt the record to be persisted.
    */
   public <T> T retrieve(String key, final Class<T> clazz, boolean isEncrypted, String encryptKey) {
     key = safetyKey(key);
@@ -201,10 +199,8 @@ public final class Disk implements Persistence {
    * Retrieve the Record previously saved.
    *
    * @param key the key whereby the object could be retrieved.
-   * @param isEncrypted If the persisted record is encrypted or not. See {@link
-   * io.rx_cache.Encrypt}
-   * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link
-   * io.rx_cache.EncryptKey}
+   * @param isEncrypted If the persisted record is encrypted or not.
+   * @param encryptKey The key used to encrypt/decrypt the record to be persisted.
    */
   @Override public <T> Record<T> retrieveRecord(String key, boolean isEncrypted,
       String encryptKey) {

@@ -182,4 +182,13 @@ public final class ProcessorProvidersBehaviour implements ProcessorProviders {
       return data;
     }
   }
+
+  @Override public Observable<Void> evictAll() {
+    return Observable.defer(new Func0<Observable<Void>>() {
+      @Override public Observable<Void> call() {
+        twoLayersCache.evictAll();
+        return Observable.just(null);
+      }
+    });
+  }
 }

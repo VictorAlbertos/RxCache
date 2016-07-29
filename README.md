@@ -41,7 +41,7 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos.RxCache:runtime:1.6.0"
+    compile "com.github.VictorAlbertos.RxCache:runtime:1.6.1"
     compile "io.reactivex:rxjava:1.1.8"
 }
 ```
@@ -82,6 +82,8 @@ interface Providers {
 }
 ```
 
+RxCache exposes `evictAll()` method to evict the entire cache in a row. 
+
 RxCache accepts as argument a set of classes to indicate how the provider needs to handle the cached data:
 
 * `Observable` is the only object required to create a provider. `Observable` type must be equal to the one specified by the returning value of the provider.
@@ -90,7 +92,6 @@ RxCache accepts as argument a set of classes to indicate how the provider needs 
 * [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) allows to explicitly evict the data of an specific [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/DynamicKeyGroup.java).
 * [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/DynamicKey.java) is a wrapper around the key object for those providers which need to handle multiple records, so they need to provide multiple keys, such us endpoints with pagination, ordering or filtering requirements. To evict the data associated with one particular key use `EvictDynamicKey`.
 * [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/DynamicKeyGroup.java) is a wrapper around the key and the group for those providers which need to handle multiple records grouped, so they need to provide multiple keys organized in groups, such us endpoints with filtering AND pagination requirements. To evict the data associated with the key of one particular group, use `EvictDynamicKeyGroup`.
-
 
 Supported annotations:
 
@@ -266,7 +267,7 @@ apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
     // apt command comes from the android-apt plugin
-    apt "com.github.VictorAlbertos.RxCache:compiler:1.6.0"
+    apt "com.github.VictorAlbertos.RxCache:compiler:1.6.1"
 }
 ```
 

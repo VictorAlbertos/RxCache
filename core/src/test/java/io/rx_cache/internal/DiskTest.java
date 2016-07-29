@@ -134,4 +134,16 @@ public class DiskTest extends BaseTest {
         assertNull(diskRecord);
     }
 
+    @Test public void When_Evict_Cache_Then_Evict_Cache() {
+        for (int i = 0; i < 100; i++) {
+            disk.save(String.valueOf(i), new Record(new Mock(VALUE)), false, null);
+        }
+
+        assertThat(disk.allKeys().size(), is(100));
+
+        disk.evictAll();
+
+        assertThat(disk.allKeys().size(), is(0));
+    }
+
 }

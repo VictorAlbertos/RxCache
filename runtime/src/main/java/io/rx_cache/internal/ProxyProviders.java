@@ -73,4 +73,9 @@ public final class ProxyProviders implements InvocationHandler {
       }
     });
   }
+
+  Observable<Void> evictAll() {
+    return processorProviders.evictAll();
+  }
+
 }
