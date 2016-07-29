@@ -2,49 +2,49 @@ apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
 
 buildscript {
-    repositories {
-        mavenCentral()
-        jcenter()
-    }
+  repositories {
+    mavenCentral()
+    jcenter()
+  }
 
-    dependencies {
-        classpath "com.neenbedankt.gradle.plugins:android-apt:1.8"
-    }
+  dependencies {
+    classpath "com.neenbedankt.gradle.plugins:android-apt:1.8"
+  }
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+  compileSdkVersion 23
+  buildToolsVersion "23.0.1"
 
-    defaultConfig {
-        applicationId "victoralbertos.io.android"
-        minSdkVersion 16
-        targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+  defaultConfig {
+    applicationId "victoralbertos.io.android"
+    minSdkVersion 16
+    targetSdkVersion 23
+    versionCode 1
+    versionName "1.0"
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-    lintOptions {
-        abortOnError false
-    }
+  }
+  lintOptions {
+    abortOnError false
+  }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile project(':core')
-    apt project(':compiler')
-    compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.2'
+  compile fileTree(dir: 'libs', include: ['*.jar'])
+  compile project(':runtime')
+  apt project(':compiler')
+  compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.2'
 
-    testCompile 'junit:junit:4.12'
+  testCompile 'junit:junit:4.12'
 
-    apt "com.google.dagger:dagger-compiler:2.4"
-    compile "com.google.dagger:dagger:2.4"
-    provided "org.glassfish:javax.annotation:10.0-b28"
+  apt "com.google.dagger:dagger-compiler:2.4"
+  compile "com.google.dagger:dagger:2.4"
+  provided "org.glassfish:javax.annotation:10.0-b28"
 }
 
 

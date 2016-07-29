@@ -16,7 +16,6 @@
 
 package io.rx_cache.internal.encrypt;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -24,62 +23,62 @@ import java.nio.channels.FileChannel;
 
 import javax.inject.Inject;
 
-public class FileEncryptor {
-    private static final String SUFFIX_TMP = "-tmp";
-    private final Encryptor encryptor;
+public final class FileEncryptor {
+  private static final String SUFFIX_TMP = "-tmp";
+  private final Encryptor encryptor;
 
-    @Inject public FileEncryptor(Encryptor encryptor) {
-        this.encryptor = encryptor;
-    }
+  @Inject public FileEncryptor(Encryptor encryptor) {
+    this.encryptor = encryptor;
+  }
 
-    public File encrypt(String key, File file) {
-        if (!file.exists()) return file;
+  public File encrypt(String key, File file) {
+    if (!file.exists()) return file;
 
-        String filenameInput = file.getAbsolutePath();
-        file = rename(file, new File(filenameInput + SUFFIX_TMP));
-        File fileOutput = new File(filenameInput);
+    String filenameInput = file.getAbsolutePath();
+    file = rename(file, new File(filenameInput + SUFFIX_TMP));
+    File fileOutput = new File(filenameInput);
 
-        encryptor.encrypt(key, file, fileOutput);
-        file.delete();
+    encryptor.encrypt(key, file, fileOutput);
+    file.delete();
 
-        return fileOutput;
-    }
+    return fileOutput;
+  }
 
-    public File decrypt(String key, File file) {
-        if (!file.exists()) return file;
+  public File decrypt(String key, File file) {
+    if (!file.exists()) return file;
 
-        String filenameInput = file.getAbsolutePath();
-        File fileOutput = new File(filenameInput + SUFFIX_TMP);
-        encryptor.decrypt(key, file, fileOutput);
+    String filenameInput = file.getAbsolutePath();
+    File fileOutput = new File(filenameInput + SUFFIX_TMP);
+    encryptor.decrypt(key, file, fileOutput);
 
-        return fileOutput;
-    }
+    return fileOutput;
+  }
 
-    private File rename(File fileSrc, File fileDst) {
-        FileChannel inputChannel = null;
-        FileChannel outputChannel = null;
+  private File rename(File fileSrc, File fileDst) {
+    FileChannel inputChannel = null;
+    FileChannel outputChannel = null;
 
-        try {
-            inputChannel = new FileInputStream(fileSrc).getChannel();
-            outputChannel = new FileOutputStream(fileDst).getChannel();
+    try {
+      inputChannel = new FileInputStream(fileSrc).getChannel();
+      outputChannel = new FileOutputStream(fileDst).getChannel();
 
-            inputChannel.transferTo(0, inputChannel.size(), outputChannel);
-            fileSrc.delete();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (inputChannel != null) {
-                    inputChannel.close();
-                }
-                if (outputChannel != null) {
-                    outputChannel.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+      inputChannel.transferTo(0, inputChannel.size(), outputChannel);
+      fileSrc.delete();
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        if (inputChannel != null) {
+          inputChannel.close();
         }
-
-        return fileDst;
+        if (outputChannel != null) {
+          outputChannel.close();
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
+
+    return fileDst;
+  }
 }

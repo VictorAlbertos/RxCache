@@ -16,23 +16,19 @@
 
 package io.rx_cache.internal.cache;
 
+import io.rx_cache.internal.Locale;
+import io.rx_cache.internal.Memory;
+import io.rx_cache.internal.Mock;
+import io.rx_cache.internal.Record;
+import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
+import io.rx_cache.internal.common.BaseTest;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import io.rx_cache.internal.ProvidersRxCache;
-import io.rx_cache.internal.Record;
-import io.rx_cache.internal.Locale;
-import io.rx_cache.internal.Memory;
-import io.rx_cache.internal.Mock;
-import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
-import io.rx_cache.internal.common.BaseTest;
-import io.rx_cache.internal.encrypt.GetEncryptKey;
 import rx.observers.TestSubscriber;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -42,12 +38,10 @@ import static org.junit.Assert.assertThat;
 public class EvictExpirableRecordsPersistenceTest extends BaseTest {
     private EvictExpirableRecordsPersistence evictExpirableRecordsPersistenceUT;
     private Memory memory;
-    private GetEncryptKey getEncryptKey;
 
     @Override public void setUp() {
         super.setUp();
         memory = new ReferenceMapMemory();
-        getEncryptKey = new GetEncryptKey(ProvidersRxCache.class);
     }
 
 /*    @Test public void When_Task_Is_Running_Do_Not_Start_Again() {
@@ -72,7 +66,7 @@ public class EvictExpirableRecordsPersistenceTest extends BaseTest {
     }*/
 
     @Test public void When_Not_Reached_Memory_Threshold_Not_Emit() {
-        evictExpirableRecordsPersistenceUT = new EvictExpirableRecordsPersistence(memory, disk, 10, getEncryptKey);
+        evictExpirableRecordsPersistenceUT = new EvictExpirableRecordsPersistence(memory, disk, 10, null);
 
         populate(true);
         assertThat(disk.allKeys().size(), is(100));
@@ -88,7 +82,7 @@ public class EvictExpirableRecordsPersistenceTest extends BaseTest {
     @DataPoint public static Integer _5_MB = 5;
     @DataPoint public static Integer _7_MB = 7;
     @Theory @Test public void When_Reached_Memory_Threshold_Perform_Task(int maxMgPersistenceCache) {
-        evictExpirableRecordsPersistenceUT = new EvictExpirableRecordsPersistence(memory, disk, maxMgPersistenceCache, getEncryptKey);
+        evictExpirableRecordsPersistenceUT = new EvictExpirableRecordsPersistence(memory, disk, maxMgPersistenceCache, null);
 
         populate(true);
         assertThat(disk.allKeys().size(), is(mocksCount()));
@@ -105,7 +99,7 @@ public class EvictExpirableRecordsPersistenceTest extends BaseTest {
     @Test public void When_Reached_Memory_Threshold_But_Not_Expirable_Records_Do_Not_Evict() {
         int maxMgPersistenceCache = 5;
 
-        evictExpirableRecordsPersistenceUT = new EvictExpirableRecordsPersistence(memory, disk, maxMgPersistenceCache, getEncryptKey);
+        evictExpirableRecordsPersistenceUT = new EvictExpirableRecordsPersistence(memory, disk, maxMgPersistenceCache, null);
 
         populate(false);
         assertThat(disk.allKeys().size(), is(mocksCount()));

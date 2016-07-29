@@ -16,43 +16,41 @@
 
 package io.rx_cache.internal.cache;
 
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Persistence;
 import io.rx_cache.internal.Record;
-import io.rx_cache.internal.encrypt.GetEncryptKey;
+import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import rx.Observable;
 
 @Singleton
 public final class EvictExpiredRecordsPersistence extends Action {
-    private final HasRecordExpired hasRecordExpired;
-    private final GetEncryptKey getEncryptKey;
+  private final HasRecordExpired hasRecordExpired;
+  private final String encryptKey;
 
-    @Inject public EvictExpiredRecordsPersistence(Memory memory, Persistence persistence, HasRecordExpired hasRecordExpired, GetEncryptKey getEncryptKey) {
-        super(memory, persistence);
-        this.hasRecordExpired = hasRecordExpired;
-        this.getEncryptKey = getEncryptKey;
+  @Inject public EvictExpiredRecordsPersistence(Memory memory, Persistence persistence,
+      HasRecordExpired hasRecordExpired, String encryptKey) {
+    super(memory, persistence);
+    this.hasRecordExpired = hasRecordExpired;
+    this.encryptKey = encryptKey;
+  }
+
+  public Observable<Void> startEvictingExpiredRecords() {
+    List<String> allKeys = persistence.allKeys();
+
+    for (String key : allKeys) {
+      Record record = persistence.retrieveRecord(key, false, encryptKey);
+
+      if (record == null && encryptKey != null) {
+        record = persistence.retrieveRecord(key, true, encryptKey);
+      }
+
+      if (record != null && hasRecordExpired.hasRecordExpired(record)) {
+        persistence.evict(key);
+      }
     }
 
-    public Observable<Void> startEvictingExpiredRecords() {
-        List<String> allKeys = persistence.allKeys();
-
-        for (String key : allKeys) {
-            Record record = persistence.retrieveRecord(key, false, getEncryptKey.getKey());
-
-            if (record == null && getEncryptKey.getKey() != null) {
-                record = persistence.retrieveRecord(key, true, getEncryptKey.getKey());
-            }
-
-            if (record != null && hasRecordExpired.hasRecordExpired(record)) {
-                persistence.evict(key);
-            }
-        }
-
-        return Observable.just(null);
-    }
+    return Observable.just(null);
+  }
 }

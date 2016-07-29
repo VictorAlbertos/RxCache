@@ -34,76 +34,79 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * Encrypt/Decrypt the file data
  */
-public class BuiltInEncryptor implements Encryptor {
-    private static final int KEY_LENGTH = 128;  // Max 128 bits by default. See http://stackoverflow.com/a/24907555/5502014
-    private static final int FILE_BUF = 1024;
-    private Cipher encryptCipher;
-    private Cipher decryptCipher;
+public final class BuiltInEncryptor implements Encryptor {
+  private static final int KEY_LENGTH = 128;
+      // Max 128 bits by default. See http://stackoverflow.com/a/24907555/5502014
+  private static final int FILE_BUF = 1024;
+  private Cipher encryptCipher;
+  private Cipher decryptCipher;
 
-    @Override public void encrypt(String key, File decryptedFile, File encryptedFile) {
-        initCiphers(key);
+  @Override public void encrypt(String key, File decryptedFile, File encryptedFile) {
+    initCiphers(key);
 
-        try {
-            CipherInputStream cis = new CipherInputStream(new FileInputStream(decryptedFile), encryptCipher);
-            write(cis, new FileOutputStream(encryptedFile));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    try {
+      CipherInputStream cis =
+          new CipherInputStream(new FileInputStream(decryptedFile), encryptCipher);
+      write(cis, new FileOutputStream(encryptedFile));
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
 
-    @Override public void decrypt(String key, File encryptedFile, File decryptedFile) {
-        initCiphers(key);
+  @Override public void decrypt(String key, File encryptedFile, File decryptedFile) {
+    initCiphers(key);
 
-        try {
-            CipherOutputStream cos = new CipherOutputStream(new FileOutputStream(decryptedFile), decryptCipher);
-            write(new FileInputStream(encryptedFile), cos);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    try {
+      CipherOutputStream cos =
+          new CipherOutputStream(new FileOutputStream(decryptedFile), decryptCipher);
+      write(new FileInputStream(encryptedFile), cos);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
 
-    private void initCiphers(String key) {
-        try {
-            SecretKeySpec secretKey = generateSecretKey(key);
+  private void initCiphers(String key) {
+    try {
+      SecretKeySpec secretKey = generateSecretKey(key);
 
-            encryptCipher = Cipher.getInstance("AES");
-            encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey);
+      encryptCipher = Cipher.getInstance("AES");
+      encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
-            decryptCipher = Cipher.getInstance("AES");
-            decryptCipher.init(Cipher.DECRYPT_MODE, secretKey);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+      decryptCipher = Cipher.getInstance("AES");
+      decryptCipher.init(Cipher.DECRYPT_MODE, secretKey);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
 
-    private SecretKeySpec generateSecretKey(String key) throws Exception {
-        SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
-        secureRandom.setSeed(key.getBytes("UTF-8"));
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(KEY_LENGTH, secureRandom);
-        SecretKey secretKey = keyGenerator.generateKey();
+  private SecretKeySpec generateSecretKey(String key) throws Exception {
+    SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+    secureRandom.setSeed(key.getBytes("UTF-8"));
+    KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+    keyGenerator.init(KEY_LENGTH, secureRandom);
+    SecretKey secretKey = keyGenerator.generateKey();
 
-        return new SecretKeySpec(secretKey.getEncoded(), "AES");
+    return new SecretKeySpec(secretKey.getEncoded(), "AES");
+  }
+
+  private void write(InputStream is, OutputStream os) {
+    byte[] bytes = new byte[FILE_BUF];
+    int numBytes;
+
+    try {
+      while ((numBytes = is.read(bytes)) != -1) {
+        os.write(bytes, 0, numBytes);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        is.close();
+        os.flush();
+        os.close();
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
     }
-
-    private void write(InputStream is, OutputStream os) {
-        byte[] bytes = new byte[FILE_BUF];
-        int numBytes;
-
-        try {
-            while ((numBytes = is.read(bytes)) != -1) {
-                os.write(bytes, 0, numBytes);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                is.close();
-                os.flush();
-                os.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
+  }
 }

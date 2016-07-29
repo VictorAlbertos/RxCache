@@ -64,7 +64,7 @@ import java.util.Set;
  * hard keys and soft values, providing a memory-sensitive cache.
  * <p>
  * This {@link Map} implementation does <i>not</i> allow null elements.
- * Attempting to add a null key or value to the map will raise a
+ * Attempting to addOrUpdate a null key or value to the map will raise a
  * <code>NullPointerException</code>.
  * <p>
  * All the available iterators can be reset back to the start by casting to
@@ -252,8 +252,8 @@ public abstract class AbstractReferenceMap<K, V> extends AbstractHashedMap<K, V>
      * Puts a key-value mapping into this map.
      * Neither the key nor the value may be null.
      *
-     * @param key  the key to add, must not be null
-     * @param value  the value to add, must not be null
+     * @param key  the key to addOrUpdate, must not be null
+     * @param value  the value to addOrUpdate, must not be null
      * @return the value previously mapped to this key, null if none
      * @throws NullPointerException if either the key or value is null
      */

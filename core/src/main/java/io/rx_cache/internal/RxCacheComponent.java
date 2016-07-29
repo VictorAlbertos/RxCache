@@ -22,6 +22,6 @@ import dagger.Component;
 
 @Component(modules = RxCacheModule.class)
 @Singleton
-interface RxCacheComponent {
-    ProxyProviders proxyRepository();
+public interface RxCacheComponent {
+  ProcessorProviders providers();
 }

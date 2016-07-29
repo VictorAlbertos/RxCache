@@ -261,8 +261,8 @@ public class AbstractHashedMap<K, V> extends AbstractMap<K, V> implements Iterab
     /**
      * Puts a key-value mapping into this map.
      *
-     * @param key  the key to add
-     * @param value  the value to add
+     * @param key  the key to addOrUpdate
+     * @param value  the value to addOrUpdate
      * @return the value previously mapped to this key, null if none
      */
     @Override
@@ -290,7 +290,7 @@ public class AbstractHashedMap<K, V> extends AbstractMap<K, V> implements Iterab
      * This implementation iterates around the specified map and
      * uses {@link #put(Object, Object)}.
      *
-     * @param map  the map to add
+     * @param map  the map to addOrUpdate
      * @throws NullPointerException if the map is null
      */
     @Override
@@ -307,7 +307,7 @@ public class AbstractHashedMap<K, V> extends AbstractMap<K, V> implements Iterab
      * It is private to allow the constructor to still call it
      * even when putAll is overriden.
      *
-     * @param map  the map to add
+     * @param map  the map to addOrUpdate
      * @throws NullPointerException if the map is null
      */
     private void _putAll(final Map<? extends K, ? extends V> map) {
@@ -480,9 +480,9 @@ public class AbstractHashedMap<K, V> extends AbstractMap<K, V> implements Iterab
      *
      * @param entry  the entry to update, not null
      * @param hashIndex  the index in the data array
-     * @param hashCode  the hash code of the key to add
-     * @param key  the key to add
-     * @param value  the value to add
+     * @param hashCode  the hash code of the key to addOrUpdate
+     * @param key  the key to addOrUpdate
+     * @param value  the value to addOrUpdate
      */
     protected void reuseEntry(final HashEntry<K, V> entry, final int hashIndex, final int hashCode,
                               final K key, final V value) {
@@ -502,9 +502,9 @@ public class AbstractHashedMap<K, V> extends AbstractMap<K, V> implements Iterab
      * Subclasses could override to fully control adds to the map.
      *
      * @param hashIndex  the index into the data array to store at
-     * @param hashCode  the hash code of the key to add
-     * @param key  the key to add
-     * @param value  the value to add
+     * @param hashCode  the hash code of the key to addOrUpdate
+     * @param key  the key to addOrUpdate
+     * @param value  the value to addOrUpdate
      */
     protected void addMapping(final int hashIndex, final int hashCode, final K key, final V value) {
         modCount++;
@@ -537,7 +537,7 @@ public class AbstractHashedMap<K, V> extends AbstractMap<K, V> implements Iterab
      * This implementation adds the entry to the data storage table.
      * Subclasses could override to handle changes to the map.
      *
-     * @param entry  the entry to add
+     * @param entry  the entry to addOrUpdate
      * @param hashIndex  the index into the data array to store at
      */
     protected void addEntry(final HashEntry<K, V> entry, final int hashIndex) {

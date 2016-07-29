@@ -41,8 +41,8 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos.RxCache:core:1.5.9"
-    compile "io.reactivex:rxjava:1.1.7"
+    compile "com.github.VictorAlbertos.RxCache:runtime:1.6.0"
+    compile "io.reactivex:rxjava:1.1.8"
 }
 ```
 
@@ -51,13 +51,13 @@ Because RxCache uses internally [Jolyglot](https://github.com/VictorAlbertos/Jol
 ```gradle
 dependencies {
     // To use Gson 
-    compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.2'
+    compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.3'
     
     // To use Jackson
-    compile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.2'
+    compile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.3'
     
     // To use Moshi
-    compile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.2'
+    compile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.3'
 }
 ```
 
@@ -266,7 +266,7 @@ apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
     // apt command comes from the android-apt plugin
-    apt "com.github.VictorAlbertos.RxCache:compiler:1.5.9"
+    apt "com.github.VictorAlbertos.RxCache:compiler:1.6.0"
 }
 ```
 
@@ -302,7 +302,7 @@ These methods return an instance of the `Actions` class, so now you are ready to
 Some actions examples:
 
 ```java
-RxProvidersActionable.mocks(rxProviders)
+ActionsProviders.mocks(rxProviders)
     .addFirst(new Mock())
     .addLast(new Mock())
     //Add a new mock at 5 position

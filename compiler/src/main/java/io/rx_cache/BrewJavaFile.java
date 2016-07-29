@@ -58,10 +58,10 @@ final class BrewJavaFile {
         String enclosingTypeListName = enclosingTypeList.toString();
 
         ParameterizedTypeName action =
-                ParameterizedTypeName.get(ClassName.get(Actions.class), enclosingTypeList);
+                ParameterizedTypeName.get(ClassName.get(ActionsList.class), enclosingTypeList);
 
         ParameterizedTypeName evict =
-                ParameterizedTypeName.get(ClassName.get(Actions.Evict.class), enclosingTypeList);
+                ParameterizedTypeName.get(ClassName.get(ActionsList.Evict.class), enclosingTypeList);
 
         ParameterizedTypeName arrayList =
                 ParameterizedTypeName.get(ClassName.get(ArrayList.class), enclosingTypeList);
@@ -104,7 +104,7 @@ final class BrewJavaFile {
             setCacheForEvictProvider(builder, observable, arrayList, methodName, enclosingTypeListName);
         }
 
-        builder.addStatement("return Actions.with(evict, oCache)");
+        builder.addStatement("return ActionsList.with(evict, oCache)");
 
         return builder.build();
     }

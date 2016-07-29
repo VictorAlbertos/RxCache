@@ -41,7 +41,7 @@ import java.io.Serializable;
  * weak values, or any other combination. The default constructor uses
  * hard keys and soft values, providing a memory-sensitive cache.
  * This {@link java.util.Map Map} implementation does <i>not</i> allow null elements.
- * Attempting to add a null key or value to the map will raise a <code>NullPointerException</code>.
+ * Attempting to addOrUpdate a null key or value to the map will raise a <code>NullPointerException</code>.
  * <p>
  * This implementation is not synchronized.
  * You can use {@link java.util.Collections#synchronizedMap} to

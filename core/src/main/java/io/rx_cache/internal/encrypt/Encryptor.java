@@ -23,21 +23,21 @@ import java.io.File;
  */
 public interface Encryptor {
 
-    /**
-     * Encrypts the {@code decryptedFile} data and saves it into {@code encryptedFile}
-     *
-     * @param key Key used by the algorithm to encrypt/decrypt the data
-     * @param decryptedFile Input file with the data to encrypt
-     * @param encryptedFile Output file with the encrypted data
-     */
-    void encrypt(String key, File decryptedFile, File encryptedFile);
+  /**
+   * Encrypts the {@code decryptedFile} data and saves it into {@code encryptedFile}
+   *
+   * @param key Key used by the algorithm to encrypt/decrypt the data
+   * @param decryptedFile Input file with the data to encrypt
+   * @param encryptedFile Output file with the encrypted data
+   */
+  void encrypt(String key, File decryptedFile, File encryptedFile);
 
-    /**
-     * Decrypts the {@code encryptedFile} data and saves it into {@code decryptedFile}
-     *
-     * @param key Key used by the algorithm to encrypt/decrypt the data
-     * @param encryptedFile Input file with the encrypted data
-     * @param decryptedFile Output file with the data without encrypt
-     */
-    void decrypt(String key, File encryptedFile, File decryptedFile);
+  /**
+   * Decrypts the {@code encryptedFile} data and saves it into {@code decryptedFile}
+   *
+   * @param key Key used by the algorithm to encrypt/decrypt the data
+   * @param encryptedFile Input file with the encrypted data
+   * @param decryptedFile Output file with the data without encrypt
+   */
+  void decrypt(String key, File encryptedFile, File decryptedFile);
 }

@@ -16,11 +16,10 @@
 
 package io.rx_cache.internal.common;
 
+import io.rx_cache.internal.Mock;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import io.rx_cache.internal.Mock;
 import rx.Observable;
 
 public class BaseTestEvictingTask {

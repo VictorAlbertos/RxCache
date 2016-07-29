@@ -16,14 +16,13 @@
 
 package io.rx_cache.internal.migration;
 
-
 import io.rx_cache.internal.Persistence;
 
 abstract class CacheVersion {
-    protected final Persistence persistence;
-    protected final static String KEY_CACHE_VERSION = "key_cache_version";
+  protected final Persistence persistence;
+  protected final static String KEY_CACHE_VERSION = "key_cache_version";
 
-    public CacheVersion(Persistence persistence) {
-        this.persistence = persistence;
-    }
+  public CacheVersion(Persistence persistence) {
+    this.persistence = persistence;
+  }
 }

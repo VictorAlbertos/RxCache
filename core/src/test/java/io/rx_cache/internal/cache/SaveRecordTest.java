@@ -16,21 +16,17 @@
 
 package io.rx_cache.internal.cache;
 
+import io.rx_cache.internal.Memory;
+import io.rx_cache.internal.Mock;
+import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
+import io.rx_cache.internal.common.BaseTest;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import io.rx_cache.internal.Memory;
-import io.rx_cache.internal.Mock;
-import io.rx_cache.internal.ProvidersRxCache;
-import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
-import io.rx_cache.internal.common.BaseTest;
-import io.rx_cache.internal.encrypt.GetEncryptKey;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -40,7 +36,6 @@ import static org.junit.Assert.assertTrue;
 public class SaveRecordTest extends BaseTest {
     private Memory memory;
     private SaveRecord saveRecordUT;
-    private GetEncryptKey getEncryptKey;
 
     @DataPoint public static Integer _10_MB = 10;
     @DataPoint public static Integer _20_MB = 20;
@@ -49,11 +44,10 @@ public class SaveRecordTest extends BaseTest {
     @Override public void setUp() {
         super.setUp();
         memory = new ReferenceMapMemory();
-        getEncryptKey = new GetEncryptKey(ProvidersRxCache.class);
     }
 
     @Test @Theory public void When_Max_Persistence_Exceed_Do_Not_Persists_Data(Integer maxMB) {
-        saveRecordUT = new SaveRecord(memory, disk, maxMB, new EvictExpirableRecordsPersistence(memory, disk, 100, getEncryptKey), getEncryptKey);
+        saveRecordUT = new SaveRecord(memory, disk, maxMB, new EvictExpirableRecordsPersistence(memory, disk, 100, null), null);
 
         int records = 250;
 

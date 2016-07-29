@@ -24,134 +24,137 @@ import io.rx_cache.Source;
 
 /**
  * Wrapper around the actual data in order to know if its life time has been expired
+ *
  * @param <T> The actual data
  */
 public final class Record<T> {
-    private Source source;
-    private final T data;
-    private final long timeAtWhichWasPersisted;
-    private final String dataClassName, dataCollectionClassName, dataKeyMapClassName;
-    private Boolean expirable;
+  private Source source;
+  private final T data;
+  private final long timeAtWhichWasPersisted;
+  private final String dataClassName, dataCollectionClassName, dataKeyMapClassName;
+  private Boolean expirable;
 
-    //LifeTime requires to be stored to be evicted by EvictExpiredRecordsTask when no life time is available without a config provider
-    private Long lifeTime;
+  //LifeTime requires to be stored to be evicted by EvictExpiredRecordsTask when no life time is available without a config provider
+  private Long lifeTime;
 
-    //Required by EvictExpirableRecordsPersistence task
-    private transient float sizeOnMb;
+  //Required by EvictExpirableRecordsPersistence task
+  private transient float sizeOnMb;
 
-    //VisibleForTesting
-    Record(T data) {
-        this(data, true, null);
-    }
+  //VisibleForTesting
+  Record(T data) {
+    this(data, true, null);
+  }
 
-    public Record() {
-        data = null;
-        timeAtWhichWasPersisted = 0;
+  public Record() {
+    data = null;
+    timeAtWhichWasPersisted = 0;
+    dataClassName = null;
+    dataCollectionClassName = null;
+    dataKeyMapClassName = null;
+    expirable = true;
+  }
+
+  public Record(T data, Boolean expirable, Long lifeTime) {
+    this.data = data;
+    this.expirable = expirable;
+    this.lifeTime = lifeTime;
+    this.timeAtWhichWasPersisted = System.currentTimeMillis();
+    this.source = Source.MEMORY;
+
+    boolean isList = Collection.class.isAssignableFrom(data.getClass());
+    boolean isArray = data.getClass().isArray();
+    boolean isMap = Map.class.isAssignableFrom(data.getClass());
+
+    if (isList) {
+      dataKeyMapClassName = null;
+      List list = (List) data;
+      if (list.size() > 0) {
+        dataCollectionClassName = List.class.getName();
+        ;
+        dataClassName = list.get(0).getClass().getName();
+      } else {
+        dataClassName = null;
+        dataCollectionClassName = null;
+      }
+    } else if (isArray) {
+      dataKeyMapClassName = null;
+      Object[] array = (Object[]) data;
+      if (array.length > 0) {
+        dataClassName = (array)[0].getClass().getName();
+        dataCollectionClassName = data.getClass().getName();
+      } else {
+        dataClassName = null;
+        dataCollectionClassName = null;
+      }
+    } else if (isMap) {
+      Map map = ((Map) data);
+      if (map.size() > 0) {
+        Map.Entry<Object, Object> object =
+            (Map.Entry<Object, Object>) map.entrySet().iterator().next();
+        dataClassName = object.getValue().getClass().getName();
+        dataKeyMapClassName = object.getKey().getClass().getName();
+        dataCollectionClassName = Map.class.getName();
+      } else {
         dataClassName = null;
         dataCollectionClassName = null;
         dataKeyMapClassName = null;
-        expirable = true;
+      }
+    } else {
+      dataKeyMapClassName = null;
+      dataClassName = data.getClass().getName();
+      dataCollectionClassName = null;
     }
+  }
 
-    public Record(T data, Boolean expirable, Long lifeTime) {
-        this.data = data;
-        this.expirable = expirable;
-        this.lifeTime = lifeTime;
-        this.timeAtWhichWasPersisted = System.currentTimeMillis();
-        this.source = Source.MEMORY;
+  public Source getSource() {
+    return source;
+  }
 
-        boolean isList = Collection.class.isAssignableFrom(data.getClass());
-        boolean isArray = data.getClass().isArray();
-        boolean isMap = Map.class.isAssignableFrom(data.getClass());
+  public void setSource(Source source) {
+    this.source = source;
+  }
 
-        if (isList) {
-            dataKeyMapClassName = null;
-            List list = (List) data;
-            if (list.size() > 0) {
-                dataCollectionClassName = List.class.getName();;
-                dataClassName = list.get(0).getClass().getName();
-            } else {
-                dataClassName = null;
-                dataCollectionClassName = null;
-            }
-        } else if (isArray) {
-            dataKeyMapClassName = null;
-            Object[] array = (Object[]) data;
-            if (array.length > 0) {
-                dataClassName = (array)[0].getClass().getName();
-                dataCollectionClassName = data.getClass().getName();
-            } else {
-                dataClassName = null;
-                dataCollectionClassName = null;
-            }
-        } else if (isMap) {
-            Map map = ((Map) data);
-            if (map.size() > 0) {
-                Map.Entry<Object, Object>  object = (Map.Entry<Object, Object>) map.entrySet().iterator().next();
-                dataClassName = object.getValue().getClass().getName();
-                dataKeyMapClassName = object.getKey().getClass().getName();
-                dataCollectionClassName = Map.class.getName();
-            } else {
-                dataClassName = null;
-                dataCollectionClassName = null;
-                dataKeyMapClassName = null;
-            }
-        } else {
-            dataKeyMapClassName = null;
-            dataClassName = data.getClass().getName();
-            dataCollectionClassName = null;
-        }
-    }
+  public T getData() {
+    return data;
+  }
 
-    public Source getSource() {
-        return source;
-    }
+  public long getTimeAtWhichWasPersisted() {
+    return timeAtWhichWasPersisted;
+  }
 
-    public void setSource(Source source) {
-        this.source = source;
-    }
+  public Long getLifeTime() {
+    return lifeTime;
+  }
 
-    public T getData() {
-        return data;
-    }
+  public void setLifeTime(Long lifeTime) {
+    this.lifeTime = lifeTime;
+  }
 
-    public long getTimeAtWhichWasPersisted() {
-        return timeAtWhichWasPersisted;
-    }
+  public float getSizeOnMb() {
+    return sizeOnMb;
+  }
 
-    public Long getLifeTime() {
-        return lifeTime;
-    }
+  public void setSizeOnMb(float sizeOnMb) {
+    this.sizeOnMb = sizeOnMb;
+  }
 
-    public void setLifeTime(Long lifeTime) {
-        this.lifeTime = lifeTime;
-    }
+  public String getDataClassName() {
+    return dataClassName;
+  }
 
-    public float getSizeOnMb() {
-        return sizeOnMb;
-    }
+  public String getDataCollectionClassName() {
+    return dataCollectionClassName;
+  }
 
-    public void setSizeOnMb(float sizeOnMb) {
-        this.sizeOnMb = sizeOnMb;
-    }
+  public String getDataKeyMapClassName() {
+    return dataKeyMapClassName;
+  }
 
-    public String getDataClassName() {
-        return dataClassName;
-    }
+  public Boolean getExpirable() {
+    return expirable;
+  }
 
-    public String getDataCollectionClassName() {
-        return dataCollectionClassName;
-    }
-
-    public String getDataKeyMapClassName() {
-        return dataKeyMapClassName;
-    }
-
-    public Boolean getExpirable() {
-        return expirable;
-    }
-
-    public void setExpirable(Boolean expirable) {
-        this.expirable = expirable;
-    }
+  public void setExpirable(Boolean expirable) {
+    this.expirable = expirable;
+  }
 }

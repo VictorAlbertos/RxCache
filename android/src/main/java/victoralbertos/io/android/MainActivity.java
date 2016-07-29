@@ -2,12 +2,10 @@ package victoralbertos.io.android;
 
 import android.app.Activity;
 import android.os.Bundle;
-
+import io.reactivecache.ReactiveCache;
+import io.victoralbertos.jolyglot.GsonSpeaker;
 import java.util.ArrayList;
 import java.util.List;
-
-import io.rx_cache.internal.RxCache;
-import io.victoralbertos.jolyglot.GsonSpeaker;
 import rx.Observable;
 
 /**
@@ -21,10 +19,9 @@ public class MainActivity extends Activity {
         //Create integration test for max mg limit and clearing expired data
 
 
-       final RxProviders rxProviders = new RxCache.Builder()
-                .setMaxMBPersistenceCache(50)
-                .persistence(getApplicationContext().getFilesDir(), new GsonSpeaker())
-                .using(RxProviders.class);
+       final ReactiveCache rxProviders = new ReactiveCache.Builder()
+                .maxMBPersistence(50)
+                .using(getApplicationContext().getFilesDir(), new GsonSpeaker());
 
         /* for (int i = 0; i < 1000; i++) {
             String key = System.currentTimeMillis() + i + "";

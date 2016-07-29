@@ -20,5 +20,5 @@ package io.rx_cache;
  * Provides information about the source used to retrieved the data at a given time
  */
 public enum Source {
-    MEMORY, PERSISTENCE, CLOUD;
+  MEMORY, PERSISTENCE, CLOUD;
 }

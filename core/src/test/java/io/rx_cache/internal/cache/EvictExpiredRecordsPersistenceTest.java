@@ -1,16 +1,12 @@
 package io.rx_cache.internal.cache;
 
-import org.junit.Test;
-
-import java.util.List;
-
-import io.rx_cache.internal.ProvidersRxCache;
-import io.rx_cache.internal.Record;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Mock;
+import io.rx_cache.internal.Record;
 import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
 import io.rx_cache.internal.common.BaseTest;
-import io.rx_cache.internal.encrypt.GetEncryptKey;
+import java.util.List;
+import org.junit.Test;
 import rx.observers.TestSubscriber;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -22,7 +18,6 @@ import static org.hamcrest.core.Is.is;
 public class EvictExpiredRecordsPersistenceTest extends BaseTest {
     private EvictExpiredRecordsPersistence evictExpiredRecordsPersistenceUT;
     private HasRecordExpired hasRecordExpired;
-    private GetEncryptKey getEncryptKey;
     private TwoLayersCache twoLayersCache;
     private Memory memory;
     private static final long ONE_SECOND_LIFE = 1000, THIRTY_SECOND_LIFE = 30000, MORE_THAN_ONE_SECOND_LIFE = 1250;
@@ -31,10 +26,9 @@ public class EvictExpiredRecordsPersistenceTest extends BaseTest {
         super.setUp();
 
         memory = new ReferenceMapMemory();
-        getEncryptKey = new GetEncryptKey(ProvidersRxCache.class);
         twoLayersCache = new TwoLayersCache(evictRecord(memory), retrieveRecord(memory), saveRecord(memory));
         hasRecordExpired = new HasRecordExpired();
-        evictExpiredRecordsPersistenceUT = new EvictExpiredRecordsPersistence(memory, disk, hasRecordExpired, getEncryptKey);
+        evictExpiredRecordsPersistenceUT = new EvictExpiredRecordsPersistence(memory, disk, hasRecordExpired, null);
     }
 
     @Test public void Evict_Just_Expired_Records() {
@@ -66,7 +60,7 @@ public class EvictExpiredRecordsPersistenceTest extends BaseTest {
     }
 
     private SaveRecord saveRecord(Memory memory) {
-        return new SaveRecord(memory, disk, 100, new EvictExpirableRecordsPersistence(memory, disk, 100, getEncryptKey), getEncryptKey);
+        return new SaveRecord(memory, disk, 100, new EvictExpirableRecordsPersistence(memory, disk, 100, null), null);
     }
 
     private EvictRecord evictRecord(Memory memory) {
@@ -74,6 +68,6 @@ public class EvictExpiredRecordsPersistenceTest extends BaseTest {
     }
 
     private RetrieveRecord retrieveRecord(Memory memory) {
-        return new RetrieveRecord(memory, disk, new EvictRecord(memory, disk), new HasRecordExpired(), getEncryptKey);
+        return new RetrieveRecord(memory, disk, new EvictRecord(memory, disk), new HasRecordExpired(), null);
     }
 }

@@ -16,7 +16,6 @@
 
 package io.rx_cache.internal.cache;
 
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -24,42 +23,47 @@ import io.rx_cache.internal.Record;
 
 @Singleton
 public final class TwoLayersCache {
-    private final EvictRecord evictRecord;
-    private final RetrieveRecord retrieveRecord;
-    private final SaveRecord saveRecord;
+  private final EvictRecord evictRecord;
+  private final RetrieveRecord retrieveRecord;
+  private final SaveRecord saveRecord;
 
-    @Inject public TwoLayersCache(EvictRecord evictRecord, RetrieveRecord retrieveRecord, SaveRecord saveRecord) {
-        this.evictRecord = evictRecord;
-        this.retrieveRecord = retrieveRecord;
-        this.saveRecord = saveRecord;
-    }
+  @Inject public TwoLayersCache(EvictRecord evictRecord, RetrieveRecord retrieveRecord,
+      SaveRecord saveRecord) {
+    this.evictRecord = evictRecord;
+    this.retrieveRecord = retrieveRecord;
+    this.saveRecord = saveRecord;
+  }
 
-    public  <T> Record<T> retrieve(String providerKey, String dynamicKey, String dynamicKeyGroup, boolean useExpiredDataIfLoaderNotAvailable, Long lifeTime, boolean isEncrypted) {
-        return retrieveRecord.retrieveRecord(providerKey, dynamicKey, dynamicKeyGroup, useExpiredDataIfLoaderNotAvailable, lifeTime, isEncrypted);
-    }
+  public <T> Record<T> retrieve(String providerKey, String dynamicKey, String dynamicKeyGroup,
+      boolean useExpiredDataIfLoaderNotAvailable, Long lifeTime, boolean isEncrypted) {
+    return retrieveRecord.retrieveRecord(providerKey, dynamicKey, dynamicKeyGroup,
+        useExpiredDataIfLoaderNotAvailable, lifeTime, isEncrypted);
+  }
 
-    public void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data, Long lifeTime, boolean isExpirable, boolean isEncrypted) {
-        saveRecord.save(providerKey, dynamicKey, dynamicKeyGroup, data, lifeTime, isExpirable, isEncrypted);
-    }
+  public void save(String providerKey, String dynamicKey, String dynamicKeyGroup, Object data,
+      Long lifeTime, boolean isExpirable, boolean isEncrypted) {
+    saveRecord.save(providerKey, dynamicKey, dynamicKeyGroup, data, lifeTime, isExpirable,
+        isEncrypted);
+  }
 
-    public void evictProviderKey(final String providerKey) {
-        evictRecord.evictRecordsMatchingProviderKey(providerKey);
-    }
+  public void evictProviderKey(final String providerKey) {
+    evictRecord.evictRecordsMatchingProviderKey(providerKey);
+  }
 
-    public void evictDynamicKey(String providerKey, String dynamicKey) {
-        evictRecord.evictRecordsMatchingDynamicKey(providerKey, dynamicKey);
-    }
+  public void evictDynamicKey(String providerKey, String dynamicKey) {
+    evictRecord.evictRecordsMatchingDynamicKey(providerKey, dynamicKey);
+  }
 
-    public void evictDynamicKeyGroup(String key, String dynamicKey, String dynamicKeyGroup) {
-        evictRecord.evictRecordMatchingDynamicKeyGroup(key, dynamicKey, dynamicKeyGroup);
-    }
+  public void evictDynamicKeyGroup(String key, String dynamicKey, String dynamicKeyGroup) {
+    evictRecord.evictRecordMatchingDynamicKeyGroup(key, dynamicKey, dynamicKeyGroup);
+  }
 
-    public void evictAll() {
-        evictRecord.evictAll();
-    }
+  public void evictAll() {
+    evictRecord.evictAll();
+  }
 
-    //Exists for testing purposes
-    public void mockMemoryDestroyed() {
-        evictRecord.mockMemoryDestroyed();
-    }
+  //Exists for testing purposes
+  public void mockMemoryDestroyed() {
+    evictRecord.mockMemoryDestroyed();
+  }
 }

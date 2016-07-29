@@ -16,55 +16,46 @@
 
 package io.rx_cache.internal.migration;
 
-import java.lang.annotation.Annotation;
+import io.rx_cache.MigrationCache;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
 import javax.inject.Inject;
-
-import io.rx_cache.Migration;
-import io.rx_cache.SchemeMigration;
 import rx.Observable;
 
 final class GetPendingMigrations {
-    private final Class providersClass;
-    private int cacheVersion;
+  private int cacheVersion;
+  private List<MigrationCache> migrations;
 
-    @Inject GetPendingMigrations(Class providersClass) {
-        this.providersClass = providersClass;
+  @Inject GetPendingMigrations() {
+  }
+
+  GetPendingMigrations with(int currentCacheVersion, List<MigrationCache> migrations) {
+    this.cacheVersion = currentCacheVersion;
+    this.migrations = migrations;
+    return this;
+  }
+
+  public Observable<List<MigrationCache>> react() {
+    if (migrations == null || migrations.isEmpty()) {
+      return Observable.just((List<MigrationCache>) new ArrayList<MigrationCache>());
     }
 
-    GetPendingMigrations with(int currentCacheVersion) {
-        this.cacheVersion = currentCacheVersion;
-        return this;
+    Collections.sort(migrations, new Comparator<MigrationCache>() {
+      @Override public int compare(MigrationCache migration1, MigrationCache migration2) {
+        return migration1.version() - migration2.version();
+      }
+    });
+
+    List<MigrationCache> pendingMigrations = new ArrayList<>();
+
+    for (MigrationCache migration : migrations) {
+      if (cacheVersion < migration.version()) {
+        pendingMigrations.add(migration);
+      }
     }
 
-    public Observable<List<Migration>> react() {
-        List<Migration> migrations = new ArrayList<>();
-        Annotation annotation = providersClass.getAnnotation(SchemeMigration.class);
-
-        if (annotation == null) return Observable.just(migrations);
-
-        SchemeMigration schemeMigration = (SchemeMigration) annotation;
-        migrations = Arrays.asList(schemeMigration.value());
-
-        Collections.sort(migrations, new Comparator<Migration>() {
-            @Override public int compare(Migration migration1, Migration migration2) {
-                return migration1.version() - migration2.version();
-            }
-        });
-
-        List<Migration> pendingMigrations = new ArrayList<>();
-
-        for (Migration migration : migrations) {
-            if (cacheVersion < migration.version())
-                pendingMigrations.add(migration);
-        }
-
-        return Observable.just(pendingMigrations);
-    }
-
+    return Observable.just(pendingMigrations);
+  }
 }

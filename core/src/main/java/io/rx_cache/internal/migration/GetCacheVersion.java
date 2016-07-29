@@ -16,7 +16,6 @@
 
 package io.rx_cache.internal.migration;
 
-
 import javax.inject.Inject;
 
 import io.rx_cache.internal.Persistence;
@@ -24,13 +23,13 @@ import rx.Observable;
 
 final class GetCacheVersion extends CacheVersion {
 
-    @Inject public GetCacheVersion(Persistence persistence) {
-        super(persistence);
-    }
+  @Inject public GetCacheVersion(Persistence persistence) {
+    super(persistence);
+  }
 
-    Observable<Integer> react() {
-        Integer currentVersion = persistence.retrieve(KEY_CACHE_VERSION, Integer.class, false, null);
-        currentVersion = currentVersion == null ? 0 : currentVersion;
-        return Observable.just(currentVersion);
-    }
+  Observable<Integer> react() {
+    Integer currentVersion = persistence.retrieve(KEY_CACHE_VERSION, Integer.class, false, null);
+    currentVersion = currentVersion == null ? 0 : currentVersion;
+    return Observable.just(currentVersion);
+  }
 }

@@ -21,40 +21,41 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import io.rx_cache.Migration;
+import io.rx_cache.MigrationCache;
 import rx.Observable;
 
 final class GetClassesToEvictFromMigrations {
-    private List<Migration> migrations;
+  private List<MigrationCache> migrations;
 
-    @Inject public GetClassesToEvictFromMigrations() {}
+  @Inject public GetClassesToEvictFromMigrations() {
+  }
 
-    GetClassesToEvictFromMigrations with(List<Migration> migrations) {
-        this.migrations = migrations;
-        return this;
+  GetClassesToEvictFromMigrations with(List<MigrationCache> migrations) {
+    this.migrations = migrations;
+    return this;
+  }
+
+  Observable<List<Class>> react() {
+    List<Class> classesToEvict = new ArrayList<>();
+
+    for (MigrationCache migration : migrations) {
+      for (Class candidate : migration.evictClasses()) {
+        if (!isAlreadyAdded(classesToEvict, candidate)) classesToEvict.add(candidate);
+      }
     }
 
-    Observable<List<Class>> react() {
-        List<Class> classesToEvict = new ArrayList<>();
+    return Observable.just(classesToEvict);
+  }
 
-        for (Migration migration : migrations) {
-            for (Class candidate : migration.evictClasses()) {
-                if (!isAlreadyAdded(classesToEvict, candidate)) classesToEvict.add(candidate);
-            }
-        }
-
-        return Observable.just(classesToEvict);
+  private boolean isAlreadyAdded(List<Class> classesToEvict, Class candidate) {
+    for (Class aClass : classesToEvict) {
+      String className = aClass.getName();
+      String classNameCandidate = candidate.getName();
+      if (className.equals(classNameCandidate)) {
+        return true;
+      }
     }
 
-    private boolean isAlreadyAdded(List<Class> classesToEvict, Class candidate) {
-        for (Class aClass : classesToEvict) {
-            String className = aClass.getName();
-            String classNameCandidate = candidate.getName();
-            if (className.equals(classNameCandidate)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    return false;
+  }
 }

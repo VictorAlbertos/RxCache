@@ -16,7 +16,6 @@
 
 package io.rx_cache.internal;
 
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -36,262 +35,296 @@ import io.victoralbertos.jolyglot.JolyglotGenerics;
  * Save objects in disk and evict them too. It uses Gson as json parser.
  */
 public final class Disk implements Persistence {
-    private final File cacheDirectory;
-    private final FileEncryptor fileEncryptor;
-    private final JolyglotGenerics jolyglot;
+  private final File cacheDirectory;
+  private final FileEncryptor fileEncryptor;
+  private final JolyglotGenerics jolyglot;
 
-    @Inject public Disk(File cacheDirectory, FileEncryptor fileEncryptor, JolyglotGenerics jolyglot) {
-        this.cacheDirectory = cacheDirectory;
-        this.fileEncryptor = fileEncryptor;
-        this.jolyglot = jolyglot;
+  @Inject public Disk(File cacheDirectory, FileEncryptor fileEncryptor, JolyglotGenerics jolyglot) {
+    this.cacheDirectory = cacheDirectory;
+    this.fileEncryptor = fileEncryptor;
+    this.jolyglot = jolyglot;
+  }
+
+  /**
+   * Save in disk the Record passed.
+   *
+   * @param key the key whereby the Record could be retrieved/deleted later. @see evict and @see
+   * retrieve.
+   * @param record the record to be persisted.
+   * @param isEncrypted If the persisted record is encrypted or not. See {@link
+   * io.rx_cache.Encrypt}
+   * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link
+   * io.rx_cache.EncryptKey}
+   */
+  @Override public void saveRecord(String key, Record record, boolean isEncrypted,
+      String encryptKey) {
+    save(key, record, isEncrypted, encryptKey);
+  }
+
+  /**
+   * Retrieve the names from all files in dir
+   */
+  @Override public List<String> allKeys() {
+    List<String> nameFiles = new ArrayList<>();
+
+    File[] files = cacheDirectory.listFiles();
+    if (files == null) return nameFiles;
+
+    for (File file : files) {
+      if (file.isFile()) {
+        nameFiles.add(file.getName());
+      }
     }
 
-    /** Save in disk the Record passed.
-     * @param key the key whereby the Record could be retrieved/deleted later. @see evict and @see retrieve.
-     * @param record the record to be persisted.
-     * @param isEncrypted If the persisted record is encrypted or not. See {@link io.rx_cache.Encrypt}
-     * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
-     * */
-    @Override public void saveRecord(String key, Record record, boolean isEncrypted, String encryptKey) {
-        save(key, record, isEncrypted, encryptKey);
+    return nameFiles;
+  }
+
+  /**
+   * Retrieve records accumulated memory in megabyte
+   */
+  @Override public int storedMB() {
+    long bytes = 0;
+
+    final File[] files = cacheDirectory.listFiles();
+    if (files == null) return 0;
+
+    for (File file : files) {
+      bytes += file.length();
     }
 
-    /**
-     * Retrieve the names from all files in dir
-     */
-    @Override public List<String> allKeys() {
-        List<String> nameFiles = new ArrayList<>();
+    double megabytes = Math.ceil((double) bytes / 1024 / 1024);
+    return (int) megabytes;
+  }
 
-        File[] files = cacheDirectory.listFiles();
-        if(files == null) return nameFiles;
+  /**
+   * Save in disk the object passed.
+   *
+   * @param key the key whereby the object could be retrieved/deleted later. @see evict and @see
+   * retrieve.
+   * @param data the object to be persisted.
+   * @param isEncrypted If the persisted record is encrypted or not. See {@link
+   * io.rx_cache.Encrypt}
+   * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link
+   * io.rx_cache.EncryptKey}
+   */
+  public void save(String key, Object data, boolean isEncrypted, String encryptKey) {
+    key = safetyKey(key);
 
-        for (File file : files) {
-            if (file.isFile()) {
-                nameFiles.add(file.getName());
-            }
+    String wrapperJSONSerialized;
+
+    if (data instanceof Record) {
+      Type type = jolyglot.newParameterizedType(data.getClass(), Object.class);
+      wrapperJSONSerialized = jolyglot.toJson(data, type);
+    } else {
+      wrapperJSONSerialized = jolyglot.toJson(data);
+    }
+
+    FileWriter fileWriter = null;
+
+    try {
+      File file = new File(cacheDirectory, key);
+      fileWriter = new FileWriter(file, false);
+      fileWriter.write(wrapperJSONSerialized);
+      fileWriter.flush();
+      fileWriter.close();
+      fileWriter = null;
+
+      if (isEncrypted) {
+        fileEncryptor.encrypt(encryptKey, new File(cacheDirectory, key));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      try {
+        if (fileWriter != null) {
+          fileWriter.flush();
+          fileWriter.close();
         }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
 
-        return nameFiles;
+  /**
+   * Delete the object previously saved.
+   *
+   * @param key the key whereby the object could be deleted.
+   */
+  @Override public void evict(String key) {
+    key = safetyKey(key);
+    final File file = new File(cacheDirectory, key);
+    file.delete();
+  }
+
+  /**
+   * Delete all objects previously saved.
+   */
+  @Override public void evictAll() {
+    for (File file : cacheDirectory.listFiles()) {
+      file.delete();
+    }
+  }
+
+  /**
+   * Retrieve the object previously saved.
+   *
+   * @param key the key whereby the object could be retrieved.
+   * @param clazz the type of class against the object need to be serialized
+   * @param isEncrypted If the persisted record is encrypted or not. See {@link
+   * io.rx_cache.Encrypt}
+   * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link
+   * io.rx_cache.EncryptKey}
+   */
+  public <T> T retrieve(String key, final Class<T> clazz, boolean isEncrypted, String encryptKey) {
+    key = safetyKey(key);
+
+    File file = new File(cacheDirectory, key);
+
+    if (isEncrypted) {
+      file = fileEncryptor.decrypt(encryptKey, file);
     }
 
-
-    /**
-     * Retrieve records accumulated memory in megabyte
-     */
-    @Override public int storedMB() {
-        long bytes = 0;
-
-        final File[] files = cacheDirectory.listFiles();
-        if (files == null) return 0;
-
-        for (File file: files) {
-            bytes += file.length();
-        }
-
-        double megabytes = Math.ceil((double)bytes/1024/1024);
-        return (int) megabytes;
-    }
-
-    /** Save in disk the object passed.
-     * @param key the key whereby the object could be retrieved/deleted later. @see evict and @see retrieve.
-     * @param data the object to be persisted.
-     * @param isEncrypted If the persisted record is encrypted or not. See {@link io.rx_cache.Encrypt}
-     * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
-     * */
-    public void save(String key, Object data, boolean isEncrypted, String encryptKey) {
-        key = safetyKey(key);
-
-        String wrapperJSONSerialized;
-
-        if (data instanceof Record) {
-            Type type = jolyglot.newParameterizedType(data.getClass(), Object.class);
-            wrapperJSONSerialized = jolyglot.toJson(data, type);
-        } else {
-            wrapperJSONSerialized = jolyglot.toJson(data);
-        }
-
-        FileWriter fileWriter = null;
-
-        try {
-            File file = new File(cacheDirectory, key);
-            fileWriter = new FileWriter(file, false);
-            fileWriter.write(wrapperJSONSerialized);
-            fileWriter.flush();
-            fileWriter.close();
-            fileWriter = null;
-
-            if (isEncrypted)
-                fileEncryptor.encrypt(encryptKey, new File(cacheDirectory, key));
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            try {
-                if (fileWriter != null) {
-                    fileWriter.flush();
-                    fileWriter.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /** Delete the object previously saved.
-     * @param key the key whereby the object could be deleted.
-     * */
-    @Override public void evict(String key) {
-        key = safetyKey(key);
-        final File file = new File(cacheDirectory, key);
+    try {
+      T data = jolyglot.fromJson(file, clazz);
+      return data;
+    } catch (Exception ignore) {
+      return null;
+    } finally {
+      if (isEncrypted) {
         file.delete();
+      }
     }
+  }
 
-    /** Delete all objects previously saved.
-     * */
-    @Override public void evictAll() {
-        for(File file: cacheDirectory.listFiles()) {
-            file.delete();
-        }
+  /**
+   * Retrieve the Record previously saved.
+   *
+   * @param key the key whereby the object could be retrieved.
+   * @param isEncrypted If the persisted record is encrypted or not. See {@link
+   * io.rx_cache.Encrypt}
+   * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link
+   * io.rx_cache.EncryptKey}
+   */
+  @Override public <T> Record<T> retrieveRecord(String key, boolean isEncrypted,
+      String encryptKey) {
+    key = safetyKey(key);
+
+    File file = new File(cacheDirectory, key);
+
+    try {
+      if (isEncrypted) {
+        file = fileEncryptor.decrypt(encryptKey, file);
+      }
+
+      Type partialType = jolyglot.newParameterizedType(Record.class, Object.class);
+      Record tempDiskRecord = jolyglot.fromJson(file, partialType);
+
+      Class classData = Class.forName(tempDiskRecord.getDataClassName());
+      Class classCollectionData = tempDiskRecord.getDataCollectionClassName() == null
+          ? Object.class : Class.forName(tempDiskRecord.getDataCollectionClassName());
+
+      boolean isCollection = Collection.class.isAssignableFrom(classCollectionData);
+      boolean isArray = classCollectionData.isArray();
+      boolean isMap = Map.class.isAssignableFrom(classCollectionData);
+      Record<T> diskRecord;
+
+      if (isCollection) {
+        Type typeCollection = jolyglot.newParameterizedType(classCollectionData, classData);
+        Type typeRecord = jolyglot.newParameterizedType(Record.class, typeCollection);
+        diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), typeRecord);
+      } else if (isArray) {
+        Type typeRecord = jolyglot.newParameterizedType(Record.class, classCollectionData);
+        diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), typeRecord);
+      } else if (isMap) {
+        Class classKeyMap = Class.forName(tempDiskRecord.getDataKeyMapClassName());
+        Type typeMap = jolyglot.newParameterizedType(classCollectionData, classKeyMap, classData);
+        Type typeRecord = jolyglot.newParameterizedType(Record.class, typeMap);
+        diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), typeRecord);
+      } else {
+        Type type = jolyglot.newParameterizedType(Record.class, classData);
+        diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), type);
+      }
+
+      diskRecord.setSizeOnMb(file.length() / 1024f / 1024f);
+
+      return diskRecord;
+    } catch (Exception ignore) {
+      return null;
+    } finally {
+      if (isEncrypted) {
+        file.delete();
+      }
     }
+  }
 
-    /** Retrieve the object previously saved.
-     * @param key the key whereby the object could be retrieved.
-     * @param clazz the type of class against the object need to be serialized
-     * @param isEncrypted If the persisted record is encrypted or not. See {@link io.rx_cache.Encrypt}
-     * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
-     * */
-    public <T> T retrieve(String key, final Class<T> clazz, boolean isEncrypted, String encryptKey) {
-        key = safetyKey(key);
+  /**
+   * Retrieve a collection previously saved.
+   *
+   * @param key the key whereby the object could be retrieved.
+   * @param classCollection type class collection
+   * @param classData type class contained by the collection, not the collection itself
+   */
+  public <C extends Collection<T>, T> C retrieveCollection(String key, Class<C> classCollection,
+      Class<T> classData) {
+    key = safetyKey(key);
 
-        File file = new File(cacheDirectory, key);
-
-        if (isEncrypted)
-            file = fileEncryptor.decrypt(encryptKey, file);
-
-        try {
-            T data = jolyglot.fromJson(file, clazz);
-            return data;
-        } catch (Exception ignore) {
-            return null;
-        } finally {
-            if (isEncrypted)
-                file.delete();
-        }
+    try {
+      File file = new File(cacheDirectory, key);
+      Type typeCollection = jolyglot.newParameterizedType(classCollection, classData);
+      T data = jolyglot.fromJson(file, typeCollection);
+      return (C) data;
+    } catch (Exception e) {
+      return null;
     }
+  }
 
-    /** Retrieve the Record previously saved.
-     * @param key the key whereby the object could be retrieved.
-     * @param isEncrypted If the persisted record is encrypted or not. See {@link io.rx_cache.Encrypt}
-     * @param encryptKey The key used to encrypt/decrypt the record to be persisted. See {@link io.rx_cache.EncryptKey}
-     * */
-    @Override public <T> Record<T> retrieveRecord(String key, boolean isEncrypted, String encryptKey) {
-        key = safetyKey(key);
+  /**
+   * Retrieve a Map previously saved.
+   *
+   * @param key the key whereby the object could be retrieved.
+   * @param classMap type class Map
+   * @param classMapKey type class of the Map key
+   * @param classMapValue type class of the Map value
+   */
+  public <M extends Map<K, V>, K, V> M retrieveMap(String key, Class classMap, Class<K> classMapKey,
+      Class<V> classMapValue) {
+    key = safetyKey(key);
 
-        File file = new File(cacheDirectory, key);
+    try {
+      File file = new File(cacheDirectory, key);
 
-        try {
-            if (isEncrypted)
-                file = fileEncryptor.decrypt(encryptKey, file);
+      Type typeMap = jolyglot.newParameterizedType(classMap, classMapKey, classMapValue);
+      Object data = jolyglot.fromJson(file, typeMap);
 
-            Type partialType = jolyglot.newParameterizedType(Record.class, Object.class);
-            Record tempDiskRecord = jolyglot.fromJson(file, partialType);
-
-            Class classData = Class.forName(tempDiskRecord.getDataClassName());
-            Class classCollectionData = tempDiskRecord.getDataCollectionClassName() == null
-                    ? Object.class : Class.forName(tempDiskRecord.getDataCollectionClassName());
-
-            boolean isCollection = Collection.class.isAssignableFrom(classCollectionData);
-            boolean isArray = classCollectionData.isArray();
-            boolean isMap = Map.class.isAssignableFrom(classCollectionData);
-            Record<T> diskRecord;
-
-            if (isCollection) {
-                Type typeCollection = jolyglot.newParameterizedType(classCollectionData, classData);
-                Type typeRecord = jolyglot.newParameterizedType(Record.class, typeCollection);
-                diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), typeRecord);
-            } else if (isArray) {
-                Type typeRecord = jolyglot.newParameterizedType(Record.class, classCollectionData);
-                diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), typeRecord);
-            } else if (isMap) {
-                Class classKeyMap = Class.forName(tempDiskRecord.getDataKeyMapClassName());
-                Type typeMap = jolyglot.newParameterizedType(classCollectionData, classKeyMap, classData);
-                Type typeRecord = jolyglot.newParameterizedType(Record.class, typeMap);
-                diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), typeRecord);
-            } else {
-                Type type = jolyglot.newParameterizedType(Record.class, classData);
-                diskRecord = jolyglot.fromJson(file.getAbsoluteFile(), type);
-            }
-
-            diskRecord.setSizeOnMb(file.length()/1024f/1024f);
-
-            return diskRecord;
-        } catch (Exception ignore) {
-            return null;
-        } finally {
-            if (isEncrypted)
-                file.delete();
-        }
+      return (M) data;
+    } catch (Exception e) {
+      return null;
     }
+  }
 
-    /** Retrieve a collection previously saved.
-     * @param key the key whereby the object could be retrieved.
-     * @param classCollection type class collection
-     * @param classData type class contained by the collection, not the collection itself
-     * */
-    public <C extends Collection<T>, T> C retrieveCollection(String key, Class<C> classCollection, Class<T> classData) {
-        key = safetyKey(key);
+  /**
+   * Retrieve an Array previously saved.
+   *
+   * @param key the key whereby the object could be retrieved.
+   * @param classData type class contained by the Array
+   */
+  public <T> T[] retrieveArray(String key, Class<T> classData) {
+    key = safetyKey(key);
 
-        try {
-            File file = new File(cacheDirectory, key);
-            Type typeCollection = jolyglot.newParameterizedType(classCollection, classData);
-            T data = jolyglot.fromJson(file, typeCollection);
-            return (C) data;
-        } catch (Exception e) {
-            return null;
-        }
+    try {
+      File file = new File(cacheDirectory, key);
+
+      Class<?> clazzArray = Array.newInstance(classData, 1).getClass();
+      Object data = jolyglot.fromJson(file, clazzArray);
+
+      return (T[]) data;
+    } catch (Exception e) {
+      return null;
     }
+  }
 
-    /** Retrieve a Map previously saved.
-     * @param key the key whereby the object could be retrieved.
-     * @param classMap type class Map
-     * @param classMapKey type class of the Map key
-     * @param classMapValue type class of the Map value
-     * */
-    public <M extends Map<K,V>, K, V> M retrieveMap(String key, Class classMap, Class<K> classMapKey, Class<V> classMapValue) {
-        key = safetyKey(key);
-
-        try {
-            File file = new File(cacheDirectory, key);
-
-            Type typeMap = jolyglot.newParameterizedType(classMap, classMapKey, classMapValue);
-            Object data = jolyglot.fromJson(file, typeMap);
-
-            return (M) data;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /** Retrieve an Array previously saved.
-     * @param key the key whereby the object could be retrieved.
-     * @param classData type class contained by the Array
-     * */
-    public <T> T[] retrieveArray(String key, Class<T> classData) {
-        key = safetyKey(key);
-
-        try {
-            File file = new File(cacheDirectory, key);
-
-            Class<?> clazzArray = Array.newInstance(classData, 1).getClass();
-            Object data = jolyglot.fromJson(file, clazzArray);
-
-            return (T[]) data;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private String safetyKey(String key) {
-        return key.replaceAll("/", "_");
-    }
+  private String safetyKey(String key) {
+    return key.replaceAll("/", "_");
+  }
 }

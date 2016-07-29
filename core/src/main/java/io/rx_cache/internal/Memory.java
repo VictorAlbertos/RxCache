@@ -19,9 +19,13 @@ package io.rx_cache.internal;
 import java.util.Set;
 
 public interface Memory {
-    <T> Record<T> getIfPresent(String key);
-    <T> void put(String key, Record<T> record);
-    Set<String> keySet();
-    void evict(String key);
-    void evictAll();
+  <T> Record<T> getIfPresent(String key);
+
+  <T> void put(String key, Record<T> record);
+
+  Set<String> keySet();
+
+  void evict(String key);
+
+  void evictAll();
 }

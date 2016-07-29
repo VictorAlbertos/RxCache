@@ -16,8 +16,6 @@
 
 package io.rx_cache.samples;
 
-import java.util.List;
-
 import io.rx_cache.Actionable;
 import io.rx_cache.DynamicKey;
 import io.rx_cache.DynamicKeyGroup;
@@ -25,6 +23,7 @@ import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
 import io.rx_cache.Mock;
+import java.util.List;
 import rx.Observable;
 
 public interface RxProviders {

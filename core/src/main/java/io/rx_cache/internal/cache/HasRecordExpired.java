@@ -20,17 +20,17 @@ import javax.inject.Inject;
 
 import io.rx_cache.internal.Record;
 
-public class HasRecordExpired {
+public final class HasRecordExpired {
 
-    public @Inject HasRecordExpired() {}
+  public @Inject HasRecordExpired() {}
 
-    public boolean hasRecordExpired(Record record) {
-        long now = System.currentTimeMillis();
+  public boolean hasRecordExpired(Record record) {
+    long now = System.currentTimeMillis();
 
-        Long lifeTime = record.getLifeTime();
-        if (lifeTime == null) return false;
+    Long lifeTime = record.getLifeTime();
+    if (lifeTime == null) return false;
 
-        long expirationDate = record.getTimeAtWhichWasPersisted() + lifeTime;
-        return now > expirationDate;
-    }
+    long expirationDate = record.getTimeAtWhichWasPersisted() + lifeTime;
+    return now > expirationDate;
+  }
 }

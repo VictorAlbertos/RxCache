@@ -16,15 +16,11 @@
 
 package io.rx_cache.internal.migration;
 
-import org.junit.Test;
-
-import java.lang.annotation.Annotation;
+import io.rx_cache.MigrationCache;
+import io.rx_cache.internal.common.BaseTest;
 import java.util.Arrays;
 import java.util.List;
-
-import io.rx_cache.Migration;
-import io.rx_cache.SchemeMigration;
-import io.rx_cache.internal.common.BaseTest;
+import org.junit.Test;
 import rx.observers.TestSubscriber;
 
 import static org.hamcrest.core.Is.is;
@@ -46,11 +42,7 @@ public class UpgradeCacheVersionTest extends BaseTest {
     }
 
     @Test public void When_Upgrade_Version_Upgrade_It() {
-        Annotation annotation = Migrations.class.getAnnotation(SchemeMigration.class);
-        SchemeMigration schemeMigration = (SchemeMigration) annotation;
-        List<Migration> migrations = Arrays.asList(schemeMigration.value());
-
-        upgradeCacheVersionUT.with(migrations).react().subscribe(upgradeTestSubscriber);
+        upgradeCacheVersionUT.with(migrations()).react().subscribe(upgradeTestSubscriber);
         upgradeTestSubscriber.awaitTerminalEvent();
         upgradeTestSubscriber.assertNoErrors();
         upgradeTestSubscriber.assertCompleted();
@@ -62,16 +54,15 @@ public class UpgradeCacheVersionTest extends BaseTest {
         assertThat(currentVersion, is(5));
     }
 
-
-    @SchemeMigration({
-            @Migration(version = 1, evictClasses = {Mock1.class}),
-            @Migration(version = 3, evictClasses = {Mock1.class}),
-            @Migration(version = 4, evictClasses = {Mock1.class}),
-            @Migration(version = 5, evictClasses = {Mock1.class})
-    })
-    private interface Migrations {}
-
-    private class Mock1 {
-
+    private List<MigrationCache> migrations() {
+        return Arrays.asList(
+            new MigrationCache(1, new Class[] {Mock1.class}),
+            new MigrationCache(2, new Class[] {Mock1.class}),
+            new MigrationCache(3, new Class[] {Mock1.class}),
+            new MigrationCache(4, new Class[] {Mock1.class}),
+            new MigrationCache(5, new Class[] {Mock1.class})
+        );
     }
+
+    private static class Mock1 {}
 }

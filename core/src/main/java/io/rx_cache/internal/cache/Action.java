@@ -23,51 +23,59 @@ import io.rx_cache.internal.Persistence;
 import io.rx_cache.internal.Memory;
 
 abstract class Action {
-    private static final String PREFIX_DYNAMIC_KEY = "$d$d$d$";
-    private static final String PREFIX_DYNAMIC_KEY_GROUP = "$g$g$g$";
+  private static final String PREFIX_DYNAMIC_KEY = "$d$d$d$";
+  private static final String PREFIX_DYNAMIC_KEY_GROUP = "$g$g$g$";
 
-    protected final Memory memory;
-    protected final Persistence persistence;
+  protected final Memory memory;
+  protected final Persistence persistence;
 
-    public Action(Memory memory, Persistence persistence) {
-        this.memory = memory;
-        this.persistence = persistence;
+  public Action(Memory memory, Persistence persistence) {
+    this.memory = memory;
+    this.persistence = persistence;
+  }
+
+  protected String composeKey(String providerKey, String dynamicKey, String dynamicKeyGroup) {
+    return providerKey
+        + PREFIX_DYNAMIC_KEY
+        + dynamicKey
+        + PREFIX_DYNAMIC_KEY_GROUP
+        + dynamicKeyGroup;
+  }
+
+  protected List<String> getKeysOnMemoryMatchingProviderKey(String providerKey) {
+    List<String> keysMatchingProviderKey = new ArrayList<>();
+
+    for (String composedKeyMemory : memory.keySet()) {
+      final String keyPartProviderMemory =
+          composedKeyMemory.substring(0, composedKeyMemory.lastIndexOf(PREFIX_DYNAMIC_KEY));
+
+      if (providerKey.equals(keyPartProviderMemory)) {
+        keysMatchingProviderKey.add(composedKeyMemory);
+      }
     }
 
-    protected String composeKey(String providerKey, String dynamicKey, String dynamicKeyGroup) {
-        return providerKey + PREFIX_DYNAMIC_KEY + dynamicKey + PREFIX_DYNAMIC_KEY_GROUP + dynamicKeyGroup;
+    return keysMatchingProviderKey;
+  }
+
+  protected List<String> getKeysOnMemoryMatchingDynamicKey(String providerKey, String dynamicKey) {
+    List<String> keysMatchingDynamicKey = new ArrayList<>();
+
+    String composedProviderKeyAndDynamicKey = providerKey + PREFIX_DYNAMIC_KEY + dynamicKey;
+
+    for (String composedKeyMemory : memory.keySet()) {
+      final String keyPartProviderAndDynamicKeyMemory =
+          composedKeyMemory.substring(0, composedKeyMemory.lastIndexOf(PREFIX_DYNAMIC_KEY_GROUP));
+
+      if (composedProviderKeyAndDynamicKey.equals(keyPartProviderAndDynamicKeyMemory)) {
+        keysMatchingDynamicKey.add(composedKeyMemory);
+      }
     }
 
-    protected List<String> getKeysOnMemoryMatchingProviderKey(String providerKey) {
-        List<String> keysMatchingProviderKey = new ArrayList<>();
+    return keysMatchingDynamicKey;
+  }
 
-        for (String composedKeyMemory : memory.keySet()) {
-            final String keyPartProviderMemory = composedKeyMemory.substring(0, composedKeyMemory.lastIndexOf(PREFIX_DYNAMIC_KEY));
-
-            if (providerKey.equals(keyPartProviderMemory))
-                keysMatchingProviderKey.add(composedKeyMemory);
-        }
-
-        return keysMatchingProviderKey;
-    }
-
-    protected List<String> getKeysOnMemoryMatchingDynamicKey(String providerKey, String dynamicKey) {
-        List<String> keysMatchingDynamicKey = new ArrayList<>();
-
-        String composedProviderKeyAndDynamicKey = providerKey + PREFIX_DYNAMIC_KEY + dynamicKey;
-
-        for (String composedKeyMemory : memory.keySet()) {
-            final String keyPartProviderAndDynamicKeyMemory = composedKeyMemory.substring(0, composedKeyMemory.lastIndexOf(PREFIX_DYNAMIC_KEY_GROUP));
-
-            if (composedProviderKeyAndDynamicKey.equals(keyPartProviderAndDynamicKeyMemory))
-                keysMatchingDynamicKey.add(composedKeyMemory);
-
-        }
-
-        return keysMatchingDynamicKey;
-    }
-
-    protected String getKeyOnMemoryMatchingDynamicKeyGroup(String providerKey, String dynamicKey, String dynamicKeyGroup) {
-        return composeKey(providerKey, dynamicKey, dynamicKeyGroup);
-    }
+  protected String getKeyOnMemoryMatchingDynamicKeyGroup(String providerKey, String dynamicKey,
+      String dynamicKeyGroup) {
+    return composeKey(providerKey, dynamicKey, dynamicKeyGroup);
+  }
 }

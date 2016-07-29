@@ -18,7 +18,6 @@ package io.rx_cache;
 
 /**
  * For those providers which will need to evict the records of an specific DynamicKeyGroup.
- * @see DynamicKeyGroup
  */
 public class EvictDynamicKeyGroup extends EvictDynamicKey {
     public EvictDynamicKeyGroup(boolean evict) {

@@ -17,15 +17,11 @@
 package io.rx_cache.internal.migration;
 
 
-import org.junit.Before;
-import org.junit.Test;
-
-import java.lang.annotation.Annotation;
+import io.rx_cache.MigrationCache;
 import java.util.Arrays;
 import java.util.List;
-
-import io.rx_cache.Migration;
-import io.rx_cache.SchemeMigration;
+import org.junit.Before;
+import org.junit.Test;
 import rx.observers.TestSubscriber;
 
 import static org.hamcrest.core.Is.is;
@@ -41,9 +37,7 @@ public class GetClassesToEvictFromMigrationsTest {
     }
 
     @Test public void When_Migration_Contain_One_Class_To_Evict_Get_It() {
-        Annotation annotation = OneMigrationProviders.class.getAnnotation(SchemeMigration.class);
-        SchemeMigration schemeMigration = (SchemeMigration) annotation;
-        List<Migration> migrations = Arrays.asList(schemeMigration.value());
+        List<MigrationCache> migrations = oneMigration();
 
         getClassesToEvictFromMigrationsUT.with(migrations).react().subscribe(testSubscriber);
         testSubscriber.awaitTerminalEvent();
@@ -53,9 +47,7 @@ public class GetClassesToEvictFromMigrationsTest {
     }
 
     @Test public void When_Migrations_Contains_Classes_To_Evict_Get_Them() {
-        Annotation annotation = MigrationsProviders.class.getAnnotation(SchemeMigration.class);
-        SchemeMigration schemeMigration = (SchemeMigration) annotation;
-        List<Migration> migrations = Arrays.asList(schemeMigration.value());
+        List<MigrationCache> migrations = migrations();
 
         getClassesToEvictFromMigrationsUT.with(migrations).react().subscribe(testSubscriber);
         testSubscriber.awaitTerminalEvent();
@@ -65,9 +57,7 @@ public class GetClassesToEvictFromMigrationsTest {
     }
 
     @Test public void When_Several_Classes_To_Evict_With_Same_Type_Only_Keep_One() {
-        Annotation annotation = MigrationsRepeatedProviders.class.getAnnotation(SchemeMigration.class);
-        SchemeMigration schemeMigration = (SchemeMigration) annotation;
-        List<Migration> migrations = Arrays.asList(schemeMigration.value());
+        List<MigrationCache> migrations = migrationsRepeated();
 
         getClassesToEvictFromMigrationsUT.with(migrations).react().subscribe(testSubscriber);
         testSubscriber.awaitTerminalEvent();
@@ -76,26 +66,26 @@ public class GetClassesToEvictFromMigrationsTest {
         assertThat(classes.size(), is(3));
     }
 
-    @SchemeMigration(@Migration(version = 1, evictClasses = {Mock1.class}))
-    private interface OneMigrationProviders {}
+    private List<MigrationCache> oneMigration() {
+        return Arrays.asList(new MigrationCache(1, new Class[] {Mock1.class}));
+    }
 
+    private List<MigrationCache> migrations() {
+        return Arrays.asList(
+            new MigrationCache(1, new Class[] {Mock1.class}),
+            new MigrationCache(2, new Class[] {Mock2.class})
+        );
+    }
 
-    @SchemeMigration({
-            @Migration(version = 1, evictClasses = {Mock1.class}),
-            @Migration(version = 2, evictClasses = {Mock2.class}),
-    })
-    private interface MigrationsProviders {}
-
-
-    @SchemeMigration({
-            @Migration(version = 1, evictClasses = {Mock1.class}),
-            @Migration(version = 2, evictClasses = {Mock2.class}),
-            @Migration(version = 3, evictClasses = {Mock1.class}),
-            @Migration(version = 4, evictClasses = {Mock2.class}),
-            @Migration(version = 5, evictClasses = {Mock3.class})
-    })
-    private interface MigrationsRepeatedProviders {}
-
+    private List<MigrationCache> migrationsRepeated() {
+        return Arrays.asList(
+            new MigrationCache(1, new Class[] {Mock1.class}),
+            new MigrationCache(2, new Class[] {Mock2.class}),
+            new MigrationCache(3, new Class[] {Mock1.class}),
+            new MigrationCache(4, new Class[] {Mock2.class}),
+            new MigrationCache(5, new Class[] {Mock3.class})
+        );
+    }
     private class Mock1 {}
     private class Mock2 {}
     private class Mock3 {}

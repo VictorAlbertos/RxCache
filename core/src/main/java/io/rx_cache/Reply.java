@@ -17,32 +17,33 @@
 package io.rx_cache;
 
 /**
- * Wrapper to provide the Source used for retrieving the actual data, plus, the actual data.
- * You can set this object as return type for your methods if you want to know which was the source
- * for an specific data
+ * Wrapper to provide the Source used for retrieving the actual data, plus, the actual data. You can
+ * set this object as return type for your methods if you want to know which was the source for an
+ * specific data
+ *
  * @param <T> The actual data to be retrieved encapsulated inside a Provider object
  * @see Source
  */
 public final class Reply<T> {
-    private final T data;
-    private final Source source;
-    private final boolean isEncrypted;
+  private final T data;
+  private final Source source;
+  private final boolean isEncrypted;
 
-    public Reply(T data, Source source, boolean isEncrypted) {
-        this.data = data;
-        this.source = source;
-        this.isEncrypted = isEncrypted;
-    }
+  public Reply(T data, Source source, boolean isEncrypted) {
+    this.data = data;
+    this.source = source;
+    this.isEncrypted = isEncrypted;
+  }
 
-    public T getData() {
-        return data;
-    }
+  public T getData() {
+    return data;
+  }
 
-    public Source getSource() {
-        return source;
-    }
+  public Source getSource() {
+    return source;
+  }
 
-    public boolean isEncrypted() {
-        return isEncrypted;
-    }
+  public boolean isEncrypted() {
+    return isEncrypted;
+  }
 }

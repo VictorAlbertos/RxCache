@@ -25,38 +25,38 @@ import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Record;
 import io.rx_cache.internal.cache.memory.apache.ReferenceMap;
 
-public class ReferenceMapMemory implements Memory {
-    private final Map<String, Record> referenceMap;
+public final class ReferenceMapMemory implements Memory {
+  private final Map<String, Record> referenceMap;
 
-    public ReferenceMapMemory() {
-        referenceMap = Collections.synchronizedMap(new ReferenceMap<String, Record>());
+  public ReferenceMapMemory() {
+    referenceMap = Collections.synchronizedMap(new ReferenceMap<String, Record>());
+  }
+
+  @Override public <T> Record<T> getIfPresent(String key) {
+    return referenceMap.get(key);
+  }
+
+  @Override public <T> void put(String key, Record<T> record) {
+    referenceMap.put(key, record);
+  }
+
+  @Override public Set<String> keySet() {
+    return referenceMap.keySet();
+  }
+
+  @Override public void evict(String key) {
+    referenceMap.remove(key);
+  }
+
+  @Override public void evictAll() {
+    Set<String> keys = referenceMap.keySet();
+
+    synchronized (referenceMap) {
+      Iterator iterator = keys.iterator();
+      while (iterator.hasNext()) {
+        iterator.next();
+        iterator.remove();
+      }
     }
-
-    @Override public <T> Record<T> getIfPresent(String key) {
-        return referenceMap.get(key);
-    }
-
-    @Override public <T> void put(String key, Record<T> record) {
-        referenceMap.put(key, record);
-    }
-
-    @Override public Set<String> keySet() {
-        return referenceMap.keySet();
-    }
-
-    @Override public void evict(String key) {
-        referenceMap.remove(key);
-    }
-
-    @Override public void evictAll() {
-        Set<String> keys = referenceMap.keySet();
-
-        synchronized (referenceMap) {
-            Iterator iterator = keys.iterator();
-            while (iterator.hasNext()) {
-                iterator.next();
-                iterator.remove();
-            }
-        }
-    }
+  }
 }

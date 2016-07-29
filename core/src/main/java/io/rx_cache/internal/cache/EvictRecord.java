@@ -16,7 +16,6 @@
 
 package io.rx_cache.internal.cache;
 
-
 import java.util.List;
 
 import javax.inject.Inject;
@@ -26,42 +25,45 @@ import io.rx_cache.internal.Persistence;
 
 public final class EvictRecord extends Action {
 
-    @Inject public EvictRecord(Memory memory, Persistence persistence) {
-        super(memory, persistence);
+  @Inject public EvictRecord(Memory memory, Persistence persistence) {
+    super(memory, persistence);
+  }
+
+  void evictRecordsMatchingProviderKey(String providerKey) {
+    List<String> keysMatchingKeyProvider = getKeysOnMemoryMatchingProviderKey(providerKey);
+
+    for (String keyMatchingKeyProvider : keysMatchingKeyProvider) {
+      memory.evict(keyMatchingKeyProvider);
+      persistence.evict(keyMatchingKeyProvider);
     }
+  }
 
-    void evictRecordsMatchingProviderKey(String providerKey) {
-        List<String> keysMatchingKeyProvider = getKeysOnMemoryMatchingProviderKey(providerKey);
+  void evictRecordsMatchingDynamicKey(String providerKey, String dynamicKey) {
+    List<String> keysMatchingDynamicKey =
+        getKeysOnMemoryMatchingDynamicKey(providerKey, dynamicKey);
 
-        for (String keyMatchingKeyProvider : keysMatchingKeyProvider) {
-            memory.evict(keyMatchingKeyProvider);
-            persistence.evict(keyMatchingKeyProvider);
-        }
+    for (String keyMatchingDynamicKey : keysMatchingDynamicKey) {
+      memory.evict(keyMatchingDynamicKey);
+      persistence.evict(keyMatchingDynamicKey);
     }
+  }
 
-    void evictRecordsMatchingDynamicKey(String providerKey, String dynamicKey) {
-        List<String> keysMatchingDynamicKey = getKeysOnMemoryMatchingDynamicKey(providerKey, dynamicKey);
+  void evictRecordMatchingDynamicKeyGroup(String providerKey, String dynamicKey,
+      String dynamicKeyGroup) {
+    String composedKey =
+        getKeyOnMemoryMatchingDynamicKeyGroup(providerKey, dynamicKey, dynamicKeyGroup);
 
-        for (String keyMatchingDynamicKey : keysMatchingDynamicKey) {
-            memory.evict(keyMatchingDynamicKey);
-            persistence.evict(keyMatchingDynamicKey);
-        }
-    }
+    memory.evict(composedKey);
+    persistence.evict(composedKey);
+  }
 
-    void evictRecordMatchingDynamicKeyGroup(String providerKey, String dynamicKey, String dynamicKeyGroup) {
-        String composedKey = getKeyOnMemoryMatchingDynamicKeyGroup(providerKey, dynamicKey, dynamicKeyGroup);
+  //VisibleForTesting
+  void mockMemoryDestroyed() {
+    memory.evictAll();
+  }
 
-        memory.evict(composedKey);
-        persistence.evict(composedKey);
-    }
-
-    //VisibleForTesting
-    void mockMemoryDestroyed() {
-        memory.evictAll();
-    }
-
-    void evictAll() {
-        memory.evictAll();
-        persistence.evictAll();
-    }
+  void evictAll() {
+    memory.evictAll();
+    persistence.evictAll();
+  }
 }
