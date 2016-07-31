@@ -42,7 +42,7 @@ public final class EvictExpiredRecordsPersistence extends Action {
     for (String key : allKeys) {
       Record record = persistence.retrieveRecord(key, false, encryptKey);
 
-      if (record == null && encryptKey != null) {
+      if (record == null && encryptKey != null && !encryptKey.isEmpty()) {
         record = persistence.retrieveRecord(key, true, encryptKey);
       }
 
