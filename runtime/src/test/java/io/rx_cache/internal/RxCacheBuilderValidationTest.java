@@ -1,5 +1,6 @@
 package io.rx_cache.internal;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -11,7 +12,8 @@ import java.security.InvalidParameterException;
  */
 public class RxCacheBuilderValidationTest {
 
-    private TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test(expected = InvalidParameterException.class)
     public void Cache_Directory_Null() {
