@@ -85,6 +85,12 @@ public final class RxCache {
       if (cacheDirectory == null) {
         throw new InvalidParameterException(Locale.REPOSITORY_DISK_ADAPTER_CAN_NOT_BE_NULL);
       }
+      if (!cacheDirectory.exists()) {
+        throw new InvalidParameterException(Locale.REPOSITORY_DISK_ADAPTER_DOES_NOT_EXIST);
+      }
+      if (!cacheDirectory.canWrite()) {
+        throw new InvalidParameterException(Locale.REPOSITORY_DISK_ADAPTER_IS_NOT_WRITABLE);
+      }
 
       if (jolyglot == null) {
         throw new InvalidParameterException(Locale.JSON_CONVERTER_CAN_NOT_BE_NULL);
