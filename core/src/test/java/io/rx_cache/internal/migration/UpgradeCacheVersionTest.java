@@ -16,12 +16,12 @@
 
 package io.rx_cache.internal.migration;
 
+import io.reactivex.observers.TestObserver;
 import io.rx_cache.MigrationCache;
 import io.rx_cache.internal.common.BaseTest;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
-import rx.observers.TestSubscriber;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -29,27 +29,27 @@ import static org.junit.Assert.assertThat;
 public class UpgradeCacheVersionTest extends BaseTest {
     private UpgradeCacheVersion upgradeCacheVersionUT;
     private GetCacheVersion getCacheVersion;
-    private TestSubscriber<Void> upgradeTestSubscriber;
-    private TestSubscriber<Integer> versionTestSubscriber;
+    private TestObserver<Integer> upgradeTestObserver;
+    private TestObserver<Integer> versionTestObserver;
 
     @Override public void setUp() {
         super.setUp();
         upgradeCacheVersionUT = new UpgradeCacheVersion(disk);
         getCacheVersion = new GetCacheVersion(disk);
 
-        upgradeTestSubscriber = new TestSubscriber<>();
-        versionTestSubscriber = new TestSubscriber<>();
+        upgradeTestObserver = new TestObserver<>();
+        versionTestObserver = new TestObserver<>();
     }
 
     @Test public void When_Upgrade_Version_Upgrade_It() {
-        upgradeCacheVersionUT.with(migrations()).react().subscribe(upgradeTestSubscriber);
-        upgradeTestSubscriber.awaitTerminalEvent();
-        upgradeTestSubscriber.assertNoErrors();
-        upgradeTestSubscriber.assertCompleted();
+        upgradeCacheVersionUT.with(migrations()).react().subscribe(upgradeTestObserver);
+        upgradeTestObserver.awaitTerminalEvent();
+        upgradeTestObserver.assertNoErrors();
+        upgradeTestObserver.assertComplete();
 
-        getCacheVersion.react().subscribe(versionTestSubscriber);
-        versionTestSubscriber.awaitTerminalEvent();
-        int currentVersion = versionTestSubscriber.getOnNextEvents().get(0);
+        getCacheVersion.react().subscribe(versionTestObserver);
+        versionTestObserver.awaitTerminalEvent();
+        int currentVersion = versionTestObserver.values().get(0);
 
         assertThat(currentVersion, is(5));
     }

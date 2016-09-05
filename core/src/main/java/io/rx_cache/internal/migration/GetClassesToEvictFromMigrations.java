@@ -16,13 +16,11 @@
 
 package io.rx_cache.internal.migration;
 
+import io.reactivex.Observable;
+import io.rx_cache.MigrationCache;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.inject.Inject;
-
-import io.rx_cache.MigrationCache;
-import rx.Observable;
 
 final class GetClassesToEvictFromMigrations {
   private List<MigrationCache> migrations;

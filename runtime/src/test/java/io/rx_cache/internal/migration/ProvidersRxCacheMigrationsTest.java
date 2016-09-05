@@ -1,20 +1,20 @@
 package io.rx_cache.internal.migration;
 
-import io.rx_cache.internal.Jolyglot$;
+import io.reactivex.Observable;
+import io.reactivex.observers.TestObserver;
 import io.rx_cache.Migration;
-import io.rx_cache.RxCacheException;
 import io.rx_cache.SchemeMigration;
+import io.rx_cache.internal.Jolyglot$;
 import io.rx_cache.internal.RxCache;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import rx.Observable;
-import rx.observers.TestSubscriber;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
 public class ProvidersRxCacheMigrationsTest {
   @ClassRule static public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -31,11 +31,11 @@ public class ProvidersRxCacheMigrationsTest {
         .persistence(temporaryFolder.getRoot(), Jolyglot$.newInstance())
         .using(ProvidersMigrations.class);
 
-    TestSubscriber<List<Mock1>> testSubscriber = new TestSubscriber<>();
-    providersMigrations.getMocks(Observable.<List<Mock1>>just(null)).subscribe(testSubscriber);
-    testSubscriber.awaitTerminalEvent();
-    testSubscriber.assertNoValues();
-    testSubscriber.assertError(RxCacheException.class);
+    TestObserver<List<Mock1>> testObserver =
+        providersMigrations.getMocks(Observable.just(Arrays.asList(new Mock1()))).test();
+    testObserver.awaitTerminalEvent();
+    testObserver.assertNoErrors();
+    testObserver.assertValueCount(1);
   }
 
   private void populateMocks() {
@@ -43,11 +43,10 @@ public class ProvidersRxCacheMigrationsTest {
         .persistence(temporaryFolder.getRoot(), Jolyglot$.newInstance())
         .using(Providers.class);
 
-    TestSubscriber<List<Mock1>> testSubscriber = new TestSubscriber<>();
-    providers.getMocks(getMocks()).subscribe(testSubscriber);
-    testSubscriber.awaitTerminalEvent();
+    TestObserver<List<Mock1>> testObserver = providers.getMocks(getMocks()).test();
+    testObserver.awaitTerminalEvent();
 
-    assertThat(testSubscriber.getOnNextEvents().get(0).size(), is(SIZE_MOCKS));
+    assertThat(testObserver.values().get(0).size(), is(SIZE_MOCKS));
   }
 
   private static int SIZE_MOCKS = 1000;

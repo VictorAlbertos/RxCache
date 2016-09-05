@@ -16,13 +16,11 @@
 
 package io.rx_cache.internal.migration;
 
-import java.util.List;
-
-import javax.inject.Inject;
-
+import io.reactivex.Observable;
 import io.rx_cache.MigrationCache;
 import io.rx_cache.internal.Persistence;
-import rx.Observable;
+import java.util.List;
+import javax.inject.Inject;
 
 final class UpgradeCacheVersion extends CacheVersion {
   private List<MigrationCache> migrations;
@@ -36,12 +34,12 @@ final class UpgradeCacheVersion extends CacheVersion {
     return this;
   }
 
-  Observable<Void> react() {
-    if (migrations == null || migrations.isEmpty()) return Observable.just(null);
+  Observable<Integer> react() {
+    if (migrations == null || migrations.isEmpty()) return Observable.just(1);
 
     MigrationCache migration = migrations.get(migrations.size() - 1);
     persistence.save(KEY_CACHE_VERSION, migration.version(), false, null);
 
-    return Observable.just(null);
+    return Observable.just(1);
   }
 }

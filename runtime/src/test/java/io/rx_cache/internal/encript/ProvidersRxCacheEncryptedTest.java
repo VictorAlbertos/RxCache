@@ -16,6 +16,9 @@
 
 package io.rx_cache.internal.encript;
 
+import io.reactivex.Observable;
+import io.reactivex.observers.TestObserver;
+import io.rx_cache.ClearProvider;
 import io.rx_cache.Encrypt;
 import io.rx_cache.EncryptKey;
 import io.rx_cache.Reply;
@@ -31,8 +34,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
-import rx.Observable;
-import rx.observers.TestSubscriber;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -53,47 +54,45 @@ public class ProvidersRxCacheEncryptedTest {
   }
 
   @Test public void _00_Save_Record_On_Disk_In_Order_To_Test_Following_Tests() {
-    TestSubscriber<Reply<List<Mock>>> subscriber = new TestSubscriber<>();
-    providersRxCache.getMocksEncryptedWithDetailResponse(createObservableMocks(SIZE))
-        .subscribe(subscriber);
-    subscriber.awaitTerminalEvent();
+    TestObserver<Reply<List<Mock>>> observer =
+        providersRxCache.getMocksEncryptedWithDetailResponse(createObservableMocks(SIZE)).test();
+    observer.awaitTerminalEvent();
 
-    subscriber = new TestSubscriber<>();
+    observer = new TestObserver<>();
     providersRxCache.getMocksNotEncryptedWithDetailResponse(createObservableMocks(SIZE))
-        .subscribe(subscriber);
+        .subscribe(observer);
 
-    subscriber.awaitTerminalEvent();
+    observer.awaitTerminalEvent();
   }
 
   @Test
   public void _01_When_Encrypted_Record_Has_Been_Persisted_And_Memory_Has_Been_Destroyed_Then_Retrieve_From_Disk() {
-    TestSubscriber<Reply<List<Mock>>> subscriber = new TestSubscriber<>();
-    providersRxCache.getMocksEncryptedWithDetailResponse(Observable.<List<Mock>>just(null))
-        .subscribe(subscriber);
-    subscriber.awaitTerminalEvent();
+    TestObserver<Reply<List<Mock>>> observer =
+        providersRxCache.getMocksEncryptedWithDetailResponse(ClearProvider.<List<Mock>>now())
+            .test();
+    observer.awaitTerminalEvent();
 
-    Reply<List<Mock>> reply = subscriber.getOnNextEvents().get(0);
+    Reply<List<Mock>> reply = observer.values().get(0);
     assertThat(reply.getSource(), is(Source.PERSISTENCE));
     assertThat(reply.isEncrypted(), is(true));
   }
 
   @Test
   public void _02_If_Class_Has_Been_Annotated_With_EncryptedKey_Then_Only_Encrypt_When_Provider_Has_Been_Annotated_With_Encrypt() {
-    TestSubscriber<Reply<List<Mock>>> subscriber = new TestSubscriber<>();
-    providersRxCache.getMocksNotEncryptedWithDetailResponse(Observable.<List<Mock>>just(null))
-        .subscribe(subscriber);
-    subscriber.awaitTerminalEvent();
+    TestObserver<Reply<List<Mock>>> observer =
+        providersRxCache.getMocksNotEncryptedWithDetailResponse(ClearProvider.<List<Mock>>now())
+            .test();
+    observer.awaitTerminalEvent();
 
-    Reply<List<Mock>> reply = subscriber.getOnNextEvents().get(0);
+    Reply<List<Mock>> reply = observer.values().get(0);
     assertThat(reply.getSource(), is(Source.PERSISTENCE));
     assertThat(reply.isEncrypted(), is(false));
 
-    subscriber = new TestSubscriber<>();
-    providersRxCache.getMocksEncryptedWithDetailResponse(Observable.<List<Mock>>just(null))
-        .subscribe(subscriber);
-    subscriber.awaitTerminalEvent();
+    observer =
+        providersRxCache.getMocksEncryptedWithDetailResponse(ClearProvider.<List<Mock>>now()).test();
+    observer.awaitTerminalEvent();
 
-    reply = subscriber.getOnNextEvents().get(0);
+    reply = observer.values().get(0);
     assertThat(reply.getSource(), is(Source.PERSISTENCE));
     assertThat(reply.isEncrypted(), is(true));
   }

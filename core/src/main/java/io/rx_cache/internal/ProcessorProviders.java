@@ -16,8 +16,8 @@
 
 package io.rx_cache.internal;
 
+import io.reactivex.Observable;
 import io.rx_cache.ConfigProvider;
-import rx.Observable;
 
 /**
  * Entry point for RxCache

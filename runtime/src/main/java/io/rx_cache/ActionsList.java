@@ -16,11 +16,11 @@
 
 package io.rx_cache;
 
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import rx.Observable;
-import rx.functions.Func1;
 
 /**
  * Provides a set of actions in order to perform write operations on lists with providers in a more
@@ -133,8 +133,8 @@ public class ActionsList<T> {
    * @return itself
    */
   public ActionsList<T> addAll(final Func2 func2, final List<T> elements) {
-    cache = cache.map(new Func1<List<T>, List<T>>() {
-      @Override public List<T> call(List<T> items) {
+    cache = cache.map(new Function<List<T>, List<T>>() {
+      @Override public List<T> apply(List<T> items) throws Exception {
         int count = items.size();
 
         for (int position = 0; position <= count; position++) {
@@ -304,8 +304,8 @@ public class ActionsList<T> {
    * @return itself
    */
   public ActionsList<T> evict(final Func3<T> func3) {
-    cache = cache.map(new Func1<List<T>, List<T>>() {
-      @Override public List<T> call(List<T> elements) {
+    cache = cache.map(new Function<List<T>, List<T>>() {
+      @Override public List<T> apply(List<T> elements) throws Exception {
         int count = elements.size();
 
         for (int position = 0; position < count; position++) {
@@ -382,8 +382,8 @@ public class ActionsList<T> {
    * @return itself
    */
   public ActionsList<T> evictIterable(final Func3<T> func3) {
-    cache = cache.map(new Func1<List<T>, List<T>>() {
-      @Override public List<T> call(List<T> elements) {
+    cache = cache.map(new Function<List<T>, List<T>>() {
+      @Override public List<T> apply(List<T> elements) throws Exception {
         int count = elements.size();
 
         for (int position = 0; position < count; position++) {
@@ -427,8 +427,8 @@ public class ActionsList<T> {
    * @return itself
    */
   public ActionsList<T> update(final Func3<T> func3, final Replace<T> replace) {
-    cache = cache.map(new Func1<List<T>, List<T>>() {
-      @Override public List<T> call(List<T> elements) {
+    cache = cache.map(new Function<List<T>, List<T>>() {
+      @Override public List<T> apply(List<T> elements) throws Exception {
         int count = elements.size();
 
         for (int position = 0; position < count; position++) {
@@ -472,8 +472,8 @@ public class ActionsList<T> {
    * @return itself
    */
   public ActionsList<T> updateIterable(final Func3<T> func3, final Replace<T> replace) {
-    cache = cache.map(new Func1<List<T>, List<T>>() {
-      @Override public List<T> call(List<T> elements) {
+    cache = cache.map(new Function<List<T>, List<T>>() {
+      @Override public List<T> apply(List<T> elements) throws Exception {
         int count = elements.size();
 
         for (int position = 0; position < count; position++) {

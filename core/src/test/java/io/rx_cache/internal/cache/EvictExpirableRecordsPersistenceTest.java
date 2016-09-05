@@ -16,6 +16,7 @@
 
 package io.rx_cache.internal.cache;
 
+import io.reactivex.observers.TestObserver;
 import io.rx_cache.internal.Locale;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Mock;
@@ -29,7 +30,6 @@ import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
-import rx.observers.TestSubscriber;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -44,38 +44,17 @@ public class EvictExpirableRecordsPersistenceTest extends BaseTest {
         memory = new ReferenceMapMemory();
     }
 
-/*    @Test public void When_Task_Is_Running_Do_Not_Start_Again() {
-        evictExpirableRecordsPersistenceUT = new EvictExpirableRecordsPersistence(memory, disk, 10);
-
-        for (int i = 0; i < 10; i++) {
-            evictExpirableRecordsPersistenceUT.startTaskIfNeeded();
-        }
-
-        assert(evictExpirableRecordsPersistenceUT.runningTasks() < 5);
-    }
-
-    @Test public void When_Task_Is_Not_Running_Start_Again() {
-        evictExpirableRecordsPersistenceUT = new EvictExpirableRecordsPersistence(memory, disk, 10);
-
-        for (int i = 0; i < 10; i++) {
-            waitTime(100);
-            evictExpirableRecordsPersistenceUT.startTaskIfNeeded();
-        }
-
-        assertThat(evictExpirableRecordsPersistenceUT.runningTasks(), is(10));
-    }*/
-
     @Test public void When_Not_Reached_Memory_Threshold_Not_Emit() {
         evictExpirableRecordsPersistenceUT = new EvictExpirableRecordsPersistence(memory, disk, 10, null);
 
         populate(true);
         assertThat(disk.allKeys().size(), is(100));
 
-        TestSubscriber testSubscriber = new TestSubscriber();
-        evictExpirableRecordsPersistenceUT.startTaskIfNeeded(false).subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
-        testSubscriber.assertNoErrors();
-        testSubscriber.assertNoValues();
+        TestObserver testObserver = evictExpirableRecordsPersistenceUT.startTaskIfNeeded(false).test();
+        testObserver.awaitTerminalEvent();
+        testObserver
+            .assertNoErrors()
+            .assertNoValues();
     }
 
     @DataPoint public static Integer _3_MB = 3;
@@ -87,10 +66,9 @@ public class EvictExpirableRecordsPersistenceTest extends BaseTest {
         populate(true);
         assertThat(disk.allKeys().size(), is(mocksCount()));
 
-        TestSubscriber testSubscriber = new TestSubscriber();
-        evictExpirableRecordsPersistenceUT.startTaskIfNeeded(false).subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
-        testSubscriber.assertNoErrors();
+        TestObserver testObserver = evictExpirableRecordsPersistenceUT.startTaskIfNeeded(false).test();
+        testObserver.awaitTerminalEvent();
+        testObserver.assertNoErrors();
 
         int expectedStoredMB = (int) (maxMgPersistenceCache * EvictExpirableRecordsPersistence.PERCENTAGE_MEMORY_STORED_TO_STOP);
         assertThat(expectedStoredMB, is(disk.storedMB()));
@@ -104,20 +82,19 @@ public class EvictExpirableRecordsPersistenceTest extends BaseTest {
         populate(false);
         assertThat(disk.allKeys().size(), is(mocksCount()));
 
-        TestSubscriber testSubscriber = new TestSubscriber();
-        evictExpirableRecordsPersistenceUT.startTaskIfNeeded(false).subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
-        testSubscriber.assertNoErrors();
+        TestObserver testObserver = evictExpirableRecordsPersistenceUT.startTaskIfNeeded(false).test();
+        testObserver.awaitTerminalEvent();
+        testObserver.assertNoErrors();
         //testSubscriber.assertNoValues();
 
         assertThat(sizeMbDataPopulated(), is(disk.storedMB()));
 
         //after first time does not start process again, just return warning message
-        testSubscriber = new TestSubscriber();
-        evictExpirableRecordsPersistenceUT.startTaskIfNeeded(false).subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
-        testSubscriber.assertNoErrors();
-        testSubscriber.assertValue(Locale.RECORD_CAN_NOT_BE_EVICTED_BECAUSE_NO_ONE_IS_EXPIRABLE);
+        testObserver = new TestObserver();
+        evictExpirableRecordsPersistenceUT.startTaskIfNeeded(false).subscribe(testObserver);
+        testObserver.awaitTerminalEvent();
+        testObserver.assertNoErrors();
+        testObserver.assertValue(Locale.RECORD_CAN_NOT_BE_EVICTED_BECAUSE_NO_ONE_IS_EXPIRABLE);
     }
 
     //7 mb

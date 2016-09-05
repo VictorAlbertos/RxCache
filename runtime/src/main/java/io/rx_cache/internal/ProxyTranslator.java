@@ -16,6 +16,7 @@
 
 package io.rx_cache.internal;
 
+import io.reactivex.Observable;
 import io.rx_cache.ConfigProvider;
 import io.rx_cache.DynamicKey;
 import io.rx_cache.DynamicKeyGroup;
@@ -28,7 +29,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import javax.inject.Inject;
-import rx.Observable;
 
 public final class ProxyTranslator {
   private final Map<Method, ConfigProvider> configProviderMethodCache;

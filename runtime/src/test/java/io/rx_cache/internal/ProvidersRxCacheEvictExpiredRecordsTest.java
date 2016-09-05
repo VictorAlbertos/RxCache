@@ -16,6 +16,8 @@
 
 package io.rx_cache.internal;
 
+import io.reactivex.Observable;
+import io.reactivex.observers.TestObserver;
 import io.rx_cache.DynamicKey;
 import io.rx_cache.Encrypt;
 import io.rx_cache.EncryptKey;
@@ -30,8 +32,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
-import rx.Observable;
-import rx.observers.TestSubscriber;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -55,11 +55,11 @@ public class ProvidersRxCacheEvictExpiredRecordsTest extends BaseTestEvictingTas
 
     for (int i = 0; i < 50; i++) {
       waitTime(50);
-      TestSubscriber<List<Mock>> subscriber = new TestSubscriber<>();
+      TestObserver<List<Mock>> observer = new TestObserver<>();
       String key = System.currentTimeMillis() + i + "";
       providersRxCache.getEphemeralMocksPaginate(createObservableMocks(), new DynamicKey(key))
-          .subscribe(subscriber);
-      subscriber.awaitTerminalEvent();
+          .subscribe(observer);
+      observer.awaitTerminalEvent();
     }
 
     assertNotEquals(0, getSizeMB(temporaryFolder.getRoot()));
@@ -77,7 +77,7 @@ public class ProvidersRxCacheEvictExpiredRecordsTest extends BaseTestEvictingTas
 
     for (int i = 0; i < 50; i++) {
       waitTime(50);
-      TestSubscriber<List<Mock>> subscriber = new TestSubscriber<>();
+      TestObserver<List<Mock>> subscriber = new TestObserver<>();
       String key = System.currentTimeMillis() + i + "";
       providersRxCache.getMocksPaginate(createObservableMocks(), new DynamicKey(key))
           .subscribe(subscriber);
@@ -98,11 +98,11 @@ public class ProvidersRxCacheEvictExpiredRecordsTest extends BaseTestEvictingTas
 
     for (int i = 0; i < 50; i++) {
       waitTime(50);
-      TestSubscriber<List<Mock>> subscriber = new TestSubscriber<>();
+      TestObserver<List<Mock>> observer = new TestObserver<>();
       String key = System.currentTimeMillis() + i + "";
       providersRxCache.getEphemeralEncryptedMocksPaginate(createObservableMocks(),
-          new DynamicKey(key)).subscribe(subscriber);
-      subscriber.awaitTerminalEvent();
+          new DynamicKey(key)).subscribe(observer);
+      observer.awaitTerminalEvent();
     }
 
     assertNotEquals(0, getSizeMB(temporaryFolder.getRoot()));

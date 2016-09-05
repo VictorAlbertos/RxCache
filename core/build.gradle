@@ -1,22 +1,22 @@
 apply plugin: 'java'
 apply plugin: 'base'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 buildscript {
-    repositories {
-        mavenCentral()
-        jcenter()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+  repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+      url "https://plugins.gradle.org/m2/"
     }
+  }
 
-    dependencies {
-        classpath "net.ltgt.gradle:gradle-apt-plugin:0.4"
-        classpath 'net.sf.proguard:proguard-gradle:4.11'
-    }
+  dependencies {
+    classpath "net.ltgt.gradle:gradle-apt-plugin:0.4"
+    classpath 'net.sf.proguard:proguard-gradle:4.11'
+  }
 }
 
 apply plugin: 'idea'
@@ -27,45 +27,45 @@ group = 'com.github.VictorAlbertos'
 version='1.6.0'
 
 configurations {
-    provided
+  provided
 }
 
 sourceSets {
-    main {
-        compileClasspath += configurations.provided
-        runtimeClasspath += configurations.provided
-    }
+  main {
+    compileClasspath += configurations.provided
+    runtimeClasspath += configurations.provided
+  }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
+  classifier = 'sources'
+  from sourceSets.main.allSource
 }
 
 javadoc {
-    failOnError = false
+  failOnError = false
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
+  classifier = 'javadoc'
+  from javadoc.destinationDir
 }
 
 artifacts {
-    archives sourcesJar
-    archives javadocJar
+  archives sourcesJar
+  archives javadocJar
 }
 
 dependencies {
-    apt "com.google.dagger:dagger-compiler:2.6"
-    compile "com.google.dagger:dagger:2.6"
-    compile "org.glassfish:javax.annotation:10.0-b28"
+  apt "com.google.dagger:dagger-compiler:2.6.1"
+  compile "com.google.dagger:dagger:2.6.1"
+  compile "org.glassfish:javax.annotation:10.0-b28"
 
-    compile "io.reactivex:rxjava:1.1.8"
-    compile 'com.github.VictorAlbertos.Jolyglot:api:0.0.3'
+  compile 'io.reactivex.rxjava2:rxjava:2.0.0-RC1'
+  compile 'com.github.VictorAlbertos.Jolyglot:api:0.0.3'
 
-    testCompile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.3'
-    testCompile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.3'
-    testCompile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.3'
-    testCompile "junit:junit:4.12"
+  testCompile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.3'
+  testCompile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.3'
+  testCompile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.3'
+  testCompile "junit:junit:4.12"
 }

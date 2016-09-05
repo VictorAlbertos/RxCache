@@ -16,8 +16,8 @@
 
 package io.rx_cache;
 
+import io.reactivex.Observable;
 import io.rx_cache.internal.Locale;
-import rx.Observable;
 
 public final class ConfigProvider {
   private final String providerKey;

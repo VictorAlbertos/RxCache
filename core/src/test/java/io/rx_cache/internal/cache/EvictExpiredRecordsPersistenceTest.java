@@ -1,5 +1,6 @@
 package io.rx_cache.internal.cache;
 
+import io.reactivex.observers.TestObserver;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Mock;
 import io.rx_cache.internal.Record;
@@ -7,7 +8,6 @@ import io.rx_cache.internal.cache.memory.ReferenceMapMemory;
 import io.rx_cache.internal.common.BaseTest;
 import java.util.List;
 import org.junit.Test;
-import rx.observers.TestSubscriber;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -43,10 +43,9 @@ public class EvictExpiredRecordsPersistenceTest extends BaseTest {
 
         assertThat(disk.allKeys().size(), is(recordsCount));
 
-        TestSubscriber<Void> testSubscriber = new TestSubscriber();
-        evictExpiredRecordsPersistenceUT.startEvictingExpiredRecords().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
-        testSubscriber.assertNoErrors();
+        TestObserver<Integer> testObserver = evictExpiredRecordsPersistenceUT.startEvictingExpiredRecords().test();
+        testObserver.awaitTerminalEvent();
+        testObserver.assertNoErrors();
 
         List<String> allKeys = disk.allKeys();
         assertThat(allKeys.size(), is(recordsCount / 2));

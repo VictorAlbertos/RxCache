@@ -16,13 +16,13 @@
 
 package io.rx_cache.internal.cache;
 
+import io.reactivex.Observable;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Persistence;
 import io.rx_cache.internal.Record;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import rx.Observable;
 
 @Singleton
 public final class EvictExpiredRecordsPersistence extends Action {
@@ -36,7 +36,7 @@ public final class EvictExpiredRecordsPersistence extends Action {
     this.encryptKey = encryptKey;
   }
 
-  public Observable<Void> startEvictingExpiredRecords() {
+  public Observable<Integer> startEvictingExpiredRecords() {
     List<String> allKeys = persistence.allKeys();
 
     for (String key : allKeys) {
@@ -51,6 +51,6 @@ public final class EvictExpiredRecordsPersistence extends Action {
       }
     }
 
-    return Observable.just(null);
+    return Observable.just(1);
   }
 }

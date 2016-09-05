@@ -16,119 +16,112 @@
 
 package io.rx_cache.internal.migration;
 
-import java.util.Arrays;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.List;
-
+import io.reactivex.observers.TestObserver;
 import io.rx_cache.MigrationCache;
 import io.rx_cache.internal.Mock;
-import rx.observers.TestSubscriber;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class GetPendingMigrationsTest {
-    private GetPendingMigrations getPendingMigrationsUT;
-    private TestSubscriber<List<MigrationCache>> testSubscriber;
+  private GetPendingMigrations getPendingMigrationsUT;
 
-    @Before public void setUp() {
-        testSubscriber = new TestSubscriber<>();
-    }
+  @Test public void When_No_Scheme_Migration_Supplied_Then_Retrieve_Empty() {
+    getPendingMigrationsUT = new GetPendingMigrations();
+    TestObserver<List<MigrationCache>> testObserver = getPendingMigrationsUT.react().test();
+    testObserver.awaitTerminalEvent();
 
-    @Test public void When_No_Scheme_Migration_Supplied_Then_Retrieve_Empty() {
-        getPendingMigrationsUT = new GetPendingMigrations();
-        getPendingMigrationsUT.react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+    List<MigrationCache> migrations = testObserver.values().get(0);
+    assertThat(migrations.size(), is(0));
+  }
 
-        List<MigrationCache> migrations = testSubscriber.getOnNextEvents().get(0);
-        assertThat(migrations.size(), is(0));
-    }
+  @Test public void When_Migrations_Supplied_Then_Retrieve_Them() {
+    getPendingMigrationsUT = new GetPendingMigrations();
+    TestObserver<List<MigrationCache>> testObserver =
+        getPendingMigrationsUT.with(0, migrations()).react().test();
+    testObserver.awaitTerminalEvent();
 
-    @Test public void When_Migrations_Supplied_Then_Retrieve_Them() {
-        getPendingMigrationsUT = new GetPendingMigrations();
-        getPendingMigrationsUT.with(0, migrations()).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+    List<MigrationCache> migrations = testObserver.values().get(0);
+    assertThat(migrations.size(), is(1));
+  }
 
-        List<MigrationCache> migrations = testSubscriber.getOnNextEvents().get(0);
-        assertThat(migrations.size(), is(1));
-    }
+  @Test public void When_Migrations_Supplied_Are_Sorted_Then_Retrieve_Them_Sorted_By_Version() {
+    getPendingMigrationsUT = new GetPendingMigrations();
+    TestObserver<List<MigrationCache>> testObserver =
+        getPendingMigrationsUT.with(0, migrationsSorted()).react().test();
+    testObserver.awaitTerminalEvent();
 
-    @Test public void When_Migrations_Supplied_Are_Sorted_Then_Retrieve_Them_Sorted_By_Version() {
-        getPendingMigrationsUT = new GetPendingMigrations();
-        getPendingMigrationsUT.with(0, migrationsSorted()).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+    List<MigrationCache> migrations = testObserver.values().get(0);
+    assertThat(migrations.get(0).version(), is(1));
+    assertThat(migrations.get(1).version(), is(2));
+    assertThat(migrations.get(2).version(), is(3));
+    assertThat(migrations.get(3).version(), is(4));
+  }
 
-        List<MigrationCache> migrations = testSubscriber.getOnNextEvents().get(0);
-        assertThat(migrations.get(0).version(), is(1));
-        assertThat(migrations.get(1).version(), is(2));
-        assertThat(migrations.get(2).version(), is(3));
-        assertThat(migrations.get(3).version(), is(4));
-    }
+  @Test public void When_Migrations_Supplied_Are_Not_Sorted_Then_Retrieve_Them_Sorted_By_Version() {
+    getPendingMigrationsUT = new GetPendingMigrations();
+    TestObserver<List<MigrationCache>> testObserver =
+        getPendingMigrationsUT.with(0, migrationsNoSorted()).react().test();
+    testObserver.awaitTerminalEvent();
 
-    @Test public void When_Migrations_Supplied_Are_Not_Sorted_Then_Retrieve_Them_Sorted_By_Version() {
-        getPendingMigrationsUT = new GetPendingMigrations();
-        getPendingMigrationsUT.with(0, migrationsNoSorted()).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+    List<MigrationCache> migrations = testObserver.values().get(0);
+    assertThat(migrations.get(0).version(), is(1));
+    assertThat(migrations.get(1).version(), is(2));
+    assertThat(migrations.get(2).version(), is(3));
+    assertThat(migrations.get(3).version(), is(4));
+  }
 
-        List<MigrationCache> migrations = testSubscriber.getOnNextEvents().get(0);
-        assertThat(migrations.get(0).version(), is(1));
-        assertThat(migrations.get(1).version(), is(2));
-        assertThat(migrations.get(2).version(), is(3));
-        assertThat(migrations.get(3).version(), is(4));
-    }
+  @Test public void When_Migrations_Supplied_And_Version_Cache_Then_Get_Only_Pending_Migrations() {
+    getPendingMigrationsUT = new GetPendingMigrations();
+    TestObserver<List<MigrationCache>> testObserver =
+        getPendingMigrationsUT.with(2, migrationsSorted()).react().test();
+    testObserver.awaitTerminalEvent();
 
+    List<MigrationCache> migrations = testObserver.values().get(0);
+    assertThat(migrations.get(0).version(), is(3));
+    assertThat(migrations.get(1).version(), is(4));
 
-    @Test public void When_Migrations_Supplied_And_Version_Cache_Then_Get_Only_Pending_Migrations() {
-        getPendingMigrationsUT = new GetPendingMigrations();
-        getPendingMigrationsUT.with(2, migrationsSorted()).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+    getPendingMigrationsUT = new GetPendingMigrations();
+    testObserver = getPendingMigrationsUT.with(0, migrationsSorted()).react().test();
+    testObserver.awaitTerminalEvent();
 
-        List<MigrationCache> migrations = testSubscriber.getOnNextEvents().get(0);
-        assertThat(migrations.get(0).version(), is(3));
-        assertThat(migrations.get(1).version(), is(4));
+    migrations = testObserver.values().get(0);
+    assertThat(migrations.get(0).version(), is(1));
+    assertThat(migrations.get(1).version(), is(2));
+    assertThat(migrations.get(2).version(), is(3));
+    assertThat(migrations.get(3).version(), is(4));
 
-        testSubscriber = new TestSubscriber<>();
-        getPendingMigrationsUT = new GetPendingMigrations();
-        getPendingMigrationsUT.with(0, migrationsSorted()).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+    getPendingMigrationsUT = new GetPendingMigrations();
+    testObserver = getPendingMigrationsUT.with(4, migrationsSorted()).react().test();
+    testObserver.awaitTerminalEvent();
+    migrations = testObserver.values().get(0);
+    assertThat(migrations.size(), is(0));
+  }
 
-        migrations = testSubscriber.getOnNextEvents().get(0);
-        assertThat(migrations.get(0).version(), is(1));
-        assertThat(migrations.get(1).version(), is(2));
-        assertThat(migrations.get(2).version(), is(3));
-        assertThat(migrations.get(3).version(), is(4));
+  private List<MigrationCache> migrations() {
+    return Arrays.asList(
+        new MigrationCache(1, new Class[] {Mock.class})
+    );
+  }
 
-        testSubscriber = new TestSubscriber<>();
-        getPendingMigrationsUT = new GetPendingMigrations();
-        getPendingMigrationsUT.with(4, migrationsSorted()).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
-        migrations = testSubscriber.getOnNextEvents().get(0);
-        assertThat(migrations.size(), is(0));
-    }
+  private List<MigrationCache> migrationsSorted() {
+    return Arrays.asList(
+        new MigrationCache(1, new Class[] {Mock.class}),
+        new MigrationCache(2, new Class[] {Mock.class}),
+        new MigrationCache(3, new Class[] {Mock.class}),
+        new MigrationCache(4, new Class[] {Mock.class})
+    );
+  }
 
-    private List<MigrationCache> migrations() {
-        return Arrays.asList(
-            new MigrationCache(1, new Class[] {Mock.class})
-        );
-    }
-
-    private List<MigrationCache> migrationsSorted() {
-        return Arrays.asList(
-            new MigrationCache(1, new Class[] {Mock.class}),
-            new MigrationCache(2, new Class[] {Mock.class}),
-            new MigrationCache(3, new Class[] {Mock.class}),
-            new MigrationCache(4, new Class[] {Mock.class})
-        );
-    }
-
-    private List<MigrationCache> migrationsNoSorted() {
-        return Arrays.asList(
-            new MigrationCache(4, new Class[] {Mock.class}),
-            new MigrationCache(2, new Class[] {Mock.class}),
-            new MigrationCache(1, new Class[] {Mock.class}),
-            new MigrationCache(3, new Class[] {Mock.class})
-        );
-    }
+  private List<MigrationCache> migrationsNoSorted() {
+    return Arrays.asList(
+        new MigrationCache(4, new Class[] {Mock.class}),
+        new MigrationCache(2, new Class[] {Mock.class}),
+        new MigrationCache(1, new Class[] {Mock.class}),
+        new MigrationCache(3, new Class[] {Mock.class})
+    );
+  }
 }

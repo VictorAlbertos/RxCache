@@ -16,6 +16,7 @@
 
 package io.rx_cache.internal;
 
+import io.reactivex.Observable;
 import io.rx_cache.DynamicKey;
 import io.rx_cache.DynamicKeyGroup;
 import io.rx_cache.EvictDynamicKey;
@@ -27,7 +28,6 @@ import io.rx_cache.Reply;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import rx.Observable;
 
 /**
  * Provided to test as an integration test the library RxCache

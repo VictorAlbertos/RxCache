@@ -16,6 +16,11 @@
 
 package io.rx_cache.internal.cache;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import io.rx_cache.internal.Locale;
 import io.rx_cache.internal.Memory;
 import io.rx_cache.internal.Persistence;
@@ -23,10 +28,6 @@ import io.rx_cache.internal.Record;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import rx.Observable;
-import rx.Subscriber;
-import rx.functions.Action1;
-import rx.schedulers.Schedulers;
 
 @Singleton
 public final class EvictExpirableRecordsPersistence extends Action {
@@ -54,18 +55,18 @@ public final class EvictExpirableRecordsPersistence extends Action {
   }
 
   private Observable<String> oEvictingTask() {
-    Observable<String> oEvictingTask = Observable.create(new Observable.OnSubscribe<String>() {
-      @Override public void call(Subscriber<? super String> subscriber) {
+    Observable<String> oEvictingTask = Observable.create(new ObservableOnSubscribe<String>() {
+      @Override public void subscribe(ObservableEmitter<String> emitter) throws Exception {
         if (!couldBeExpirableRecords) {
-          subscriber.onNext(Locale.RECORD_CAN_NOT_BE_EVICTED_BECAUSE_NO_ONE_IS_EXPIRABLE);
-          subscriber.onCompleted();
+          emitter.onNext(Locale.RECORD_CAN_NOT_BE_EVICTED_BECAUSE_NO_ONE_IS_EXPIRABLE);
+          emitter.onComplete();
           return;
         }
 
         int storedMB = persistence.storedMB();
 
         if (!reachedPercentageMemoryToStart(storedMB)) {
-          subscriber.onCompleted();
+          emitter.onComplete();
           return;
         }
 
@@ -82,18 +83,18 @@ public final class EvictExpirableRecordsPersistence extends Action {
           if (!record.getExpirable()) continue;
 
           persistence.evict(key);
-          subscriber.onNext(key);
+          emitter.onNext(key);
 
           releasedMBSoFar += record.getSizeOnMb();
         }
 
         couldBeExpirableRecords = reachedPercentageMemoryToStop(storedMB, releasedMBSoFar);
-        subscriber.onCompleted();
+        emitter.onComplete();
       }
     }).subscribeOn((Schedulers.io()))
         .observeOn(Schedulers.io())
-        .doOnError(new Action1<Throwable>() {
-          @Override public void call(Throwable throwable) {
+        .doOnError(new Consumer<Throwable>() {
+          @Override public void accept(Throwable throwable) throws Exception {
             throwable.printStackTrace();
           }
         });

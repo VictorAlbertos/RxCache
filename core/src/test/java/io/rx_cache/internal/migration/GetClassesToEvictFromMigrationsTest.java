@@ -17,52 +17,53 @@
 package io.rx_cache.internal.migration;
 
 
+import io.reactivex.observers.TestObserver;
 import io.rx_cache.MigrationCache;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
-import rx.observers.TestSubscriber;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 public class GetClassesToEvictFromMigrationsTest {
     private GetClassesToEvictFromMigrations getClassesToEvictFromMigrationsUT;
-    private TestSubscriber<List<Class>> testSubscriber;
 
     @Before public void setUp() {
         getClassesToEvictFromMigrationsUT = new GetClassesToEvictFromMigrations();
-        testSubscriber = new TestSubscriber<>();
     }
 
     @Test public void When_Migration_Contain_One_Class_To_Evict_Get_It() {
         List<MigrationCache> migrations = oneMigration();
 
-        getClassesToEvictFromMigrationsUT.with(migrations).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+        TestObserver<List<Class>> testObserver = getClassesToEvictFromMigrationsUT.with(migrations).react()
+            .test();
+        testObserver.awaitTerminalEvent();
 
-        List<Class> classes = testSubscriber.getOnNextEvents().get(0);
+        List<Class> classes = testObserver.values().get(0);
         assertThat(classes.size(), is(1));
     }
 
     @Test public void When_Migrations_Contains_Classes_To_Evict_Get_Them() {
         List<MigrationCache> migrations = migrations();
 
-        getClassesToEvictFromMigrationsUT.with(migrations).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+        TestObserver<List<Class>> testObserver = getClassesToEvictFromMigrationsUT.with(migrations).react()
+            .test();
+        testObserver.awaitTerminalEvent();
 
-        List<Class> classes = testSubscriber.getOnNextEvents().get(0);
+        List<Class> classes = testObserver.values().get(0);
         assertThat(classes.size(), is(2));
     }
 
     @Test public void When_Several_Classes_To_Evict_With_Same_Type_Only_Keep_One() {
         List<MigrationCache> migrations = migrationsRepeated();
 
-        getClassesToEvictFromMigrationsUT.with(migrations).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+        TestObserver<List<Class>> testObserver = getClassesToEvictFromMigrationsUT.with(migrations).react()
+            .test();
+        testObserver.awaitTerminalEvent();
 
-        List<Class> classes = testSubscriber.getOnNextEvents().get(0);
+        List<Class> classes = testObserver.values().get(0);
         assertThat(classes.size(), is(3));
     }
 

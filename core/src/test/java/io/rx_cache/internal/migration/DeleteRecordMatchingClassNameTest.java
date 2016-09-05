@@ -4,14 +4,12 @@ import io.rx_cache.internal.Record;
 import io.rx_cache.internal.common.BaseTest;
 import java.util.Arrays;
 import org.junit.Test;
-import rx.observers.TestSubscriber;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 public class DeleteRecordMatchingClassNameTest extends BaseTest {
     private DeleteRecordMatchingClassName deleteRecordMatchingClassNameUT;
-    private TestSubscriber<Void> testSubscriber;
 
     @Override public void setUp() {
         super.setUp();
@@ -24,9 +22,11 @@ public class DeleteRecordMatchingClassNameTest extends BaseTest {
 
         assertThat(disk.allKeys().size(), is(2));
 
-        testSubscriber = new TestSubscriber<>();
-        deleteRecordMatchingClassNameUT.with(Arrays.<Class>asList(Mock1.class)).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+        deleteRecordMatchingClassNameUT.with(Arrays.<Class>asList(Mock1.class))
+            .react()
+            .test()
+            .awaitTerminalEvent();
+
         assertThat(disk.allKeys().size(), is(1));
     }
 
@@ -36,9 +36,10 @@ public class DeleteRecordMatchingClassNameTest extends BaseTest {
 
         assertThat(disk.allKeys().size(), is(2));
 
-        testSubscriber = new TestSubscriber<>();
-        deleteRecordMatchingClassNameUT.with(Arrays.<Class>asList(Mock1.class, Mock2.class)).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+        deleteRecordMatchingClassNameUT.with(Arrays.<Class>asList(Mock1.class, Mock2.class))
+            .react()
+            .test()
+            .awaitTerminalEvent();
         assertThat(disk.allKeys().size(), is(0));
     }
 
@@ -48,9 +49,11 @@ public class DeleteRecordMatchingClassNameTest extends BaseTest {
 
         assertThat(disk.allKeys().size(), is(2));
 
-        testSubscriber = new TestSubscriber<>();
-        deleteRecordMatchingClassNameUT.with(Arrays.<Class>asList(Mock1.class)).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+        deleteRecordMatchingClassNameUT.with(Arrays.<Class>asList(Mock1.class))
+            .react()
+            .test()
+            .awaitTerminalEvent();
+
         assertThat(disk.allKeys().size(), is(1));
     }
 
@@ -60,9 +63,11 @@ public class DeleteRecordMatchingClassNameTest extends BaseTest {
 
         assertThat(disk.allKeys().size(), is(2));
 
-        testSubscriber = new TestSubscriber<>();
-        deleteRecordMatchingClassNameUT.with(Arrays.<Class>asList(Mock1.class, Mock2.class)).react().subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+        deleteRecordMatchingClassNameUT.with(Arrays.<Class>asList(Mock1.class, Mock2.class))
+            .react()
+            .test()
+            .awaitTerminalEvent();
+
         assertThat(disk.allKeys().size(), is(0));
     }
 

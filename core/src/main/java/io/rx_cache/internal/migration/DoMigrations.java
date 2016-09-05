@@ -16,12 +16,13 @@
 
 package io.rx_cache.internal.migration;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.functions.Function;
 import io.rx_cache.MigrationCache;
 import io.rx_cache.internal.Persistence;
 import java.util.List;
 import javax.inject.Inject;
-import rx.Observable;
-import rx.functions.Func1;
 
 public final class DoMigrations {
   private final GetCacheVersion getCacheVersion;
@@ -41,26 +42,26 @@ public final class DoMigrations {
     this.deleteRecordMatchingClassName = new DeleteRecordMatchingClassName(persistence, encryptKey);
   }
 
-  public Observable<Void> react() {
+  public Observable<Integer> react() {
     return getCacheVersion.react()
-        .flatMap(new Func1<Integer, Observable<? extends List<MigrationCache>>>() {
-          @Override
-          public Observable<? extends List<MigrationCache>> call(Integer currentCacheVersion) {
+        .flatMap(new Function<Integer, ObservableSource<List<MigrationCache>>>() {
+          @Override public ObservableSource<List<MigrationCache>> apply(Integer currentCacheVersion)
+              throws Exception {
             return getPendingMigrations.with(currentCacheVersion, migrations).react();
           }
         })
-        .flatMap(new Func1<List<MigrationCache>, Observable<List<Class>>>() {
-          @Override public Observable<List<Class>> call(List<MigrationCache> pendingMigrations) {
-            return getClassesToEvictFromMigrations.with(pendingMigrations).react();
+        .flatMap(new Function<List<MigrationCache>, ObservableSource<List<Class>>>() {
+          @Override public ObservableSource<List<Class>> apply(List<MigrationCache> migrationCaches)
+              throws Exception {
+            return getClassesToEvictFromMigrations.with(migrationCaches).react();
           }
-        })
-        .flatMap(new Func1<List<Class>, Observable<Void>>() {
-          @Override public Observable<Void> call(List<Class> classes) {
+        }).flatMap(new Function<List<Class>, ObservableSource<Integer>>() {
+          @Override public ObservableSource<Integer> apply(List<Class> classes) throws Exception {
             return deleteRecordMatchingClassName.with(classes).react();
           }
         })
-        .flatMap(new Func1<Object, Observable<Void>>() {
-          @Override public Observable<Void> call(Object o) {
+        .flatMap(new Function<Integer, ObservableSource<Integer>>() {
+          @Override public ObservableSource<Integer> apply(Integer ignore) throws Exception {
             return upgradeCacheVersion.with(migrations).react();
           }
         });

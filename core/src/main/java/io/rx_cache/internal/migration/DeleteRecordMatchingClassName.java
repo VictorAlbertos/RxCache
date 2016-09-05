@@ -16,11 +16,11 @@
 
 package io.rx_cache.internal.migration;
 
+import io.reactivex.Observable;
 import io.rx_cache.internal.Persistence;
 import io.rx_cache.internal.Record;
 import java.util.List;
 import javax.inject.Inject;
-import rx.Observable;
 
 public final class DeleteRecordMatchingClassName {
   private final Persistence persistence;
@@ -37,8 +37,8 @@ public final class DeleteRecordMatchingClassName {
     return this;
   }
 
-  public Observable<Void> react() {
-    if (classes.isEmpty()) return Observable.just(null);
+  public Observable<Integer> react() {
+    if (classes.isEmpty()) return Observable.just(1);
 
     List<String> allKeys = persistence.allKeys();
 
@@ -54,7 +54,7 @@ public final class DeleteRecordMatchingClassName {
       }
     }
 
-    return Observable.just(null);
+    return Observable.just(1);
   }
 
   private boolean evictRecord(Record record) {

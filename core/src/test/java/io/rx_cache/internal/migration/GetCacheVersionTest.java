@@ -17,28 +17,25 @@
 package io.rx_cache.internal.migration;
 
 
-import org.junit.Test;
-
+import io.reactivex.observers.TestObserver;
 import io.rx_cache.internal.common.BaseTest;
-import rx.observers.TestSubscriber;
+import org.junit.Test;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 public class GetCacheVersionTest extends BaseTest {
     private GetCacheVersion getCacheVersionUT;
-    private TestSubscriber<Integer> versionTestSubscriber;
 
     @Override public void setUp() {
         super.setUp();
         getCacheVersionUT = new GetCacheVersion(disk);
-        versionTestSubscriber = new TestSubscriber<>();
     }
 
     @Test public void When_No_Version_Specified_Then_Return_0() {
-        getCacheVersionUT.react().subscribe(versionTestSubscriber);
-        versionTestSubscriber.awaitTerminalEvent();
-        int currentVersion = versionTestSubscriber.getOnNextEvents().get(0);
+        TestObserver<Integer> versionTestObserver = getCacheVersionUT.react().test();
+        versionTestObserver.awaitTerminalEvent();
+        int currentVersion = versionTestObserver.values().get(0);
 
         assertThat(currentVersion, is(0));
     }
@@ -46,9 +43,9 @@ public class GetCacheVersionTest extends BaseTest {
     @Test public void When_Version_Specified_Then_Get_It() {
         disk.save(GetCacheVersion.KEY_CACHE_VERSION, 5, false, null);
 
-        getCacheVersionUT.react().subscribe(versionTestSubscriber);
-        versionTestSubscriber.awaitTerminalEvent();
-        int currentVersion = versionTestSubscriber.getOnNextEvents().get(0);
+        TestObserver<Integer> versionTestObserver = getCacheVersionUT.react().test();
+        versionTestObserver.awaitTerminalEvent();
+        int currentVersion = versionTestObserver.values().get(0);
 
         assertThat(currentVersion, is(5));
     }

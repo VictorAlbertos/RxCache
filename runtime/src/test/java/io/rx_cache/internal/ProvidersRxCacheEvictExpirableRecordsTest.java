@@ -16,9 +16,10 @@
 
 package io.rx_cache.internal;
 
+import io.reactivex.observers.TestObserver;
 import io.rx_cache.DynamicKey;
-import io.rx_cache.internal.common.BaseTestEvictingTask;
 import io.rx_cache.internal.cache.EvictExpirableRecordsPersistence;
+import io.rx_cache.internal.common.BaseTestEvictingTask;
 import java.util.List;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -26,7 +27,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
-import rx.observers.TestSubscriber;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -50,11 +50,11 @@ public class ProvidersRxCacheEvictExpirableRecordsTest extends BaseTestEvictingT
 
     for (int i = 0; i < 50; i++) {
       waitTime(50);
-      TestSubscriber<List<Mock>> subscriber = new TestSubscriber<>();
+      TestObserver<List<Mock>> observer = new TestObserver<>();
       String key = i + "";
       providersRxCache.getMocksPaginate(createObservableMocks(), new DynamicKey(key))
-          .subscribe(subscriber);
-      subscriber.awaitTerminalEvent();
+          .subscribe(observer);
+      observer.awaitTerminalEvent();
     }
 
     waitTime(5000);
@@ -68,11 +68,11 @@ public class ProvidersRxCacheEvictExpirableRecordsTest extends BaseTestEvictingT
 
     for (int i = 0; i < 50; i++) {
       waitTime(50);
-      TestSubscriber<List<Mock>> subscriber = new TestSubscriber<>();
+      TestObserver<List<Mock>> observer = new TestObserver<>();
       String key = i + "";
       providersRxCache.getMocksPaginateNotExpirable(createObservableMocks(), new DynamicKey(key))
-          .subscribe(subscriber);
-      subscriber.awaitTerminalEvent();
+          .subscribe(observer);
+      observer.awaitTerminalEvent();
     }
 
     waitTime(1000);

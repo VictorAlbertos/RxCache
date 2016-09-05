@@ -16,6 +16,8 @@
 
 package io.rx_cache.internal;
 
+import io.reactivex.Observable;
+import io.reactivex.observers.TestObserver;
 import io.rx_cache.ActionsList;
 import io.rx_cache.ConfigProvider;
 import io.rx_cache.EvictProvider;
@@ -27,8 +29,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import rx.Observable;
-import rx.observers.TestSubscriber;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,16 +53,16 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .addAllFirst(Arrays.asList(new Mock("11"), new Mock("12")))
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(12));
     assertThat(mocks.get(0).getMessage(), is("11"));
     assertThat(mocks.get(1).getMessage(), is("12"));
@@ -72,16 +72,16 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .addAllLast(Arrays.asList(new Mock("11"), new Mock("12")))
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(12));
     assertThat(mocks.get(10).getMessage(), is("11"));
     assertThat(mocks.get(11).getMessage(), is("12"));
@@ -90,16 +90,16 @@ public class ActionsListTest {
   @Test public void Add_First() {
     checkInitialState();
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .addFirst(new Mock("1"))
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(1));
     assertThat(mocks.get(0).getMessage(), is("1"));
   }
@@ -108,16 +108,16 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .addLast(new Mock("11"))
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(11));
     assertThat(mocks.get(10).getMessage(), is("11"));
   }
@@ -126,7 +126,7 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .add(new ActionsList.Func2() {
@@ -135,11 +135,11 @@ public class ActionsListTest {
           }
         }, new Mock("6_added"))
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(11));
     assertThat(mocks.get(5).getMessage(), is("6_added"));
   }
@@ -148,16 +148,16 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictFirst()
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(9));
     assertThat(mocks.get(0).getMessage(), is("1"));
   }
@@ -166,16 +166,16 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictFirstN(4)
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(6));
     assertThat(mocks.get(0).getMessage(), is("4"));
   }
@@ -185,7 +185,7 @@ public class ActionsListTest {
     addAll(10);
 
     //do not evict
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictFirst(new ActionsList.Func1Count() {
@@ -194,15 +194,15 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(10));
 
     //evict
-    testSubscriber = new TestSubscriber<>();
+    testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictFirst(new ActionsList.Func1Count() {
@@ -211,11 +211,11 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    mocks = testSubscriber.getOnNextEvents().get(0);
+    mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(9));
     assertThat(mocks.get(0).getMessage(), is("1"));
   }
@@ -225,7 +225,7 @@ public class ActionsListTest {
     addAll(10);
 
     //do not evict
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictFirstN(new ActionsList.Func1Count() {
@@ -234,15 +234,15 @@ public class ActionsListTest {
           }
         }, 5)
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(10));
 
     //evict
-    testSubscriber = new TestSubscriber<>();
+    testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictFirstN(new ActionsList.Func1Count() {
@@ -251,11 +251,11 @@ public class ActionsListTest {
           }
         }, 5)
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    mocks = testSubscriber.getOnNextEvents().get(0);
+    mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(5));
     assertThat(mocks.get(0).getMessage(), is("5"));
     assertThat(mocks.get(1).getMessage(), is("6"));
@@ -265,16 +265,16 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictLast()
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(9));
     assertThat(mocks.get(8).getMessage(), is("8"));
   }
@@ -283,16 +283,16 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictLastN(4)
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(6));
     assertThat(mocks.get(0).getMessage(), is("0"));
   }
@@ -302,7 +302,7 @@ public class ActionsListTest {
     addAll(10);
 
     //do not evict
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictLast(new ActionsList.Func1Count() {
@@ -311,15 +311,15 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(10));
 
     //evict
-    testSubscriber = new TestSubscriber<>();
+    testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictLast(new ActionsList.Func1Count() {
@@ -328,11 +328,11 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    mocks = testSubscriber.getOnNextEvents().get(0);
+    mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(9));
     assertThat(mocks.get(8).getMessage(), is("8"));
   }
@@ -342,7 +342,7 @@ public class ActionsListTest {
     addAll(10);
 
     //do not evict
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictLastN(new ActionsList.Func1Count() {
@@ -351,15 +351,15 @@ public class ActionsListTest {
           }
         }, 5)
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(10));
 
     //evict
-    testSubscriber = new TestSubscriber<>();
+    testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictLastN(new ActionsList.Func1Count() {
@@ -368,11 +368,11 @@ public class ActionsListTest {
           }
         }, 5)
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    mocks = testSubscriber.getOnNextEvents().get(0);
+    mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(5));
     assertThat(mocks.get(0).getMessage(), is("0"));
     assertThat(mocks.get(1).getMessage(), is("1"));
@@ -382,7 +382,7 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evict(new ActionsList.Func1Element<Mock>() {
@@ -391,11 +391,11 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(9));
     assertThat(mocks.get(3).getMessage(), is("4"));
   }
@@ -405,7 +405,7 @@ public class ActionsListTest {
     addAll(10);
 
     //do not evict
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evict(new ActionsList.Func3<Mock>() {
@@ -414,16 +414,16 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(10));
     assertThat(mocks.get(3).getMessage(), is("3"));
 
     //evict
-    testSubscriber = new TestSubscriber<>();
+    testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evict(new ActionsList.Func3<Mock>() {
@@ -432,11 +432,11 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    mocks = testSubscriber.getOnNextEvents().get(0);
+    mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(9));
     assertThat(mocks.get(3).getMessage(), is("4"));
   }
@@ -445,7 +445,7 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictIterable(new ActionsList.Func3<Mock>() {
@@ -454,11 +454,11 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(8));
     assertThat(mocks.get(2).getMessage(), is("4"));
     assertThat(mocks.get(3).getMessage(), is("5"));
@@ -468,16 +468,16 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictAll()
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(0));
   }
 
@@ -485,16 +485,16 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictAllKeepingFirstN(3)
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(3));
     assertThat(mocks.get(0).getMessage(), is("0"));
   }
@@ -503,16 +503,16 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .evictAllKeepingLastN(7)
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(7));
     assertThat(mocks.get(0).getMessage(), is("3"));
   }
@@ -521,7 +521,7 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .update(new ActionsList.Func1Element<Mock>() {
@@ -535,11 +535,11 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(10));
     assertThat(mocks.get(5).getMessage(), is("5_updated"));
   }
@@ -549,7 +549,7 @@ public class ActionsListTest {
     addAll(10);
 
     //do not evict
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .update(new ActionsList.Func3<Mock>() {
@@ -563,16 +563,16 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(10));
     assertThat(mocks.get(5).getMessage(), is("5"));
 
     //evict
-    testSubscriber = new TestSubscriber<>();
+    testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .update(new ActionsList.Func3<Mock>() {
@@ -586,11 +586,11 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    mocks = testSubscriber.getOnNextEvents().get(0);
+    mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(10));
     assertThat(mocks.get(5).getMessage(), is("5_updated"));
   }
@@ -599,7 +599,7 @@ public class ActionsListTest {
     checkInitialState();
     addAll(10);
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .updateIterable(new ActionsList.Func1Element<Mock>() {
@@ -613,11 +613,11 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(10));
     assertThat(mocks.get(5).getMessage(), is("5_or_6_updated"));
     assertThat(mocks.get(6).getMessage(), is("5_or_6_updated"));
@@ -628,7 +628,7 @@ public class ActionsListTest {
     addAll(10);
 
     //do not evict
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .updateIterable(new ActionsList.Func3<Mock>() {
@@ -643,17 +643,17 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(10));
     assertThat(mocks.get(5).getMessage(), is("5"));
     assertThat(mocks.get(6).getMessage(), is("6"));
 
     //evict
-    testSubscriber = new TestSubscriber<>();
+    testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .updateIterable(new ActionsList.Func3<Mock>() {
@@ -668,11 +668,11 @@ public class ActionsListTest {
           }
         })
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
+    testObserver.awaitTerminalEvent();
 
-    mocks = testSubscriber.getOnNextEvents().get(0);
+    mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(10));
     assertThat(mocks.get(5).getMessage(), is("5_or_6_updated"));
     assertThat(mocks.get(6).getMessage(), is("5_or_6_updated"));
@@ -700,13 +700,12 @@ public class ActionsListTest {
   }
 
   private void checkInitialState() {
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
-    cache().subscribe(testSubscriber);
-    testSubscriber.awaitTerminalEvent();
+    TestObserver<List<Mock>> testObserver = cache().test();
+    testObserver.awaitTerminalEvent();
 
-    if (testSubscriber.getOnNextEvents().isEmpty()) return;
+    if (testObserver.values().isEmpty()) return;
 
-    List<Mock> mocks = testSubscriber.getOnNextEvents().get(0);
+    List<Mock> mocks = testObserver.values().get(0);
     assertThat(mocks.size(), is(0));
   }
 
@@ -717,7 +716,7 @@ public class ActionsListTest {
       mocks.add(new Mock(String.valueOf(i)));
     }
 
-    TestSubscriber<List<Mock>> testSubscriber = new TestSubscriber<>();
+    TestObserver<List<Mock>> testObserver = new TestObserver<>();
 
     ActionsList.with(evict(), cache())
         .addAll(new ActionsList.Func2() {
@@ -726,10 +725,10 @@ public class ActionsListTest {
           }
         }, mocks)
         .toObservable()
-        .subscribe(testSubscriber);
+        .subscribe(testObserver);
 
-    testSubscriber.awaitTerminalEvent();
-    assertThat(testSubscriber.getOnNextEvents().get(0).size(),
+    testObserver.awaitTerminalEvent();
+    assertThat(testObserver.values().get(0).size(),
         is(count));
   }
 

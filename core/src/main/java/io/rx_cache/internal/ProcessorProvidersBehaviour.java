@@ -16,6 +16,12 @@
 
 package io.rx_cache.internal;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import io.rx_cache.ConfigProvider;
 import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
@@ -26,18 +32,14 @@ import io.rx_cache.internal.cache.EvictExpiredRecordsPersistence;
 import io.rx_cache.internal.cache.GetDeepCopy;
 import io.rx_cache.internal.cache.TwoLayersCache;
 import io.rx_cache.internal.migration.DoMigrations;
+import java.util.concurrent.Callable;
 import javax.inject.Inject;
-import rx.Observable;
-import rx.functions.Action1;
-import rx.functions.Func0;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 
 public final class ProcessorProvidersBehaviour implements ProcessorProviders {
   private final TwoLayersCache twoLayersCache;
   private final Boolean useExpiredDataIfLoaderNotAvailable;
   private final GetDeepCopy getDeepCopy;
-  private final Observable<Void> oProcesses;
+  private final Observable<Integer> oProcesses;
   private volatile Boolean hasProcessesEnded;
 
   @Inject public ProcessorProvidersBehaviour(TwoLayersCache twoLayersCache,
@@ -51,17 +53,17 @@ public final class ProcessorProvidersBehaviour implements ProcessorProviders {
     this.oProcesses = startProcesses(doMigrations, evictExpiredRecordsPersistence);
   }
 
-  private Observable<Void> startProcesses(DoMigrations doMigrations,
+  private Observable<Integer> startProcesses(DoMigrations doMigrations,
       final EvictExpiredRecordsPersistence evictExpiredRecordsPersistence) {
-    Observable<Void> oProcesses =
-        doMigrations.react().flatMap(new Func1<Void, Observable<? extends Void>>() {
-          @Override public Observable<? extends Void> call(Void nothing) {
+    Observable<Integer> oProcesses = doMigrations.react().flatMap(new Function<Integer, ObservableSource<Integer>>() {
+          @Override public ObservableSource<Integer> apply(Integer ignore) throws Exception {
             return evictExpiredRecordsPersistence.startEvictingExpiredRecords();
           }
         }).subscribeOn((Schedulers.io())).observeOn(Schedulers.io()).share();
 
-    oProcesses.subscribe(new Action1<Void>() {
-      @Override public void call(Void nothing) {
+
+    oProcesses.subscribe(new Consumer<Integer>() {
+      @Override public void accept(Integer ignore) throws Exception {
         hasProcessesEnded = true;
       }
     });
@@ -71,14 +73,14 @@ public final class ProcessorProvidersBehaviour implements ProcessorProviders {
 
   @Override
   public <T> Observable<T> process(final ConfigProvider configProvider) {
-    return (Observable<T>) Observable.defer(new Func0<Observable<Object>>() {
-      @Override public Observable<Object> call() {
+    return Observable.defer(new Callable<ObservableSource<? extends T>>() {
+      @Override public ObservableSource<? extends T> call() throws Exception {
         if (hasProcessesEnded) {
           return getData(configProvider);
         }
 
-        return oProcesses.flatMap(new Func1<Void, Observable<?>>() {
-          @Override public Observable<?> call(Void aVoid) {
+        return oProcesses.flatMap(new Function<Integer, ObservableSource<? extends T>>() {
+          @Override public ObservableSource<? extends T> apply(Integer ignore) throws Exception {
             return getData(configProvider);
           }
         });
@@ -88,36 +90,29 @@ public final class ProcessorProvidersBehaviour implements ProcessorProviders {
 
   //VisibleForTesting
   <T> Observable<T> getData(final ConfigProvider configProvider) {
-    return (Observable<T>) Observable.just(
-        twoLayersCache.retrieve(configProvider.getProviderKey(), configProvider.getDynamicKey(),
-            configProvider.getDynamicKeyGroup(), useExpiredDataIfLoaderNotAvailable,
-            configProvider.getLifeTimeMillis(), configProvider.isEncrypted()))
-        .map(new Func1<Record, Observable<Reply>>() {
-          @Override public Observable<Reply> call(final Record record) {
-            if (record != null && !configProvider.evictProvider().evict()) {
-              return Observable.just(
-                  new Reply(record.getData(), record.getSource(), configProvider.isEncrypted()));
-            }
+    Record<Object> record = twoLayersCache.retrieve(configProvider.getProviderKey(), configProvider.getDynamicKey(),
+        configProvider.getDynamicKeyGroup(), useExpiredDataIfLoaderNotAvailable,
+        configProvider.getLifeTimeMillis(), configProvider.isEncrypted());
 
-            return getDataFromLoader(configProvider, record);
-          }
-        }).flatMap(new Func1<Observable<Reply>, Observable<Object>>() {
-          @Override
-          public Observable<Object> call(Observable<Reply> responseObservable) {
-            return responseObservable.map(new Func1<Reply, Object>() {
-              @Override
-              public Object call(Reply reply) {
-                return getReturnType(configProvider, reply);
-              }
-            });
-          }
-        });
+    Observable<Reply> replyObservable;
+
+    if (record != null && !configProvider.evictProvider().evict()) {
+      replyObservable = Observable.just(new Reply(record.getData(), record.getSource(), configProvider.isEncrypted()));
+    } else {
+      replyObservable = getDataFromLoader(configProvider, record);
+    }
+
+    return (Observable<T>) replyObservable.map(new Function<Reply, Object>() {
+      @Override public Object apply(Reply reply) throws Exception {
+        return ProcessorProvidersBehaviour.this.getReturnType(configProvider, reply);
+      }
+    });
   }
 
   private Observable<Reply> getDataFromLoader(final ConfigProvider configProvider,
       final Record record) {
-    return configProvider.getLoaderObservable().map(new Func1() {
-      @Override public Reply call(Object data) {
+    return configProvider.getLoaderObservable().map(new Function<Object, Reply>() {
+      @Override public Reply apply(Object data) throws Exception {
         boolean useExpiredData = configProvider.useExpiredDataIfNotLoaderAvailable() != null ?
             configProvider.useExpiredDataIfNotLoaderAvailable()
             : useExpiredDataIfLoaderNotAvailable;
@@ -139,8 +134,8 @@ public final class ProcessorProvidersBehaviour implements ProcessorProviders {
             configProvider.isExpirable(), configProvider.isEncrypted());
         return new Reply(data, Source.CLOUD, configProvider.isEncrypted());
       }
-    }).onErrorReturn(new Func1() {
-      @Override public Object call(Object o) {
+    }).onErrorReturn(new Function<Object, Object>() {
+      @Override public Object apply(Object o) throws Exception {
         clearKeyIfNeeded(configProvider);
 
         boolean useExpiredData = configProvider.useExpiredDataIfNotLoaderAvailable() != null ?
@@ -184,10 +179,10 @@ public final class ProcessorProvidersBehaviour implements ProcessorProviders {
   }
 
   @Override public Observable<Void> evictAll() {
-    return Observable.defer(new Func0<Observable<Void>>() {
-      @Override public Observable<Void> call() {
-        twoLayersCache.evictAll();
-        return Observable.just(null);
+    return Observable.defer(new Callable<ObservableSource<Void>>() {
+      @Override public ObservableSource<Void> call() throws Exception {
+        ProcessorProvidersBehaviour.this.twoLayersCache.evictAll();
+        return Completable.complete().toObservable();
       }
     });
   }

@@ -16,6 +16,8 @@
 
 package io.rx_cache.internal;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
 import io.rx_cache.EncryptKey;
 import io.rx_cache.Migration;
 import io.rx_cache.MigrationCache;
@@ -25,8 +27,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import rx.Observable;
-import rx.functions.Func0;
+import java.util.concurrent.Callable;
 
 public final class ProxyProviders implements InvocationHandler {
   private final ProcessorProviders processorProviders;
@@ -67,8 +68,8 @@ public final class ProxyProviders implements InvocationHandler {
 
   @Override public Object invoke(final Object proxy, final Method method, final Object[] args)
       throws Throwable {
-    return Observable.defer(new Func0<Observable<Object>>() {
-      @Override public Observable<Object> call() {
+    return Observable.defer(new Callable<ObservableSource<Object>>() {
+      @Override public ObservableSource<Object> call() throws Exception {
         return processorProviders.process(proxyTranslator.processMethod(method, args));
       }
     });

@@ -16,6 +16,7 @@
 
 package io.rx_cache.internal;
 
+import io.reactivex.Observable;
 import io.rx_cache.ConfigProvider;
 import io.rx_cache.DynamicKey;
 import io.rx_cache.DynamicKeyGroup;
@@ -25,7 +26,6 @@ import io.rx_cache.EvictProvider;
 import java.lang.reflect.Method;
 import org.junit.Before;
 import org.junit.Test;
-import rx.Observable;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,7 +37,7 @@ import static org.junit.Assert.assertNull;
  */
 public class ProxyTranslatorTest {
   private ProxyTranslator proxyTranslatorUT;
-  private final Object[] dataMethod = {Observable.just(null)};
+  private final Object[] dataMethod = {Observable.just(new Object[]{})};
 
   @Before public void init() {
     proxyTranslatorUT = new ProxyTranslator();
@@ -99,12 +99,12 @@ public class ProxyTranslatorTest {
         io.rx_cache.internal.ProvidersRxCache.class.getDeclaredMethod("getMocksEvictProvider",
             Observable.class, EvictProvider.class);
 
-    Object[] dataMethodEvict = {Observable.just(null), new EvictProvider(true)};
+    Object[] dataMethodEvict = {Observable.just(new Object[]{}), new EvictProvider(true)};
 
     ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodEvict);
     assertThat(configProvider.evictProvider().evict(), is(true));
 
-    Object[] dataMethodNoEvict = {Observable.just(null), new EvictProvider(false)};
+    Object[] dataMethodNoEvict = {Observable.just(new Object[]{}), new EvictProvider(false)};
     configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodNoEvict);
     assertThat(configProvider.evictProvider().evict(), is(false));
   }
@@ -117,7 +117,7 @@ public class ProxyTranslatorTest {
             Observable.class, DynamicKey.class, EvictDynamicKey.class);
 
     Object[] dataMethodEvict =
-        {Observable.just(null), new DynamicKey(dynamicKey), new EvictDynamicKey(true)};
+        {Observable.just(new Object[]{}), new DynamicKey(dynamicKey), new EvictDynamicKey(true)};
 
     ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodEvict);
     EvictDynamicKey evictDynamicKey = (EvictDynamicKey) configProvider.evictProvider();
@@ -125,7 +125,7 @@ public class ProxyTranslatorTest {
     assertThat(evictDynamicKey.evict(), is(true));
 
     Object[] dataMethodNoEvict =
-        {Observable.just(null), new DynamicKey(dynamicKey), new EvictDynamicKey(false)};
+        {Observable.just(new Object[]{}), new DynamicKey(dynamicKey), new EvictDynamicKey(false)};
 
     configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethodNoEvict);
     evictDynamicKey = (EvictDynamicKey) configProvider.evictProvider();
@@ -134,7 +134,7 @@ public class ProxyTranslatorTest {
   }
 
   @Test public void When_Get_Page_Get_Pages() throws NoSuchMethodException {
-    Object[] dataMethodPaginate = {Observable.just(null), new DynamicKey(1)};
+    Object[] dataMethodPaginate = {Observable.just(new Object[]{}), new DynamicKey(1)};
 
     Method mockMethod =
         io.rx_cache.internal.ProvidersRxCache.class.getDeclaredMethod("getMocksPaginate",
@@ -164,7 +164,7 @@ public class ProxyTranslatorTest {
     Method mockMethod =
         io.rx_cache.internal.ProvidersRxCache.class.getDeclaredMethod("getMockMultipleObservables",
             Observable.class, Observable.class);
-    Object[] data = {Observable.just(null), Observable.just(null)};
+    Object[] data = {Observable.just(new Object[]{}), Observable.just("")};
     proxyTranslatorUT.processMethod(mockMethod, data);
   }
 
@@ -173,7 +173,7 @@ public class ProxyTranslatorTest {
     Method mockMethod =
         io.rx_cache.internal.ProvidersRxCache.class.getDeclaredMethod("getMockMultipleEvicts",
             Observable.class, EvictProvider.class, EvictProvider.class);
-    Object[] data = {Observable.just(null), new EvictProvider(true), new EvictProvider(true)};
+    Object[] data = {Observable.just(new Object[]{}), new EvictProvider(true), new EvictProvider(true)};
     proxyTranslatorUT.processMethod(mockMethod, data);
   }
 
@@ -182,7 +182,7 @@ public class ProxyTranslatorTest {
     Method mockMethod =
         io.rx_cache.internal.ProvidersRxCache.class.getDeclaredMethod("getMockMultipleDynamicKeys",
             Observable.class, DynamicKey.class, DynamicKey.class);
-    Object[] data = {Observable.just(null), new DynamicKey(1), new DynamicKey(1)};
+    Object[] data = {Observable.just(new Object[]{}), new DynamicKey(1), new DynamicKey(1)};
     proxyTranslatorUT.processMethod(mockMethod, data);
   }
 
@@ -191,7 +191,7 @@ public class ProxyTranslatorTest {
     Method mockMethod = io.rx_cache.internal.ProvidersRxCache.class.getDeclaredMethod(
         "getMockEvictDynamicKeyProvidingDynamicKey", Observable.class, DynamicKey.class,
         EvictDynamicKey.class);
-    Object[] data = {Observable.just(null), new DynamicKey("1"), new EvictDynamicKey(true)};
+    Object[] data = {Observable.just(new Object[]{}), new DynamicKey("1"), new EvictDynamicKey(true)};
     proxyTranslatorUT.processMethod(mockMethod, data);
   }
 
@@ -201,7 +201,7 @@ public class ProxyTranslatorTest {
     Method mockMethod = io.rx_cache.internal.ProvidersRxCache.class.getDeclaredMethod(
         "getMockEvictDynamicKeyWithoutProvidingDynamicKey", Observable.class,
         EvictDynamicKey.class);
-    Object[] data = {Observable.just(null), new EvictDynamicKey(true)};
+    Object[] data = {Observable.just(new Object[]{}), new EvictDynamicKey(true)};
     proxyTranslatorUT.processMethod(mockMethod, data);
   }
 
@@ -212,7 +212,7 @@ public class ProxyTranslatorTest {
         "getMockEvictDynamicKeyGroupProvidingDynamicKeyGroup", Observable.class,
         DynamicKeyGroup.class, EvictDynamicKeyGroup.class);
     Object[] data =
-        {Observable.just(null), new DynamicKeyGroup("1", "1"), new EvictDynamicKeyGroup(true)};
+        {Observable.just(new Object[]{}), new DynamicKeyGroup("1", "1"), new EvictDynamicKeyGroup(true)};
     proxyTranslatorUT.processMethod(mockMethod, data);
   }
 
@@ -222,7 +222,7 @@ public class ProxyTranslatorTest {
     Method mockMethod = ProvidersRxCache.class.getDeclaredMethod(
         "getMockEvictDynamicKeyGroupWithoutProvidingDynamicKeyGroup", Observable.class,
         EvictDynamicKeyGroup.class);
-    Object[] data = {Observable.just(null), new EvictDynamicKeyGroup(true)};
+    Object[] data = {Observable.just(new Object[]{}), new EvictDynamicKeyGroup(true)};
     proxyTranslatorUT.processMethod(mockMethod, data);
   }
 }

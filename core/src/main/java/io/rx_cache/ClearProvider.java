@@ -14,21 +14,17 @@
  * limitations under the License.
  */
 
-package io.rx_cache.internal.migration;
+package io.rx_cache;
 
 import io.reactivex.Observable;
-import io.rx_cache.internal.Persistence;
-import javax.inject.Inject;
 
-final class GetCacheVersion extends CacheVersion {
+/**
+ * Helper class to build an Observable to evict all the data associated with a provider.
+ */
+public class ClearProvider {
 
-  @Inject public GetCacheVersion(Persistence persistence) {
-    super(persistence);
+  public static <T> Observable<T> now() {
+    return Observable.error(new RuntimeException());
   }
 
-  Observable<Integer> react() {
-    Integer currentVersion = persistence.retrieve(KEY_CACHE_VERSION, Integer.class, false, null);
-    currentVersion = currentVersion == null ? 0 : currentVersion;
-    return Observable.just(currentVersion);
-  }
 }

@@ -16,6 +16,7 @@
 
 package io.rx_cache.samples;
 
+import io.reactivex.Observable;
 import io.rx_cache.Actionable;
 import io.rx_cache.DynamicKey;
 import io.rx_cache.DynamicKeyGroup;
@@ -24,20 +25,16 @@ import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
 import io.rx_cache.Mock;
 import java.util.List;
-import rx.Observable;
 
 public interface RxProviders {
-    @Actionable
-    Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks,
-                                                 EvictProvider evictProvider);
+  @Actionable Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks,
+      EvictProvider evictProvider);
 
-    @Actionable
-    Observable<List<Mock>> getMocksEvictDynamicKey(Observable<List<Mock>> oMocks,
-                                                   DynamicKey dynamicKey,
-                                                   EvictDynamicKey evictDynamicKey);
+  @Actionable Observable<List<Mock>> getMocksEvictDynamicKey(Observable<List<Mock>> oMocks,
+      DynamicKey dynamicKey,
+      EvictDynamicKey evictDynamicKey);
 
-    @Actionable
-    Observable<List<Mock>> getMocksEvictDynamicKeyGroup(Observable<List<Mock>> oMocks,
-                                                        DynamicKeyGroup dynamicKeyGroup,
-                                                        EvictDynamicKeyGroup evictDynamicKeyGroup);
+  @Actionable Observable<List<Mock>> getMocksEvictDynamicKeyGroup(Observable<List<Mock>> oMocks,
+      DynamicKeyGroup dynamicKeyGroup,
+      EvictDynamicKeyGroup evictDynamicKeyGroup);
 }
