@@ -4,8 +4,6 @@
 
 # RxCache
 
-_For the `swift` version go [here](https://github.com/FuckBoilerplate/RxCache)_.
-
 The **goal** of this library is simple: **caching your data models like [Picasso](https://github.com/square/picasso) caches your images, with no effort at all.** 
 
 Every Android application is a client application, which means it does not make sense to create and maintain a database just for caching data.
@@ -41,7 +39,7 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos.RxCache:runtime:1.6.4"
+    compile "com.github.VictorAlbertos.RxCache:runtime:1.6.5-2.x"
     compile "io.reactivex:rxjava:1.1.8"
 }
 ```
@@ -267,7 +265,7 @@ apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
     // apt command comes from the android-apt plugin
-    apt "com.github.VictorAlbertos.RxCache:compiler:1.6.4"
+    apt "com.github.VictorAlbertos.RxCache:compiler:1.6.5-2.x"
 }
 ```
 
