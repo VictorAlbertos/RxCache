@@ -21,10 +21,13 @@ import io.reactivex.Observable;
 /**
  * Helper class to build an Observable to evict all the data associated with a provider.
  */
-public class ClearProvider {
-
-  public static <T> Observable<T> now() {
+public class ProviderHelper {
+  /**
+   Create an Observable to provide a placeholder to
+   #1 obtain the cached data when the source loader is not available
+   #2 evict all the data associated with a provider
+   */
+  public static <T> Observable<T> withoutLoader() {
     return Observable.error(new RuntimeException());
   }
-
 }

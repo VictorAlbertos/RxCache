@@ -18,9 +18,9 @@ package io.rx_cache.internal.encript;
 
 import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
-import io.rx_cache.ClearProvider;
 import io.rx_cache.Encrypt;
 import io.rx_cache.EncryptKey;
+import io.rx_cache.ProviderHelper;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
 import io.rx_cache.internal.Jolyglot$;
@@ -68,7 +68,7 @@ public class ProvidersRxCacheEncryptedTest {
   @Test
   public void _01_When_Encrypted_Record_Has_Been_Persisted_And_Memory_Has_Been_Destroyed_Then_Retrieve_From_Disk() {
     TestObserver<Reply<List<Mock>>> observer =
-        providersRxCache.getMocksEncryptedWithDetailResponse(ClearProvider.<List<Mock>>now())
+        providersRxCache.getMocksEncryptedWithDetailResponse(ProviderHelper.<List<Mock>>withoutLoader())
             .test();
     observer.awaitTerminalEvent();
 
@@ -80,7 +80,7 @@ public class ProvidersRxCacheEncryptedTest {
   @Test
   public void _02_If_Class_Has_Been_Annotated_With_EncryptedKey_Then_Only_Encrypt_When_Provider_Has_Been_Annotated_With_Encrypt() {
     TestObserver<Reply<List<Mock>>> observer =
-        providersRxCache.getMocksNotEncryptedWithDetailResponse(ClearProvider.<List<Mock>>now())
+        providersRxCache.getMocksNotEncryptedWithDetailResponse(ProviderHelper.<List<Mock>>withoutLoader())
             .test();
     observer.awaitTerminalEvent();
 
@@ -89,7 +89,7 @@ public class ProvidersRxCacheEncryptedTest {
     assertThat(reply.isEncrypted(), is(false));
 
     observer =
-        providersRxCache.getMocksEncryptedWithDetailResponse(ClearProvider.<List<Mock>>now()).test();
+        providersRxCache.getMocksEncryptedWithDetailResponse(ProviderHelper.<List<Mock>>withoutLoader()).test();
     observer.awaitTerminalEvent();
 
     reply = observer.values().get(0);

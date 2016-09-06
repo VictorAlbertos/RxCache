@@ -18,12 +18,12 @@ package io.rx_cache.internal;
 
 import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
-import io.rx_cache.ClearProvider;
 import io.rx_cache.DynamicKey;
 import io.rx_cache.DynamicKeyGroup;
 import io.rx_cache.EvictDynamicKey;
 import io.rx_cache.EvictDynamicKeyGroup;
 import io.rx_cache.EvictProvider;
+import io.rx_cache.ProviderHelper;
 import io.rx_cache.Reply;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,19 +75,19 @@ public class ProvidersDynamicsKeysRxCacheTest {
     testObserver.awaitTerminalEvent();
 
     testObserver =
-        providersRxCache.getMocksPaginate(ClearProvider.<List<Mock>>now(), new DynamicKey(1))
+        providersRxCache.getMocksPaginate(ProviderHelper.<List<Mock>>withoutLoader(), new DynamicKey(1))
             .test();
     testObserver.awaitTerminalEvent();
     assertThat(testObserver.values().get(0).get(0).getMessage(), is(mockPage1Value));
 
     testObserver =
-        providersRxCache.getMocksPaginate(ClearProvider.<List<Mock>>now(), new DynamicKey(2))
+        providersRxCache.getMocksPaginate(ProviderHelper.<List<Mock>>withoutLoader(), new DynamicKey(2))
             .test();
     testObserver.awaitTerminalEvent();
     assertThat(testObserver.values().get(0).get(0).getMessage(), is(mockPage2Value));
 
     testObserver =
-        providersRxCache.getMocksPaginate(ClearProvider.<List<Mock>>now(), new DynamicKey(3))
+        providersRxCache.getMocksPaginate(ProviderHelper.<List<Mock>>withoutLoader(), new DynamicKey(3))
             .test();
     testObserver.awaitTerminalEvent();
     assertThat(testObserver.values().get(0).get(0).getMessage(), is(mockPage3Value));
@@ -148,13 +148,13 @@ public class ProvidersDynamicsKeysRxCacheTest {
         new DynamicKey(2), new EvictDynamicKey(true)).test();
     observer.awaitTerminalEvent();
 
-    observer = providersRxCache.getMocksDynamicKeyEvictPage(ClearProvider.<List<Mock>>now(),
+    observer = providersRxCache.getMocksDynamicKeyEvictPage(ProviderHelper.<List<Mock>>withoutLoader(),
         new DynamicKey(1), new EvictDynamicKey(true)).test();
     observer.awaitTerminalEvent();
     assertThat(observer.errors().size(), is(1));
     assertThat(observer.values().size(), is(0));
 
-    observer = providersRxCache.getMocksDynamicKeyEvictPage(ClearProvider.<List<Mock>>now(),
+    observer = providersRxCache.getMocksDynamicKeyEvictPage(ProviderHelper.<List<Mock>>withoutLoader(),
         new DynamicKey(2), new EvictDynamicKey(false))
         .test();
     observer.awaitTerminalEvent();
@@ -259,7 +259,7 @@ public class ProvidersDynamicsKeysRxCacheTest {
     String page = filter_page.split("_")[1];
 
     TestObserver<List<Mock>> observer =
-        providersRxCache.getMocksFilteredPaginateEvict(ClearProvider.<List<Mock>>now(),
+        providersRxCache.getMocksFilteredPaginateEvict(ProviderHelper.<List<Mock>>withoutLoader(),
             new DynamicKeyGroup(filter, page), new EvictDynamicKeyGroup(false)).test();
     observer.awaitTerminalEvent();
 
@@ -279,7 +279,7 @@ public class ProvidersDynamicsKeysRxCacheTest {
     String filter = filter_page.split("_")[0];
     String page = filter_page.split("_")[1];
 
-    providersRxCache.getMocksFilteredPaginateEvict(ClearProvider.<List<Mock>>now(),
+    providersRxCache.getMocksFilteredPaginateEvict(ProviderHelper.<List<Mock>>withoutLoader(),
         new DynamicKeyGroup(filter, page), new EvictProvider(true)).subscribe(subscriber);
     subscriber.awaitTerminalEvent();
   }
@@ -290,7 +290,7 @@ public class ProvidersDynamicsKeysRxCacheTest {
     String filter = filter_page.split("_")[0];
     String page = filter_page.split("_")[1];
 
-    providersRxCache.getMocksFilteredPaginateEvict(ClearProvider.<List<Mock>>now(),
+    providersRxCache.getMocksFilteredPaginateEvict(ProviderHelper.<List<Mock>>withoutLoader(),
         new DynamicKeyGroup(filter, page), new EvictDynamicKey(true)).subscribe(subscriber);
     subscriber.awaitTerminalEvent();
   }
@@ -301,7 +301,7 @@ public class ProvidersDynamicsKeysRxCacheTest {
     String filter = filter_page.split("_")[0];
     String page = filter_page.split("_")[1];
 
-    providersRxCache.getMocksFilteredPaginateEvict(ClearProvider.<List<Mock>>now(),
+    providersRxCache.getMocksFilteredPaginateEvict(ProviderHelper.<List<Mock>>withoutLoader(),
         new DynamicKeyGroup(filter, page), new EvictDynamicKeyGroup(true)).subscribe(subscriber);
     subscriber.awaitTerminalEvent();
   }

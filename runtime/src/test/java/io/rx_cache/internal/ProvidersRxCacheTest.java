@@ -21,9 +21,9 @@ import com.google.gson.reflect.TypeToken;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 import io.reactivex.observers.TestObserver;
-import io.rx_cache.ClearProvider;
 import io.rx_cache.DynamicKey;
 import io.rx_cache.EvictProvider;
+import io.rx_cache.ProviderHelper;
 import io.rx_cache.Reply;
 import io.rx_cache.Source;
 import java.lang.reflect.Type;
@@ -189,7 +189,7 @@ public class ProvidersRxCacheTest {
     Mock mock = createMocks(SIZE).get(0);
 
     //not logged mock
-    providersRxCache.getLoggedMock(ClearProvider.<Mock>now(), new EvictProvider(false))
+    providersRxCache.getLoggedMock(ProviderHelper.<Mock>withoutLoader(), new EvictProvider(false))
         .subscribe(subscriber);
     subscriber.awaitTerminalEvent();
     assertThat(subscriber.values().size(), is(0));
@@ -204,14 +204,14 @@ public class ProvidersRxCacheTest {
 
     //logged mock
     subscriber = new TestObserver<>();
-    providersRxCache.getLoggedMock(ClearProvider.<Mock>now(), new EvictProvider(false))
+    providersRxCache.getLoggedMock(ProviderHelper.<Mock>withoutLoader(), new EvictProvider(false))
         .subscribe(subscriber);
     subscriber.awaitTerminalEvent();
     assertNotNull(subscriber.values().get(0));
 
     //logout mock
     subscriber = new TestObserver<>();
-    providersRxCache.getLoggedMock(ClearProvider.<Mock>now(), new EvictProvider(true))
+    providersRxCache.getLoggedMock(ProviderHelper.<Mock>withoutLoader(), new EvictProvider(true))
         .subscribe(subscriber);
     subscriber.awaitTerminalEvent();
     assertThat(subscriber.values().size(), is(0));
@@ -219,7 +219,7 @@ public class ProvidersRxCacheTest {
 
     //not logged mock
     subscriber = new TestObserver<>();
-    providersRxCache.getLoggedMock(ClearProvider.<Mock>now(), new EvictProvider(false))
+    providersRxCache.getLoggedMock(ProviderHelper.<Mock>withoutLoader(), new EvictProvider(false))
         .subscribe(subscriber);
     subscriber.awaitTerminalEvent();
     assertThat(subscriber.values().size(), is(0));
@@ -239,7 +239,7 @@ public class ProvidersRxCacheTest {
     waitTime(1100);
 
     subscriber = new TestObserver<>();
-    providersRxCache.getMocksListResponseOneSecond(ClearProvider.<List<Mock>>now())
+    providersRxCache.getMocksListResponseOneSecond(ProviderHelper.<List<Mock>>withoutLoader())
         .subscribe(subscriber);
     subscriber.awaitTerminalEvent();
 
@@ -261,7 +261,7 @@ public class ProvidersRxCacheTest {
     assertThat(reply.getData().size(), is(SIZE - 1));
 
     subscriber = new TestObserver<>();
-    providersRxCache.getMocksWithDetailResponse(ClearProvider.<List<Mock>>now())
+    providersRxCache.getMocksWithDetailResponse(ProviderHelper.<List<Mock>>withoutLoader())
         .subscribe(subscriber);
     subscriber.awaitTerminalEvent();
 
@@ -282,13 +282,11 @@ public class ProvidersRxCacheTest {
     subscriber.awaitTerminalEvent();
     Reply<Mock[]> reply = subscriber.values().get(0);
     assertThat(reply.getData().length, is(SIZE));
-    reply =
-        new Reply<>(Arrays.copyOf(reply.getData(), reply.getData().length - 1), reply.getSource(),
-            false);
+    reply = new Reply<>(Arrays.copyOf(reply.getData(), reply.getData().length - 1), reply.getSource(), false);
     assertThat(reply.getData().length, is(SIZE - 1));
 
     subscriber = new TestObserver<>();
-    providersRxCache.getMocksArrayResponse(ClearProvider.<Mock[]>now()).subscribe(subscriber);
+    providersRxCache.getMocksArrayResponse(ProviderHelper.<Mock[]>withoutLoader()).subscribe(subscriber);
     subscriber.awaitTerminalEvent();
 
     assertThat(subscriber.errors().size(), is(0));
@@ -311,7 +309,7 @@ public class ProvidersRxCacheTest {
     assertThat(reply.getData().size(), is(SIZE - 1));
 
     subscriber = new TestObserver<>();
-    providersRxCache.getMocksMapResponse(ClearProvider.<Map<Integer, Mock>>now())
+    providersRxCache.getMocksMapResponse(ProviderHelper.<Map<Integer, Mock>>withoutLoader())
         .subscribe(subscriber);
     subscriber.awaitTerminalEvent();
 
@@ -339,7 +337,7 @@ public class ProvidersRxCacheTest {
     assertThat(compare(reply, replyOriginal, type), is(false));
 
     subscriber = new TestObserver<>();
-    providersRxCache.getMocksWithDetailResponse(ClearProvider.<List<Mock>>now())
+    providersRxCache.getMocksWithDetailResponse(ProviderHelper.<List<Mock>>withoutLoader())
         .subscribe(subscriber);
     subscriber.awaitTerminalEvent();
 
@@ -369,7 +367,7 @@ public class ProvidersRxCacheTest {
     assertThat(compare(reply, replyOriginal, type), is(false));
 
     subscriber = new TestObserver<>();
-    providersRxCache.getMocksArrayResponse(ClearProvider.<Mock[]>now()).subscribe(subscriber);
+    providersRxCache.getMocksArrayResponse(ProviderHelper.<Mock[]>withoutLoader()).subscribe(subscriber);
     subscriber.awaitTerminalEvent();
 
     assertThat(subscriber.errors().size(), is(0));
@@ -398,7 +396,7 @@ public class ProvidersRxCacheTest {
     assertThat(compare(reply, replyOriginal, type), is(false));
 
     subscriber = new TestObserver<>();
-    providersRxCache.getMocksMapResponse(ClearProvider.<Map<Integer, Mock>>now())
+    providersRxCache.getMocksMapResponse(ProviderHelper.<Map<Integer, Mock>>withoutLoader())
         .subscribe(subscriber);
     subscriber.awaitTerminalEvent();
 
@@ -429,7 +427,7 @@ public class ProvidersRxCacheTest {
     assertThat(compare(mock, mockOriginal, type), is(false));
 
     subscriber = new TestObserver<>();
-    providersRxCache.getLoggedMock(ClearProvider.<Mock>now(), new EvictProvider(false))
+    providersRxCache.getLoggedMock(ProviderHelper.<Mock>withoutLoader(), new EvictProvider(false))
         .subscribe(subscriber);
     subscriber.awaitTerminalEvent();
 
