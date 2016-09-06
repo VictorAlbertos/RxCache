@@ -40,7 +40,7 @@ And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
     compile "com.github.VictorAlbertos.RxCache:runtime:1.6.5-2.x"
-    compile "io.reactivex:rxjava:1.1.8"
+    compile "io.reactivex.rxjava2:rxjava:2.0.0-RC1"
 }
 ```
 
