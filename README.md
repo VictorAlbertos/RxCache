@@ -4,6 +4,8 @@
 
 # RxCache
 
+_For the a more reactive approach go [here](https://github.com/VictorAlbertos/ReactiveCache/tree/2.x)_.
+
 The **goal** of this library is simple: **caching your data models like [Picasso](https://github.com/square/picasso) caches your images, with no effort at all.** 
 
 Every Android application is a client application, which means it does not make sense to create and maintain a database just for caching data.
