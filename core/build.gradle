@@ -61,7 +61,7 @@ dependencies {
   compile "com.google.dagger:dagger:2.6.1"
   compile "org.glassfish:javax.annotation:10.0-b28"
 
-  compile 'io.reactivex.rxjava2:rxjava:2.0.0-RC1'
+  compile 'io.reactivex.rxjava2:rxjava:2.0.0-RC2'
   compile 'com.github.VictorAlbertos.Jolyglot:api:0.0.3'
 
   testCompile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.3'
