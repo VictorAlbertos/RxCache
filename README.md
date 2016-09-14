@@ -4,7 +4,7 @@
 
 # RxCache
 
-_For the a more reactive approach go [here](https://github.com/VictorAlbertos/ReactiveCache/tree/2.x)_.
+_For a more reactive approach go [here](https://github.com/VictorAlbertos/ReactiveCache/tree/2.x)_.
 
 The **goal** of this library is simple: **caching your data models like [Picasso](https://github.com/square/picasso) caches your images, with no effort at all.** 
 
