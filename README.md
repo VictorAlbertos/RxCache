@@ -469,6 +469,7 @@ The policy is very simple:
 ## Proguard
 ```
 -dontwarn io.rx_cache.internal.**
+-keepclassmembers enum io.rx_cache.Source { *; }
 ```
 
 
