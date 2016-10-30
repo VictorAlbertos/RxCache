@@ -38,12 +38,12 @@ dependencies {
   compile fileTree(dir: 'libs', include: ['*.jar'])
   compile project(':runtime')
   apt project(':compiler')
-  compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.2'
+  compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.3'
 
   testCompile 'junit:junit:4.12'
 
-  apt "com.google.dagger:dagger-compiler:2.4"
-  compile "com.google.dagger:dagger:2.4"
+  apt "com.google.dagger:dagger-compiler:2.7"
+  compile "com.google.dagger:dagger:2.7"
   provided "org.glassfish:javax.annotation:10.0-b28"
 }
 
