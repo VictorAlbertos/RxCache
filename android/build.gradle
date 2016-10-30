@@ -42,8 +42,8 @@ dependencies {
 
   testCompile 'junit:junit:4.12'
 
-  apt "com.google.dagger:dagger-compiler:2.4"
-  compile "com.google.dagger:dagger:2.4"
+  apt "com.google.dagger:dagger-compiler:2.7"
+  compile "com.google.dagger:dagger:2.7"
   provided "org.glassfish:javax.annotation:10.0-b28"
 }
 
