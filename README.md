@@ -41,7 +41,7 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos.RxCache:runtime:1.6.5"
+    compile "com.github.VictorAlbertos.RxCache:runtime:1.6.8"
     compile "io.reactivex:rxjava:1.2.1"
 }
 ```
@@ -267,7 +267,7 @@ apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
     // apt command comes from the android-apt plugin
-    apt "com.github.VictorAlbertos.RxCache:compiler:1.6.5"
+    apt "com.github.VictorAlbertos.RxCache:compiler:1.6.8"
 }
 ```
 
