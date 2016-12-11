@@ -46,4 +46,13 @@ public final class Reply<T> {
   public boolean isEncrypted() {
     return isEncrypted;
   }
+  
+  @Override 
+  public String toString() {
+    return "Reply{" +
+      "data=" + data +
+      ", source=" + source +
+      ", isEncrypted=" + isEncrypted +
+      '}';
+  }
 }
