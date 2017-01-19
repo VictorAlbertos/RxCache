@@ -57,11 +57,11 @@ artifacts {
 }
 
 dependencies {
-  apt "com.google.dagger:dagger-compiler:2.7"
-  compile "com.google.dagger:dagger:2.7"
+  apt "com.google.dagger:dagger-compiler:2.8"
+  compile "com.google.dagger:dagger:2.8"
   compile "org.glassfish:javax.annotation:10.0-b28"
 
-  compile 'io.reactivex.rxjava2:rxjava:2.0.0'
+  compile 'io.reactivex.rxjava2:rxjava:2.0.4'
   compile 'com.github.VictorAlbertos.Jolyglot:api:0.0.3'
 
   testCompile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.3'
