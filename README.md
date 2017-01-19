@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/VictorAlbertos/RxCache.svg?branch=master)](https://travis-ci.org/VictorAlbertos/RxCache)
+## [DISCLAIMER] Branch 1.x will not be any longer actively maintained. Upgrade to RxJava 2.x asap.
 
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-RxCache-green.svg?style=true)](https://android-arsenal.com/details/1/3016)
 
