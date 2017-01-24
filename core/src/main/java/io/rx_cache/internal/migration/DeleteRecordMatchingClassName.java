@@ -49,7 +49,7 @@ public final class DeleteRecordMatchingClassName {
         record = persistence.retrieveRecord(key, true, encryptKey);
       }
 
-      if (evictRecord(record)) {
+      if (null == record || evictRecord(record)) {
         persistence.evict(key);
       }
     }
