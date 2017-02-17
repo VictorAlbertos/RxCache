@@ -1,6 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'maven'
-group='com.github.VictorAlbertos'
+group = 'com.github.VictorAlbertos'
+version='1.8.0-2.x'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7

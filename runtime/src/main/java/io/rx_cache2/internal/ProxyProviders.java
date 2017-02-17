@@ -16,8 +16,11 @@
 
 package io.rx_cache2.internal;
 
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
+import io.reactivex.Single;
 import io.rx_cache2.EncryptKey;
 import io.rx_cache2.Migration;
 import io.rx_cache2.MigrationCache;
@@ -68,15 +71,31 @@ public final class ProxyProviders implements InvocationHandler {
 
   @Override public Object invoke(final Object proxy, final Method method, final Object[] args)
       throws Throwable {
-    return Observable.defer(new Callable<ObservableSource<Object>>() {
-      @Override public ObservableSource<Object> call() throws Exception {
-        return processorProviders.process(proxyTranslator.processMethod(method, args));
+    return Observable.defer(new Callable<ObservableSource<?>>() {
+      @Override public ObservableSource<?> call() throws Exception {
+        Observable observable =
+            processorProviders.process(proxyTranslator.processMethod(method, args));
+        Class<?> methodType = method.getReturnType();
+
+        if (methodType == Observable.class) return Observable.just(observable);
+
+        if (methodType == Single.class) return Observable.just(Single.fromObservable(observable));
+
+        if (methodType == Maybe.class) {
+          return Observable.just(Maybe.fromSingle(Single.fromObservable(observable)));
+        }
+
+        if (method.getReturnType() == io.reactivex.Flowable.class) {
+          return Observable.just(observable.toFlowable(BackpressureStrategy.MISSING));
+        }
+
+        String errorMessage = method.getName() + io.rx_cache2.internal.Locale.INVALID_RETURN_TYPE;
+        throw new RuntimeException(errorMessage);
       }
-    });
+    }).blockingFirst();
   }
 
   Observable<Void> evictAll() {
     return processorProviders.evictAll();
   }
-
 }
