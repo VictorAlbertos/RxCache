@@ -16,7 +16,10 @@
 
 package io.rx_cache2.internal;
 
+import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.rx_cache2.DynamicKey;
 import io.rx_cache2.DynamicKeyGroup;
 import io.rx_cache2.EvictDynamicKey;
@@ -33,6 +36,12 @@ import java.util.concurrent.TimeUnit;
  * Provided to test as an integration test the library RxCache
  */
 public interface ProvidersRxCache {
+  Single<List<Mock>> getMocksSingle(Single<List<io.rx_cache2.internal.Mock>> mocks);
+
+  Maybe<List<Mock>> getMocksMaybe(Maybe<List<io.rx_cache2.internal.Mock>> mocks);
+
+  Flowable<List<Mock>> getMocksFlowable(Flowable<List<io.rx_cache2.internal.Mock>> mocks);
+
   Observable<List<io.rx_cache2.internal.Mock>> getMocks(Observable<List<io.rx_cache2.internal.Mock>> mocks);
 
   Observable<Reply<List<io.rx_cache2.internal.Mock>>> getMocksWithDetailResponse(Observable<List<io.rx_cache2.internal.Mock>> mocks);

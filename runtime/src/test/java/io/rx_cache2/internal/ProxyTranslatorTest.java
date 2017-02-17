@@ -16,7 +16,10 @@
 
 package io.rx_cache2.internal;
 
+import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.rx_cache2.ConfigProvider;
 import io.rx_cache2.DynamicKey;
 import io.rx_cache2.DynamicKeyGroup;
@@ -55,6 +58,27 @@ public class ProxyTranslatorTest {
     assertThat(configProvider.requiredDetailedResponse(), is(false));
   }
 
+  @Test public void Check_Single_Reactive_Type() throws NoSuchMethodException {
+    Method mockMethod =
+        io.rx_cache2.internal.ProvidersRxCache.class.getDeclaredMethod("getMocksSingle", Single.class);
+    ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
+    assertNotNull(configProvider.getLoaderObservable());
+  }
+
+  @Test public void Check_Maybe_Reactive_Type() throws NoSuchMethodException {
+    Method mockMethod =
+        io.rx_cache2.internal.ProvidersRxCache.class.getDeclaredMethod("getMocksMaybe", Maybe.class);
+    ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
+    assertNotNull(configProvider.getLoaderObservable());
+  }
+
+  @Test public void Check_Flowable_Reactive_Type() throws NoSuchMethodException {
+    Method mockMethod =
+        io.rx_cache2.internal.ProvidersRxCache.class.getDeclaredMethod("getMocksFlowable", Flowable.class);
+    ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
+    assertNotNull(configProvider.getLoaderObservable());
+  }
+
   @Test public void Check_Method_With_Life_Time_Defined() throws NoSuchMethodException {
     Method mockMethod =
         io.rx_cache2.internal.ProvidersRxCache.class.getDeclaredMethod("getMocksLifeTimeMinutes",
@@ -86,7 +110,7 @@ public class ProxyTranslatorTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void When_Method_Not_Return_Observable_Then_Throw_Exception()
+  public void When_Method_Not_Return_Supported_Reactive_Type_Then_Throw_Exception()
       throws NoSuchMethodException {
     Method mockMethod =
         io.rx_cache2.internal.ProvidersRxCache.class.getDeclaredMethod("getMocksBadReturnType",

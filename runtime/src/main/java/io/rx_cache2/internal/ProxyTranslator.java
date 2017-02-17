@@ -16,7 +16,10 @@
 
 package io.rx_cache2.internal;
 
+import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.rx_cache2.ConfigProvider;
 import io.rx_cache2.DynamicKey;
 import io.rx_cache2.DynamicKeyGroup;
@@ -72,10 +75,20 @@ public final class ProxyTranslator {
   }
 
   private Observable getLoaderObservable(Method method, Object[] objectsMethod) {
-    Observable observable = getObjectFromMethodParam(method, Observable.class, objectsMethod);
+    Observable<?> observable = getObjectFromMethodParam(method, Observable.class, objectsMethod);
     if (observable != null) return observable;
 
-    String errorMessage = method.getName() + io.rx_cache2.internal.Locale.NOT_OBSERVABLE_LOADER_FOUND;
+    Single single = getObjectFromMethodParam(method, Single.class, objectsMethod);
+    if (single != null) return single.toObservable();
+
+    Maybe maybe = getObjectFromMethodParam(method, Maybe.class, objectsMethod);
+    if (maybe != null) return maybe.toObservable();
+
+    Flowable flowable = getObjectFromMethodParam(method, Flowable.class, objectsMethod);
+    if (flowable != null) return flowable.toObservable();
+
+    String errorMessage =
+        method.getName() + io.rx_cache2.internal.Locale.NOT_REACTIVE_TYPE_FOR_LOADER_WAS_FOUND;
     throw new IllegalArgumentException(errorMessage);
   }
 
@@ -98,12 +111,13 @@ public final class ProxyTranslator {
   }
 
   private boolean requiredDetailResponse(Method method) {
-    if (method.getReturnType() != Observable.class) {
-      String errorMessage = method.getName() + io.rx_cache2.internal.Locale.INVALID_RETURN_TYPE;
-      throw new IllegalArgumentException(errorMessage);
+    if (method.getReturnType() == Observable.class || method.getReturnType() == Single.class
+        || method.getReturnType() == Maybe.class || method.getReturnType() == Flowable.class) {
+      return method.getGenericReturnType().toString().contains(Reply.class.getName());
     }
 
-    return method.getGenericReturnType().toString().contains(Reply.class.getName());
+    String errorMessage = method.getName() + io.rx_cache2.internal.Locale.INVALID_RETURN_TYPE;
+    throw new IllegalArgumentException(errorMessage);
   }
 
   private EvictProvider evictProvider(Method method, Object[] objectsMethod) {
@@ -130,7 +144,9 @@ public final class ProxyTranslator {
 
     if (countSameObjectsType > 1) {
       String errorMessage =
-          method.getName() + io.rx_cache2.internal.Locale.JUST_ONE_INSTANCE + expectedObject.getClass().getSimpleName();
+          method.getName()
+              + io.rx_cache2.internal.Locale.JUST_ONE_INSTANCE
+              + expectedObject.getClass().getSimpleName();
       throw new IllegalArgumentException(errorMessage);
     }
 

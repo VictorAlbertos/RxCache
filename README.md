@@ -14,13 +14,8 @@ Plus, the fact that you have some sort of legendary database for persisting your
 
 Inspired by [Retrofit](http://square.github.io/retrofit/) api, **RxCache is a reactive caching library for Android and Java which turns your caching needs into an interface.** 
 
-Every method acts as a provider for RxCache, and all of them are managed through `observables`; they are the fundamental contract 
-between the library and its clients. 
-
-When supplying an `observable` which contains the data provided by an expensive task -probably an http connection, RxCache determines if it is needed 
+When supplying an **`observable`, `single`, `maybe` or `flowable` (these are the supported Reactive types)** which contains the data provided by an expensive task -probably an http connection, RxCache determines if it is needed 
 to subscribe to it or instead fetch the data previously cached. This decision is made based on the providers configuration.
-
-So, when supplying an `observable` you get your `observable` cached back, and next time you will retrieve it without the time cost associated with its underlying task. 
  
 ```java
 Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
@@ -41,8 +36,8 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos.RxCache:runtime:1.7.0-2.x"
-    compile "io.reactivex.rxjava2:rxjava:2.0.4"
+    compile "com.github.VictorAlbertos.RxCache:runtime:1.8.0-2.x"
+    compile "io.reactivex.rxjava2:rxjava:2.0.6"
 }
 ```
 
@@ -86,7 +81,7 @@ RxCache exposes `evictAll()` method to evict the entire cache in a row.
 
 RxCache accepts as argument a set of classes to indicate how the provider needs to handle the cached data:
 
-* `Observable` is the only object required to create a provider. `Observable` type must be equal to the one specified by the returning value of the provider.
+* A Reactive type is the only object required to create a provider. This Reactive type must be equal to the one specified by the returning value of the provider.
 * [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictProvider.java) allows to explicitly evict all the data associated with the provider.
 * [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKey.java) allows to explicitly evict the data of an specific [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/DynamicKey.java).
 * [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) allows to explicitly evict the data of an specific [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/DynamicKeyGroup.java).
@@ -246,6 +241,8 @@ Nevertheless, there are complete examples for [Android and Java projects](https:
 
 ## <a name="actionable_section"></a>Actionable API RxCache:
 
+**Limitation: This actionable API only support `Observable` as Reactive type.**
+
 This actionable api offers an easy way to perform write operations using providers. Although write operations could be achieved using the classic api too, it's much complex and error-prone. Indeed, the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/ActionsList.java) class it's a wrapper around the classic api which play with evicting scopes and lists.
 
 In order to use this actionable api, first you need to add the [repository compiler](https://github.com/VictorAlbertos/RxCache/tree/master/compiler) as a dependency to your project using an annotation processor. For Android, it would be as follows:
@@ -267,7 +264,7 @@ apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
     // apt command comes from the android-apt plugin
-    apt "com.github.VictorAlbertos.RxCache:compiler:1.7.0-2.x"
+    apt "com.github.VictorAlbertos.RxCache:compiler:1.8.0-2.x"
 }
 ```
 
