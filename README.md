@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/VictorAlbertos/RxCache.svg?branch=2.x)](https://travis-ci.org/VictorAlbertos/RxCache)
+![Downloads](https://jitpack.io/v/VictorAlbertos/RxCache/month.svg)
 
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-RxCache-green.svg?style=true)](https://android-arsenal.com/details/1/3016)
 
