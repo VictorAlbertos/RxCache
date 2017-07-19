@@ -58,6 +58,17 @@ public class ProxyTranslatorTest {
     assertThat(configProvider.requiredDetailedResponse(), is(false));
   }
 
+  @Test public void Check_Annotated_Method() throws NoSuchMethodException {
+    Method mockMethod = io.rx_cache2.internal.ProvidersRxCache.class.getDeclaredMethod("getMocksDifferent", Observable.class);
+    ConfigProvider configProvider = proxyTranslatorUT.processMethod(mockMethod, dataMethod);
+
+    assertThat(configProvider.getProviderKey(), is("get-mocks-different"));
+    assertNotNull(configProvider.getLoaderObservable());
+    assertNull(configProvider.getLifeTimeMillis());
+    assertThat(configProvider.evictProvider().evict(), is(false));
+    assertThat(configProvider.requiredDetailedResponse(), is(false));
+  }
+
   @Test public void Check_Single_Reactive_Type() throws NoSuchMethodException {
     Method mockMethod =
         io.rx_cache2.internal.ProvidersRxCache.class.getDeclaredMethod("getMocksSingle", Single.class);
