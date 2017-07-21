@@ -61,8 +61,6 @@ public final class ProxyTranslator {
     if(annotation != null) {
       return annotation.value();
     } else {
-      // We could log a warning here that not using a annotation can lead to strange behaviour when
-      // using proguard without -keep rule.
       return method.getName();
     }
   }
