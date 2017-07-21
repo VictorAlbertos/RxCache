@@ -27,7 +27,10 @@ import io.rx_cache2.Encrypt;
 import io.rx_cache2.EvictProvider;
 import io.rx_cache2.Expirable;
 import io.rx_cache2.LifeCache;
+import io.rx_cache2.ProviderKey;
 import io.rx_cache2.Reply;
+
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +57,12 @@ public final class ProxyTranslator {
   }
 
   private String getProviderKey(Method method) {
-    return method.getName();
+    final ProviderKey annotation = method.getAnnotation(ProviderKey.class);
+    if(annotation != null) {
+      return annotation.value();
+    } else {
+      return method.getName();
+    }
   }
 
   private String getDynamicKey(Method method, Object[] objectsMethod) {

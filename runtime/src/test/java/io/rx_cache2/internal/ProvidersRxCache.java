@@ -27,6 +27,7 @@ import io.rx_cache2.EvictDynamicKeyGroup;
 import io.rx_cache2.EvictProvider;
 import io.rx_cache2.Expirable;
 import io.rx_cache2.LifeCache;
+import io.rx_cache2.ProviderKey;
 import io.rx_cache2.Reply;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,9 @@ public interface ProvidersRxCache {
   Flowable<List<Mock>> getMocksFlowable(Flowable<List<io.rx_cache2.internal.Mock>> mocks);
 
   Observable<List<io.rx_cache2.internal.Mock>> getMocks(Observable<List<io.rx_cache2.internal.Mock>> mocks);
+
+  @ProviderKey("get-mocks-different")
+  Observable<List<io.rx_cache2.internal.Mock>> getMocksDifferent(Observable<List<io.rx_cache2.internal.Mock>> mocks);
 
   Observable<Reply<List<io.rx_cache2.internal.Mock>>> getMocksWithDetailResponse(Observable<List<io.rx_cache2.internal.Mock>> mocks);
 
