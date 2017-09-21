@@ -504,5 +504,8 @@ RxCache服务于三个层之一的数据：
 ## 关于译者
 
 **却把清梅嗅**
+
 [CSDN](http://blog.csdn.net/mq2553299): 我的博客.
+
 [GitHub](https://github.com/qingmei2):  我的GitHub.
+
