@@ -416,7 +416,7 @@ new RxCache.Builder()
 
 当达到此限制时，RxCache将无法保留磁盘新数据。 这就是为什么当分配给持久层的阈值内存接近达到时，RxCache有一个自动化的过程来清除任何记录，即使没有满足失效时间的缓存数据也被清除。
 
-但是Provider的某方法用[@Expirable]（https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Expirable.java）注解注释，并将其值设置为false将额外被保存。
+但是Provider的某方法用[@Expirable](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Expirable.java) 注解注释，并将其值设置为false将额外被保存。
 
 ```java
 interface Providers {
@@ -450,7 +450,7 @@ new RxCache.Builder()
 ## Retrofit
 
 RxCache和Retrofit完美搭配，创建一个指向端点的自动管理缓存数据库。
-您可以检查RxCache和Retrofit的一个[示例]（https://github.com/VictorAlbertos/RxCacheSamples/blob/master/sample_data/src/main/java/sample_data/Repository.java）。
+您可以检查RxCache和Retrofit的一个[示例](https://github.com/VictorAlbertos/RxCacheSamples/blob/master/sample_data/src/main/java/sample_data/Repository.java)。
 
 ## 本质
 
