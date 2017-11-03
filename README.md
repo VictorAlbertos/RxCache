@@ -483,6 +483,7 @@ Proguard users MUST add the two given lines to their proguard configuration file
 ```
 -dontwarn io.rx_cache2.internal.**
 -keepclassmembers enum io.rx_cache2.Source { *; }
+-keepclassmembernames class * { @io.rx_cache2.* <methods>; }
 ```
 
 
