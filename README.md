@@ -481,8 +481,8 @@ The policy is very simple:
 Proguard users MUST add the two given lines to their proguard configuration file and MUST use the `@ProviderKey` annotation method for every method that is being used as provider. Without the `@ProviderKey` annotation the method name will be used instead which can lead to providers that use the same name, see issue [#96](https://github.com/VictorAlbertos/RxCache/issues/96) for detailed information.
 
 ```
--dontwarn io.rx_cache.internal.**
--keepclassmembers enum io.rx_cache.Source { *; }
+-dontwarn io.rx_cache2.internal.**
+-keepclassmembers enum io.rx_cache2.Source { *; }
 ```
 
 
