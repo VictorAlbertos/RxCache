@@ -55,6 +55,7 @@
  [7.4 RxCache Swift版本](#7.4)
 
  [7.5 作者其它使用RxJava的库](#7.5)
+ 
 ## <h2 id="1">概述</h2>
 
 本库的 **目标** 很简单: **就像[Picasso](https://github.com/square/picasso) 缓存您的图片一样，毫不费力缓存您的数据对象。** 
@@ -69,7 +70,7 @@
  
 此决定是基于RxCache的Providers进行配置的。
  
-## <h3 id="2">基本使用</h2>
+## <h2 id="2">基本使用</h2>
 ## <h3 id="2.1">依赖配置</h3>
 
 在您的Project级的build.gradle中添加JitPack仓库：
