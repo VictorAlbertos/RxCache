@@ -16,8 +16,6 @@
 
 package io.rx_cache2.internal;
 
-import io.rx_cache2.internal.encrypt.FileEncryptor;
-import io.victoralbertos.jolyglot.JolyglotGenerics;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -28,6 +26,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
+
+import io.rx_cache2.internal.encrypt.FileEncryptor;
+import io.victoralbertos.jolyglot.JolyglotGenerics;
 
 /**
  * Save objects in disk and evict them too. It uses Gson as json parser.
@@ -216,7 +217,8 @@ public final class Disk implements Persistence {
       Type partialType = jolyglot.newParameterizedType(io.rx_cache2.internal.Record.class, Object.class);
       io.rx_cache2.internal.Record tempDiskRecord = jolyglot.fromJson(file, partialType);
 
-      Class classData = Class.forName(tempDiskRecord.getDataClassName());
+      Class classData = tempDiskRecord.getDataClassName() == null
+          ? Object.class : Class.forName(tempDiskRecord.getDataClassName());
       Class classCollectionData = tempDiskRecord.getDataCollectionClassName() == null
           ? Object.class : Class.forName(tempDiskRecord.getDataCollectionClassName());
 

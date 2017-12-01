@@ -16,17 +16,20 @@
 
 package io.rx_cache2.internal;
 
-import io.rx_cache2.internal.common.BaseTest;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.Test;
+
+import io.rx_cache2.internal.common.BaseTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class DiskTest extends BaseTest {
     private final static String KEY = "store/store";
@@ -145,4 +148,25 @@ public class DiskTest extends BaseTest {
         assertThat(disk.allKeys().size(), is(0));
     }
 
+    @Test public void When_A_Record_Multi_Level_Map_Is_Supplied_Retrieve_It() {
+        Map multiLevelMap = new HashMap<>();
+        multiLevelMap.put(1, VALUE);
+        multiLevelMap.put(2, VALUE + 1);
+
+        Map innerMap = new HashMap();
+        innerMap.put("foo", VALUE + 2);
+        innerMap.put("bar", VALUE + 3);
+        multiLevelMap.put(3, innerMap);
+
+        disk.save(KEY, new io.rx_cache2.internal.Record(multiLevelMap), false, null);
+        io.rx_cache2.internal.Record<Map> diskRecord = disk.retrieveRecord(KEY, false, null);
+
+        assertThat(diskRecord.getData().get(1), is((Object) VALUE));
+        assertThat(diskRecord.getData().get(2), is((Object) (VALUE+1)));
+
+        final Object value3 = diskRecord.getData().get(3);
+        assertTrue(value3 instanceof Map);
+        assertThat(((Map) value3).get("foo"), is((Object) (VALUE + 2)));
+        assertThat(((Map) value3).get("bar"), is((Object) (VALUE + 3)));
+    }
 }

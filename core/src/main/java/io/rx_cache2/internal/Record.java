@@ -17,8 +17,11 @@
 package io.rx_cache2.internal;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import io.rx_cache2.Source;
 
@@ -89,11 +92,24 @@ public final class Record<T> {
     } else if (isMap) {
       Map map = ((Map) data);
       if (map.size() > 0) {
-        Map.Entry<Object, Object> object =
-            (Map.Entry<Object, Object>) map.entrySet().iterator().next();
-        dataClassName = object.getValue().getClass().getName();
-        dataKeyMapClassName = object.getKey().getClass().getName();
         dataCollectionClassName = Map.class.getName();
+
+        final Iterator<Map.Entry> iterator = ((Set<Entry>) map.entrySet()).iterator();
+
+        Map.Entry firstEntry = iterator.next();
+        Class valueClass = firstEntry.getValue().getClass();
+        Class keyClass = firstEntry.getKey().getClass();
+
+        //makes sure, that all the keys and values are of the same type. E.g. values are different for multi-level map.
+        while (iterator.hasNext() || valueClass == null && keyClass == null) {
+          final Entry next = iterator.next();
+
+          if (keyClass != null && keyClass != next.getKey().getClass()) keyClass = null;
+          if (valueClass != null && valueClass != next.getValue().getClass()) valueClass = null;
+        }
+
+        dataClassName = valueClass != null ? valueClass.getName() : null;
+        dataKeyMapClassName = keyClass != null ? keyClass.getName() : null;
       } else {
         dataClassName = null;
         dataCollectionClassName = null;
