@@ -35,32 +35,47 @@ public class DiskTest extends BaseTest {
     private final static String KEY = "store/store";
     private final static String VALUE = "dummy";
 
-    @Test public void When_A_Record_Is_Supplied_Retrieve_It() {
+    @Test
+    public void when_Key_Is_LangLength() {
+        StringBuffer key = new StringBuffer(KEY);
+        for (int i = 0; i <= 150; i++) {
+            key.append((char) i);
+        }
+        disk.save(key.toString(), new io.rx_cache2.internal.Record(new Mock(VALUE)), false, null);
+        io.rx_cache2.internal.Record<Mock> diskRecord = disk.retrieveRecord(key.toString(), false, null);
+        assertThat(diskRecord.getData().getMessage(), is(VALUE));
+    }
+
+    @Test
+    public void When_A_Record_Is_Supplied_Retrieve_It() {
         disk.save(KEY, new io.rx_cache2.internal.Record(new Mock(VALUE)), false, null);
 
         io.rx_cache2.internal.Record<Mock> diskRecord = disk.retrieveRecord(KEY, false, null);
         assertThat(diskRecord.getData().getMessage(), is(VALUE));
     }
 
-    @Test public void When_A_Record_Collection_Is_Supplied_Retrieve_It() {
+    @Test
+    public void When_A_Record_Collection_Is_Supplied_Retrieve_It() {
         List<Mock> mocks = Arrays.asList(new Mock(VALUE), new Mock(VALUE + 1));
         disk.save(KEY, new io.rx_cache2.internal.Record(mocks), false, null);
 
         io.rx_cache2.internal.Record<List<Mock>> diskRecord = disk.retrieveRecord(KEY, false, null);
         assertThat(diskRecord.getData().get(0).getMessage(), is(VALUE));
-        assertThat(diskRecord.getData().get(1).getMessage(), is(VALUE+1));
+        assertThat(diskRecord.getData().get(1).getMessage(), is(VALUE + 1));
     }
 
-    @Test public void When_A_Record_Array_Is_Supplied_Retrieve_It() {
-        Mock[] mocks = {new Mock(VALUE), new Mock(VALUE+1)};
+    @Test
+    public void When_A_Record_Array_Is_Supplied_Retrieve_It() {
+        Mock[] mocks = {new Mock(VALUE), new Mock(VALUE + 1)};
         disk.save(KEY, new io.rx_cache2.internal.Record(mocks), false, null);
 
         io.rx_cache2.internal.Record<Mock[]> diskRecord = disk.retrieveRecord(KEY, false, null);
         assertThat(diskRecord.getData()[0].getMessage(), is(VALUE));
-        assertThat(diskRecord.getData()[1].getMessage(), is(VALUE+1));
+        assertThat(diskRecord.getData()[1].getMessage(), is(VALUE + 1));
     }
 
-    @Test public void When_A_Record_Map_Is_Supplied_Retrieve_It() {
+    @Test
+    public void When_A_Record_Map_Is_Supplied_Retrieve_It() {
         Map<Integer, Mock> mocks = new HashMap();
         mocks.put(1, new Mock(VALUE));
         mocks.put(2, new Mock(VALUE + 1));
@@ -68,12 +83,13 @@ public class DiskTest extends BaseTest {
         disk.save(KEY, new io.rx_cache2.internal.Record(mocks), false, null);
 
         io.rx_cache2.internal.Record<Map<Integer, Mock>>
-            diskRecord = disk.retrieveRecord(KEY, false, null);
+                diskRecord = disk.retrieveRecord(KEY, false, null);
         assertThat(diskRecord.getData().get(1).getMessage(), is(VALUE));
-        assertThat(diskRecord.getData().get(2).getMessage(), is(VALUE+1));
+        assertThat(diskRecord.getData().get(2).getMessage(), is(VALUE + 1));
     }
 
-    @Test public void When_A_Collection_Is_Supplied_Retrieve_It() {
+    @Test
+    public void When_A_Collection_Is_Supplied_Retrieve_It() {
         List<Mock> mockArrayList = new ArrayList();
         mockArrayList.add(new Mock(VALUE));
         mockArrayList.add(new Mock(VALUE + 1));
@@ -85,7 +101,8 @@ public class DiskTest extends BaseTest {
         assertThat(mockArrayList.get(1).getMessage(), is(VALUE + 1));
     }
 
-    @Test public void When_A_Map_Is_Supplied_Retrieve_It() {
+    @Test
+    public void When_A_Map_Is_Supplied_Retrieve_It() {
         Map<Integer, Mock> mocksHashMap = new HashMap();
         mocksHashMap.put(1, new Mock(VALUE));
         mocksHashMap.put(2, new Mock(VALUE + 1));
@@ -94,49 +111,56 @@ public class DiskTest extends BaseTest {
 
         mocksHashMap = disk.retrieveMap(KEY, Map.class, Integer.class, Mock.class);
         assertThat(mocksHashMap.get(1).getMessage(), is(VALUE));
-        assertThat(mocksHashMap.get(2).getMessage(), is(VALUE+1));
+        assertThat(mocksHashMap.get(2).getMessage(), is(VALUE + 1));
     }
 
-    @Test public void When_An_Array_Is_Supplied_Retrieve_It() {
-        Mock[] mocksArray = {new Mock(VALUE), new Mock(VALUE+1)};
+    @Test
+    public void When_An_Array_Is_Supplied_Retrieve_It() {
+        Mock[] mocksArray = {new Mock(VALUE), new Mock(VALUE + 1)};
         disk.save(KEY, mocksArray, false, null);
 
         mocksArray = disk.retrieveArray(KEY, Mock.class);
         assertThat(mocksArray[0].getMessage(), is(VALUE));
-        assertThat(mocksArray[1].getMessage(), is(VALUE+1));
+        assertThat(mocksArray[1].getMessage(), is(VALUE + 1));
     }
 
-    @Test public void When_Encrypt_Is_False_Then_Retrieve_Record_Without_Encrypt() {
+    @Test
+    public void When_Encrypt_Is_False_Then_Retrieve_Record_Without_Encrypt() {
         disk.save(KEY, new io.rx_cache2.internal.Record(new Mock(VALUE)), false, null);
         io.rx_cache2.internal.Record<Mock> diskRecord = disk.retrieveRecord(KEY, false, null);
         assertThat(diskRecord.getData().getMessage(), is(VALUE));
     }
 
-    @Test public void When_Encrypt_Is_True_Then_Retrieve_Record_Decrypted() {
+    @Test
+    public void When_Encrypt_Is_True_Then_Retrieve_Record_Decrypted() {
         disk.save(KEY, new io.rx_cache2.internal.Record(new Mock(VALUE)), true, "key");
         io.rx_cache2.internal.Record<Mock> diskRecord = disk.retrieveRecord(KEY, true, "key");
         assertThat(diskRecord.getData().getMessage(), is(VALUE));
     }
 
-    @Test public void When_Encrypt_Is_False_And_I_Try_Retrieve_It_Encrypted_Then_Record_Is_Null() {
+    @Test
+    public void When_Encrypt_Is_False_And_I_Try_Retrieve_It_Encrypted_Then_Record_Is_Null() {
         disk.save(KEY, new io.rx_cache2.internal.Record(new Mock(VALUE)), false, null);
         io.rx_cache2.internal.Record<Mock> diskRecord = disk.retrieveRecord(KEY, true, "key");
         assertNull(diskRecord);
     }
 
-    @Test public void When_Encrypt_Is_True_And_I_Try_Retrieve_It_Without_Encrypt_Then_Record_Is_Null() {
+    @Test
+    public void When_Encrypt_Is_True_And_I_Try_Retrieve_It_Without_Encrypt_Then_Record_Is_Null() {
         disk.save(KEY, new io.rx_cache2.internal.Record(new Mock(VALUE)), true, "key");
         io.rx_cache2.internal.Record<Mock> diskRecord = disk.retrieveRecord(KEY, false, null);
         assertNull(diskRecord);
     }
 
-    @Test public void When_Encrypt_Is_True_And_I_Try_Retrieve_It_With_Another_Key_Then_Record_Is_Null() {
+    @Test
+    public void When_Encrypt_Is_True_And_I_Try_Retrieve_It_With_Another_Key_Then_Record_Is_Null() {
         disk.save(KEY, new io.rx_cache2.internal.Record(new Mock(VALUE)), true, "key");
         io.rx_cache2.internal.Record<Mock> diskRecord = disk.retrieveRecord(KEY, true, "otherkey");
         assertNull(diskRecord);
     }
 
-    @Test public void When_Evict_Cache_Then_Evict_Cache() {
+    @Test
+    public void When_Evict_Cache_Then_Evict_Cache() {
         for (int i = 0; i < 100; i++) {
             disk.save(String.valueOf(i), new io.rx_cache2.internal.Record(new Mock(VALUE)), false, null);
         }
@@ -148,7 +172,8 @@ public class DiskTest extends BaseTest {
         assertThat(disk.allKeys().size(), is(0));
     }
 
-    @Test public void When_A_Record_Multi_Level_Map_Is_Supplied_Retrieve_It() {
+    @Test
+    public void When_A_Record_Multi_Level_Map_Is_Supplied_Retrieve_It() {
         Map multiLevelMap = new HashMap<>();
         multiLevelMap.put(1, VALUE);
         multiLevelMap.put(2, VALUE + 1);
@@ -162,7 +187,7 @@ public class DiskTest extends BaseTest {
         io.rx_cache2.internal.Record<Map> diskRecord = disk.retrieveRecord(KEY, false, null);
 
         assertThat(diskRecord.getData().get(1), is((Object) VALUE));
-        assertThat(diskRecord.getData().get(2), is((Object) (VALUE+1)));
+        assertThat(diskRecord.getData().get(2), is((Object) (VALUE + 1)));
 
         final Object value3 = diskRecord.getData().get(3);
         assertTrue(value3 instanceof Map);
