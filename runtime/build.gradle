@@ -22,11 +22,11 @@ artifacts {
 }
 
 dependencies {
-    compile 'com.github.VictorAlbertos.Jolyglot:api:0.0.3'
+    compile 'com.github.VictorAlbertos.Jolyglot:api:0.0.4'
     compile project(':core')
 
-    testCompile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.3'
-    testCompile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.3'
-    testCompile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.3'
+    testCompile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.4'
+    testCompile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.4'
+    testCompile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.4'
     testCompile 'junit:junit:4.12'
 }

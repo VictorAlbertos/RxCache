@@ -14,7 +14,7 @@ dependencies {
     compile project(':runtime')
 
     compile 'com.google.auto.service:auto-service:1.0-rc2'
-    compile 'com.squareup:javapoet:1.8.0'
+    compile 'com.squareup:javapoet:1.9.0'
 
     testCompile "junit:junit:4.12"
     testCompile "com.google.testing.compile:compile-testing:0.10"

@@ -15,7 +15,7 @@ buildscript {
 
   dependencies {
     classpath "net.ltgt.gradle:gradle-apt-plugin:0.4"
-    classpath 'net.sf.proguard:proguard-gradle:4.11'
+    classpath 'net.sf.proguard:proguard-gradle:5.3.3'
   }
 }
 
@@ -57,15 +57,15 @@ artifacts {
 }
 
 dependencies {
-  apt "com.google.dagger:dagger-compiler:2.8"
-  compile "com.google.dagger:dagger:2.8"
+  apt "com.google.dagger:dagger-compiler:2.14.1"
+  compile "com.google.dagger:dagger:2.14.1"
   compile "org.glassfish:javax.annotation:10.0-b28"
 
-  compile 'io.reactivex.rxjava2:rxjava:2.0.6'
-  compile 'com.github.VictorAlbertos.Jolyglot:api:0.0.3'
+  compile 'io.reactivex.rxjava2:rxjava:2.1.6'
+  compile 'com.github.VictorAlbertos.Jolyglot:api:0.0.4'
 
-  testCompile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.3'
-  testCompile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.3'
-  testCompile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.3'
+  testCompile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.4'
+  testCompile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.4'
+  testCompile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.4'
   testCompile "junit:junit:4.12"
 }
