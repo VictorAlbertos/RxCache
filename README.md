@@ -38,8 +38,8 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos.RxCache:runtime:1.8.2-2.x"
-    compile "io.reactivex.rxjava2:rxjava:2.0.6"
+    compile "com.github.VictorAlbertos.RxCache:runtime:1.8.3-2.x"
+    compile "io.reactivex.rxjava2:rxjava:2.1.6"
 }
 ```
 
@@ -48,13 +48,13 @@ Because RxCache uses internally [Jolyglot](https://github.com/VictorAlbertos/Jol
 ```gradle
 dependencies {
     // To use Gson 
-    compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.3'
+    compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.4'
     
     // To use Jackson
-    compile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.3'
+    compile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.4'
     
     // To use Moshi
-    compile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.3'
+    compile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.4'
 }
 ```
 
@@ -278,7 +278,7 @@ apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
     // apt command comes from the android-apt plugin
-    apt "com.github.VictorAlbertos.RxCache:compiler:1.8.0-1.x"
+    apt "com.github.VictorAlbertos.RxCache:compiler:1.8.3-2.x"
 }
 ```
 
