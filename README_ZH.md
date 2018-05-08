@@ -60,6 +60,8 @@
  
 ## <h2 id="1">概述</h2>
 
+_如果希望获取更多的响应式方法，请点击 [这里](https://github.com/VictorAlbertos/ReactiveCache/tree/2.x)_.
+
 本库的 **目标** 很简单: **就像[Picasso](https://github.com/square/picasso) 缓存您的图片一样，毫不费力缓存您的数据对象。** 
 
 每个Android Application都是一个客户端应用程序，这意味着仅仅为缓存数据创建数据库并进行维护毫无意义。
@@ -71,6 +73,10 @@
 当提供一个 **`observable`, `single`, `maybe` or `flowable` (这些是RxJava2支持的响应式数据类型)** 这些由耗时操作提供的数据，RxCache确定是否需要subscribe，或覆盖先前缓存的数据。
  
 此决定是基于RxCache的Providers进行配置的。
+
+```java
+Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
+```
  
 ## <h2 id="2">基本使用</h2>
 ## <h3 id="2.1">依赖配置</h3>
@@ -90,8 +96,8 @@ allprojects {
 
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos.RxCache:runtime:1.8.1-2.x"
-    compile "io.reactivex.rxjava2:rxjava:2.0.6"
+    compile "com.github.VictorAlbertos.RxCache:runtime:1.8.3-2.x"
+    compile "io.reactivex.rxjava2:rxjava:2.1.6"
 }
 ```
 
@@ -100,13 +106,13 @@ dependencies {
 ```gradle
 dependencies {
     // To use Gson 
-    compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.3'
+    compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.4'
     
     // To use Jackson
-    compile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.3'
+    compile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.4'
     
     // To use Moshi
-    compile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.3'
+    compile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.4'
 }
 ```
 
@@ -344,7 +350,7 @@ apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
     // apt command comes from the android-apt plugin
-    apt "com.github.VictorAlbertos.RxCache:compiler:1.8.0-1.x"
+    apt "com.github.VictorAlbertos.RxCache:compiler:1.8.3-2.x"
 }
 ```
 
@@ -551,8 +557,9 @@ RxCache的数据来源取决于下面三个数据层中某一层：
 ## <h3 id="7.2">代码混淆</h3>
 
 ```
--dontwarn io.rx_cache.internal.**
--keepclassmembers enum io.rx_cache.Source { *; }
+-dontwarn io.rx_cache2.internal.**
+-keepclassmembers enum io.rx_cache2.Source { *; }
+-keepclassmembernames class * { @io.rx_cache2.* <methods>; }
 ```
 
 
