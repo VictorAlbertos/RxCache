@@ -5,8 +5,16 @@ package io.rx_cache2;
  */
 public final class RxCacheException extends RuntimeException {
 
+  public RxCacheException() {
+    super();
+  }
+
   public RxCacheException(String message) {
     super(message);
+  }
+
+  public RxCacheException(Throwable throwable) {
+    super(throwable);
   }
 
   public RxCacheException(String message, Throwable exception) {
