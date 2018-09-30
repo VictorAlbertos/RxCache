@@ -92,7 +92,7 @@ public final class ProxyProviders implements InvocationHandler {
         }
 
         String errorMessage = method.getName() + io.rx_cache2.internal.Locale.INVALID_RETURN_TYPE;
-        throw new RxCacheException(errorMessage);
+        return Observable.error(new RxCacheException(errorMessage));
       }
     }).blockingFirst();
   }

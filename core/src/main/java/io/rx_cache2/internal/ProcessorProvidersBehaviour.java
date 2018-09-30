@@ -16,6 +16,10 @@
 
 package io.rx_cache2.internal;
 
+import java.util.concurrent.Callable;
+
+import javax.inject.Inject;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -27,8 +31,6 @@ import io.rx_cache2.EvictDynamicKeyGroup;
 import io.rx_cache2.Reply;
 import io.rx_cache2.Source;
 import io.rx_cache2.internal.cache.GetDeepCopy;
-import java.util.concurrent.Callable;
-import javax.inject.Inject;
 
 public final class ProcessorProvidersBehaviour implements ProcessorProviders {
   private final io.rx_cache2.internal.cache.TwoLayersCache twoLayersCache;
@@ -108,31 +110,33 @@ public final class ProcessorProvidersBehaviour implements ProcessorProviders {
 
   private Observable<Reply> getDataFromLoader(final io.rx_cache2.ConfigProvider configProvider,
       final Record record) {
-    return configProvider.getLoaderObservable().map(new Function<Object, Reply>() {
-      @Override public Reply apply(Object data) throws Exception {
+    return configProvider.getLoaderObservable().flatMap(new Function<Object, ObservableSource<Reply>>() {
+      @Override
+      public ObservableSource<Reply> apply(Object data) throws Exception {
         boolean useExpiredData = configProvider.useExpiredDataIfNotLoaderAvailable() != null ?
             configProvider.useExpiredDataIfNotLoaderAvailable()
             : useExpiredDataIfLoaderNotAvailable;
 
         if (data == null && useExpiredData && record != null) {
-          return new Reply(record.getData(), record.getSource(), configProvider.isEncrypted());
+          return Observable.just(new Reply(record.getData(), record.getSource(), configProvider.isEncrypted()));
         }
 
         clearKeyIfNeeded(configProvider);
 
         if (data == null) {
-          throw new io.rx_cache2.RxCacheException(io.rx_cache2.internal.Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER
+          return Observable.error(new io.rx_cache2.RxCacheException(io.rx_cache2.internal.Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER
               + " "
-              + configProvider.getProviderKey());
+              + configProvider.getProviderKey()));
         }
 
         twoLayersCache.save(configProvider.getProviderKey(), configProvider.getDynamicKey(),
             configProvider.getDynamicKeyGroup(), data, configProvider.getLifeTimeMillis(),
             configProvider.isExpirable(), configProvider.isEncrypted());
-        return new Reply(data, Source.CLOUD, configProvider.isEncrypted());
+        return Observable.just(new Reply(data, Source.CLOUD, configProvider.isEncrypted()));
       }
-    }).onErrorReturn(new Function<Object, Object>() {
-      @Override public Object apply(Object o) throws Exception {
+    }).onErrorResumeNext(new Function<Throwable, ObservableSource>() {
+      @Override
+      public ObservableSource apply(Throwable throwable) throws Exception {
         clearKeyIfNeeded(configProvider);
 
         boolean useExpiredData = configProvider.useExpiredDataIfNotLoaderAvailable() != null ?
@@ -140,12 +144,12 @@ public final class ProcessorProvidersBehaviour implements ProcessorProviders {
             : useExpiredDataIfLoaderNotAvailable;
 
         if (useExpiredData && record != null) {
-          return new Reply(record.getData(), record.getSource(), configProvider.isEncrypted());
+          return Observable.just(new Reply(record.getData(), record.getSource(), configProvider.isEncrypted()));
         }
 
-        throw new io.rx_cache2.RxCacheException(io.rx_cache2.internal.Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER
+        return Observable.error(new io.rx_cache2.RxCacheException(io.rx_cache2.internal.Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER
             + " "
-            + configProvider.getProviderKey(), (Throwable) o);
+            + configProvider.getProviderKey(), throwable));
       }
     });
   }
