@@ -153,6 +153,26 @@ public final class Disk implements Persistence {
   }
 
   /**
+   * Delete the object previously saved that startwith key
+   *
+   * @param key 
+   */
+  @Override
+  public void evictStartwith(String key) {
+    key = safetyKey(key);
+    File[] files = cacheDirectory.listFiles();
+
+    if (null != files) {
+      for (File file : files) {
+        if (file != null&&file.getName().startsWith(key)){
+          file.delete();
+        }
+      }
+    }
+  }
+
+
+  /**
    * Delete all objects previously saved.
    */
   @Override public void evictAll() {
