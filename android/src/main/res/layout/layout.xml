@@ -1,25 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:layout_width="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:orientation="vertical">
+
     <Button
-        android:text="PageReFresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:onClick="PageReFresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:text="PageReFresh" />
+
     <Button
-        android:text="LoadMore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:onClick="LoadMore"
+        android:text="LoadMore" />
+
+    <Button
+        android:onClick="anotherProvider"
+        android:id="@+id/AnoterProvider"
+        android:text="anotherProvider"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <Button
-        android:text="ClearCache"
-        android:onClick="ClearCache"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:onClick="ClearCache"
+        android:text="ClearCache" />
     <TextView
         android:id="@+id/tv"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-    </LinearLayout>
+
+</LinearLayout>

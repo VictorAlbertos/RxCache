@@ -35,7 +35,7 @@ public final class EvictRecord extends Action {
     for (String keyMatchingKeyProvider : keysMatchingKeyProvider) {
       memory.evict(keyMatchingKeyProvider);
     }
-    persistence.evictStartwith(providerKey);
+    persistence.evictProvider(providerKey);
   }
 
   void evictRecordsMatchingDynamicKey(String providerKey, String dynamicKey) {

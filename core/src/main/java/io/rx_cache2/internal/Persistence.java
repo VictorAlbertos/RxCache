@@ -53,11 +53,11 @@ public interface Persistence {
    */
   void evict(String key);
   /**
-   * Delete the data file starts with its particular key
+   * Delete the data file with its particular key
    *
    * @param key The key associated with the object to be deleted from persistence
    */
-  void evictStartwith(String key);
+  void evictProvider(String key);
 
   /**
    * Delete all the data

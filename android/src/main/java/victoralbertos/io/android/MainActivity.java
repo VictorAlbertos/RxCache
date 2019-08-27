@@ -54,7 +54,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * so the is my pr reason.
  *
  * Thanks you read my pr!
- * @param view
  */
 public class MainActivity extends Activity {
     String TAG="Rxtest";
@@ -62,6 +61,7 @@ public class MainActivity extends Activity {
     private RxCache rxCache;
     private int lastid=1;
     private TextView mtv;
+    private File externalCacheDir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,14 +81,83 @@ public class MainActivity extends Activity {
                 .using(Providers.class);
         Retrofit mretrofit = client.build();
         mProvider = mretrofit.create(Providers.class);
-
-        rxCache = new RxCache.Builder().persistence(getCacheDir(), new GsonSpeaker(new Gson()));
+        externalCacheDir = getExternalCacheDir();
+        Log.d("Rxcache","externalCacheDir:"+ externalCacheDir.toString() );
+        rxCache = new RxCache.Builder().persistence(externalCacheDir, new GsonSpeaker(new Gson()));
 
     }
     public void ClearCache(View view){
-        getFilesDir().deleteOnExit();
+        if (externalCacheDir!=null) {
+            deleteFile(externalCacheDir);
+            File[] files = externalCacheDir.listFiles();
+            if (files==null){
+                Toast.makeText(this,"delete:-1",Toast.LENGTH_LONG).show();
+                return;
+            }
+            Toast.makeText(this,"delete:"+files.length,Toast.LENGTH_LONG).show();
+        }
     }
+    public void anotherProvider(View view){
+        if (lastid==1){
+            Toast.makeText(this,"Please onclick PageRefresh btn first",Toast.LENGTH_LONG).show();
+            return;
+        }
+        Log.d(TAG, "LoadMore: ");
+        Observable.just(mProvider.getUsers(lastid,10))
+                .flatMap(new Function<Observable<List<User>>, ObservableSource<List<User>>>() {
+                    @Override
+                    public ObservableSource<List<User>> apply(Observable<List<User>> listObservable) throws Exception {
+                        return rxCache.using(CommonCache.class).getUsers2(listObservable,new DynamicKey(lastid),new EvictProvider(false))
+                                .map(new Function<Reply<List<User>>, List<User>>() {
+                                    @Override
+                                    public List<User> apply(final Reply<List<User>> listReply) throws Exception {
+                                        Log.d("okhttp_getUsers","lastIdQueried:"+lastid+",source:"+listReply.getSource());
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                mtv.setText("lastIdQueried:"+lastid+",source:"+listReply.getSource());
+                                            }
+                                        });
+                                        return listReply.getData();
+                                    }
+                                });
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<List<User>>() {
+            @Override
+            public void onSubscribe(Disposable d) {
 
+            }
+
+            @Override
+            public void onNext(List<User> users) {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d("okhttp_Requesterror",e.toString());
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
+    }
+    private void deleteFile(File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                File f = files[i];
+                boolean delete = f.delete();
+                Log.d(TAG, "delete: "+delete);
+            }
+        } else if (file.exists()) {
+        }
+    }
     public void PageReFresh(View view){
         lastid=1;
         Log.d(TAG, "PageReFresh: ");
