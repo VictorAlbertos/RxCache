@@ -1,24 +1,27 @@
 ![Downloads](https://jitpack.io/v/VictorAlbertos/RxCache/month.svg)
 
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-RxCache-green.svg?style=true)](https://android-arsenal.com/details/1/3016)
-
 # RxCache
+## Fork Change Log
+- Fix EvictProvider do not work.
+## ------------
 
-> [**中文文档**](http://www.jianshu.com/p/b58ef6b0624b)
+> [**中文文档1**](http://www.jianshu.com/p/b58ef6b0624b),
+> [**中文文档2**](https://github.com/BryceLee/RxCache/blob/2.x/README_ZH.md)
 
 _For a more reactive approach go [here](https://github.com/VictorAlbertos/ReactiveCache/tree/2.x)_.
 
-The **goal** of this library is simple: **caching your data models like [Picasso](https://github.com/square/picasso) caches your images, with no effort at all.** 
+The **goal** of this library is simple: **caching your data models like [Picasso](https://github.com/square/picasso) caches your images, with no effort at all.**
 
 Every Android application is a client application, which means it does not make sense to create and maintain a database just for caching data.
 
-Plus, the fact that you have some sort of legendary database for persisting your data does not solves by itself the real challenge: to be able to configure your caching needs in a flexible and simple way. 
+Plus, the fact that you have some sort of legendary database for persisting your data does not solves by itself the real challenge: to be able to configure your caching needs in a flexible and simple way.
 
-Inspired by [Retrofit](http://square.github.io/retrofit/) api, **RxCache is a reactive caching library for Android and Java which turns your caching needs into an interface.** 
+Inspired by [Retrofit](http://square.github.io/retrofit/) api, **RxCache is a reactive caching library for Android and Java which turns your caching needs into an interface.**
 
-When supplying an **`observable`, `single`, `maybe` or `flowable` (these are the supported Reactive types)** which contains the data provided by an expensive task -probably an http connection, RxCache determines if it is needed 
+When supplying an **`observable`, `single`, `maybe` or `flowable` (these are the supported Reactive types)** which contains the data provided by an expensive task -probably an http connection, RxCache determines if it is needed
 to subscribe to it or instead fetch the data previously cached. This decision is made based on the providers configuration.
- 
+
 ```java
 Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
 ```
@@ -38,21 +41,22 @@ allprojects {
 And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
-    compile "com.github.VictorAlbertos.RxCache:runtime:1.8.3-2.x"
-    compile "io.reactivex.rxjava2:rxjava:2.1.6"
+    implementation 'com.github.BryceLee.RxCache:runtime:2.0.0'
+    annotationProcessor 'com.github.BryceLee.RxCache:compiler:2.0.0'
+    implementation "io.reactivex.rxjava2:rxjava:2.1.6"
 }
 ```
 
 Because RxCache uses internally [Jolyglot](https://github.com/VictorAlbertos/Jolyglot) to serialize and deserialize objects, you need to add one of the next dependency to gradle.
- 
+
 ```gradle
 dependencies {
-    // To use Gson 
+    // To use Gson
     compile 'com.github.VictorAlbertos.Jolyglot:gson:0.0.4'
-    
+
     // To use Jackson
     compile 'com.github.VictorAlbertos.Jolyglot:jackson:0.0.4'
-    
+
     // To use Moshi
     compile 'com.github.VictorAlbertos.Jolyglot:moshi:0.0.4'
 }
@@ -67,26 +71,26 @@ interface Providers {
 
         @ProviderKey("mocks")
         Observable<List<Mock>> getMocks(Observable<List<Mock>> oMocks);
-    
+
         @ProviderKey("mocks-5-minute-ttl")
         @LifeCache(duration = 5, timeUnit = TimeUnit.MINUTES)
         Observable<List<Mock>> getMocksWith5MinutesLifeTime(Observable<List<Mock>> oMocks);
-    
+
         @ProviderKey("mocks-evict-provider")
         Observable<List<Mock>> getMocksEvictProvider(Observable<List<Mock>> oMocks, EvictProvider evictProvider);
-    
+
         @ProviderKey("mocks-paginate")
         Observable<List<Mock>> getMocksPaginate(Observable<List<Mock>> oMocks, DynamicKey page);
-    
+
         @ProviderKey("mocks-paginate-evict-per-page")
         Observable<List<Mock>> getMocksPaginateEvictingPerPage(Observable<List<Mock>> oMocks, DynamicKey page, EvictDynamicKey evictPage);
-        
+
         @ProviderKey("mocks-paginate-evict-per-filter")
         Observable<List<Mock>> getMocksPaginateWithFiltersEvictingPerFilter(Observable<List<Mock>> oMocks, DynamicKeyGroup filterPage, EvictDynamicKey evictFilter);
 }
 ```
 
-RxCache exposes `evictAll()` method to evict the entire cache in a row. 
+RxCache exposes `evictAll()` method to evict the entire cache in a row.
 
 RxCache accepts as argument a set of classes to indicate how the provider needs to handle the cached data:
 
@@ -259,30 +263,9 @@ Nevertheless, there are complete examples for [Android and Java projects](https:
 
 This actionable api offers an easy way to perform write operations using providers. Although write operations could be achieved using the classic api too, it's much complex and error-prone. Indeed, the [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/ActionsList.java) class it's a wrapper around the classic api which play with evicting scopes and lists.
 
-In order to use this actionable api, first you need to add the [repository compiler](https://github.com/VictorAlbertos/RxCache/tree/master/compiler) as a dependency to your project using an annotation processor. For Android, it would be as follows:
+In order to use this actionable api, first you need to add the [repository compiler](https://github.com/BryceLee/RxCache/tree/2.x/compiler) as a dependency to your project using an annotation processor.
 
-Add this line to your root build.gradle:
-
-```gradle
-dependencies {
-     // other classpath definitions here
-     classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
- }
-```
-
-
-Then make sure to apply the plugin in your app/build.gradle and add the compiler dependency:
-
-```gradle
-apply plugin: 'com.neenbedankt.android-apt'
-
-dependencies {
-    // apt command comes from the android-apt plugin
-    apt "com.github.VictorAlbertos.RxCache:compiler:1.8.3-2.x"
-}
-```
-
-After this configuration, every provider annotated with [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Actionable.java) `annotation` 
+Every provider annotated with [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Actionable.java) `annotation`
 will expose an accessor method in a new generated class called with the same name as the interface, but appending an 'Actionable' suffix.
 
 The order in the params supplies must be as in the following example:
