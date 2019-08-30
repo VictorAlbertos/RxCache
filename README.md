@@ -42,8 +42,9 @@ And add next dependencies in the build.gradle of the module:
 ```gradle
 dependencies {
     implementation 'com.github.BryceLee.RxCache:runtime:2.0.0'
-    annotationProcessor 'com.github.BryceLee.RxCache:compiler:2.0.0'
     implementation "io.reactivex.rxjava2:rxjava:2.1.6"
+    //Optional,add annotationProcessor If you want to use Actionable:
+    annotationProcessor 'com.github.BryceLee.RxCache:compiler:2.0.0'
 }
 ```
 
