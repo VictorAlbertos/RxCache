@@ -20,6 +20,7 @@ import dagger.Module;
 import dagger.Provides;
 import io.rx_cache2.MigrationCache;
 import io.rx_cache2.internal.cache.memory.ReferenceMapMemory;
+import io.rx_cache2.internal.encrypt.AdvanceEncryptor;
 import io.rx_cache2.internal.encrypt.BuiltInEncryptor;
 import io.rx_cache2.internal.encrypt.Encryptor;
 import io.victoralbertos.jolyglot.JolyglotGenerics;
@@ -69,7 +70,7 @@ public final class RxCacheModule {
   }
 
   @Singleton @Provides Encryptor provideEncryptor() {
-    return new BuiltInEncryptor();
+    return new AdvanceEncryptor();
   }
 
   @Singleton @Provides String provideEncryptKey() {
