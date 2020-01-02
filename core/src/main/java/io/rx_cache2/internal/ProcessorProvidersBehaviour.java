@@ -93,11 +93,20 @@ public final class ProcessorProvidersBehaviour implements ProcessorProviders {
 
     Observable<Reply> replyObservable;
 
-    if (record != null && !configProvider.evictProvider().evict()) {
-      replyObservable = Observable.just(new Reply(record.getData(), record.getSource(), configProvider.isEncrypted()));
-    } else {
-      replyObservable = getDataFromLoader(configProvider, record);
-    }
+     	if (record != null && !configProvider.evictProvider().evict()) {
+            //从网络获取数据
+            return getDataFromClond(configProvider, record);
+        }else{
+            //从网络获取数据如果失败，使用缓存数据
+            return getDataFromLoader(configProvider, record);
+        }
+            
+
+    // if (record != null && !configProvider.evictProvider().evict()) {
+    //   replyObservable = Observable.just(new Reply(record.getData(), record.getSource(), configProvider.isEncrypted()));
+    // } else {
+    //   replyObservable = getDataFromLoader(configProvider, record);
+    // }
 
     return (Observable<T>) replyObservable.map(new Function<Reply, Object>() {
       @Override public Object apply(Reply reply) throws Exception {
@@ -139,11 +148,38 @@ public final class ProcessorProvidersBehaviour implements ProcessorProviders {
             configProvider.useExpiredDataIfNotLoaderAvailable()
             : useExpiredDataIfLoaderNotAvailable;
 
-        if (useExpiredData && record != null) {
+        if (record != null) {
+        //请求失败，并且缓存数据存在，使用缓存数据
           return new Reply(record.getData(), record.getSource(), configProvider.isEncrypted());
         }
 
+        // if (useExpiredData && record != null) {
+        //   return new Reply(record.getData(), record.getSource(), configProvider.isEncrypted());
+        // }
+
         throw new io.rx_cache2.RxCacheException(io.rx_cache2.internal.Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER
+            + " "
+            + configProvider.getProviderKey(), (Throwable) o);
+      }
+    });
+  }
+
+  private Observable<Reply> getDataFromClond(final ConfigProvider configProvider,
+      final Record record) {
+    return configProvider.getLoaderObservable().map(new Func1() {
+      @Override public Reply call(Object data) {
+        clearKeyIfNeeded(configProvider);
+        if (data == null) {
+          throw new RxCacheException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER
+              + " "
+              + configProvider.getProviderKey());
+        }
+        //仅仅使用网络数据
+        return new Reply(data, Source.CLOUD, configProvider.isEncrypted());
+      }
+    }).onErrorReturn(new Func1() {
+      @Override public Object call(Object o) {
+        throw new RxCacheException(Locale.NOT_DATA_RETURN_WHEN_CALLING_OBSERVABLE_LOADER
             + " "
             + configProvider.getProviderKey(), (Throwable) o);
       }
