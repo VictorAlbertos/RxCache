@@ -16,6 +16,7 @@
 
 package io.rx_cache2.internal;
 
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -53,12 +54,8 @@ public class RxCacheBuilderValidationTest {
   @Test(expected = InvalidParameterException.class)
   public void Cache_Directory_Not_Writable() {
     File cacheDir = new File(temporaryFolder.getRoot(), "non_existent_folder");
-    if (!cacheDir.mkdirs()) {
-      throw new IllegalStateException("Cannot create temporary directory");
-    }
-    if (!cacheDir.setWritable(false, false)) {
-      throw new IllegalStateException("Cannot modify permissions");
-    }
+    Assume.assumeTrue("Cannot create temporary directory", !cacheDir.mkdirs());
+    Assume.assumeFalse("Cannot modify permissions", !cacheDir.setWritable(false, false));
     new RxCache.Builder()
         .persistence(cacheDir, io.rx_cache2.internal.Jolyglot$.newInstance());
   }
