@@ -1,3 +1,5 @@
+:warning: This repository is no longer mantained consider using [Room](https://developer.android.com/topic/libraries/architecture/room) as an alternative :warning: 
+
 ![Downloads](https://jitpack.io/v/VictorAlbertos/RxCache/month.svg)
 
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-RxCache-green.svg?style=true)](https://android-arsenal.com/details/1/3016)
