@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 
+import io.rx_cache2.RxCacheException;
 import io.rx_cache2.internal.encrypt.FileEncryptor;
 import io.victoralbertos.jolyglot.JolyglotGenerics;
 
@@ -128,7 +129,7 @@ public final class Disk implements Persistence {
         fileEncryptor.encrypt(encryptKey, new File(cacheDirectory, key));
       }
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      throw new RxCacheException(e);
     } finally {
       try {
         if (fileWriter != null) {
