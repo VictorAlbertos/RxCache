@@ -145,24 +145,24 @@ RxCache的Provider配置中，方法所需要的参数用来配置Provider处理
 
 * 无论如何，必不可少的参数是RxJava提供的响应式基本数据类型（如Observable），这个参数的意义是将你想缓存的Retrofit接口作为参数传入，并以相同的RxJava数据类型作为返回。
   > 这意味着，您可以不配置任何可选项，但是您必须将您要缓存的数据作为参数交给RxCache进行缓存.
-* [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictProvider.java) 是否驱逐与该Provider相关联的所有缓存数据.
+* [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/2.x/core/src/main/java/io/rx_cache2/EvictProvider.java) 是否驱逐与该Provider相关联的所有缓存数据.
   > 该对象通过构造方法进行实例化，创建时需要传入boolean类型的参数，当参数为true时，RxCache会直接驱逐该Provider的缓存数据，进行最新的网络请求并进行缓存；若参数为false，若缓存数据未过期，正常加载缓存数据
-* [@ProviderKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/ProviderKey.java) 保护用户数据的Provider方法的注解，强烈建议使用这个注解！ 如果不使用该注解，该方法的名称会被作为该Provider的key进行文件缓存, 使用了代码混淆的用户很快会遇到问题，详情请参阅 [Proguard](proguard) . 如果不使用代码混淆，该注解也很有用，因为它可以确保您可以随心所欲修改Provider数据缓存的方法名，而无需为旧缓存文件迁移问题而苦恼。
+* [@ProviderKey](https://github.com/VictorAlbertos/RxCache/blob/2.x/core/src/main/java/io/rx_cache2/ProviderKey.java) 保护用户数据的Provider方法的注解，强烈建议使用这个注解！ 如果不使用该注解，该方法的名称会被作为该Provider的key进行文件缓存, 使用了代码混淆的用户很快会遇到问题，详情请参阅 [Proguard](proguard) . 如果不使用代码混淆，该注解也很有用，因为它可以确保您可以随心所欲修改Provider数据缓存的方法名，而无需为旧缓存文件迁移问题而苦恼。
   > 该注解是最近版本添加的，在考虑到代码混淆（方法名的改变导致缓存文件命名的改变）和缓存数据迁移,强烈建议使用该注解！
-* [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKey.java) 是否驱逐具体的缓存数据 [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/DynamicKey.java).
+* [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/2.x/core/src/main/java/io/rx_cache2/EvictDynamicKey.java) 是否驱逐具体的缓存数据 [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/DynamicKey.java).
   > 缓存数据驱逐范围比EvictProvider小（后者是驱逐所有缓存），比EvictDynamicKeyGroup大（后者是驱逐更精细分类的缓存），举例，若将userId（唯一）作为参数传入DynamicKey，清除缓存时，仅清除该userId下的对应缓存
-* [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) 是否驱逐更加具体的缓存数据 [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/DynamicKeyGroup.java).
+* [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/2.x/core/src/main/java/io/rx_cache2/EvictDynamicKeyGroup.java) 是否驱逐更加具体的缓存数据 [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/DynamicKeyGroup.java).
   > 和EvictDynamicKey对比，上述案例中，DynamicKeyGroup可以filter到某userId下缓存的某一页数据进行驱逐，其他缓存不驱逐
-* [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/DynamicKey.java) 通过传入一个对象参数（比如userId）实现和对应缓存数据的绑定， 清除该key相关联的缓存数据请使用 `EvictDynamicKey`.
-* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/DynamicKeyGroup.java) 通过传入一个Group参数（比如userId，数据的分类）实现和对应缓存数据的绑定， 清除该keyGroup相关联的缓存数据请使用`EvictDynamicKeyGroup`.
+* [DynamicKey](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/DynamicKey.java) 通过传入一个对象参数（比如userId）实现和对应缓存数据的绑定， 清除该key相关联的缓存数据请使用 `EvictDynamicKey`.
+* [DynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/DynamicKeyGroup.java) 通过传入一个Group参数（比如userId，数据的分类）实现和对应缓存数据的绑定， 清除该keyGroup相关联的缓存数据请使用`EvictDynamicKeyGroup`.
 
 Supported annotations:
 
-* [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/LifeCache.java) 设置缓存过期时间. 如果没有设置@LifeCache , 数据将被永久缓存，直到你使用了 [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/master/core/src/main/java/io/rx_cache/EvictDynamicKeyGroup.java) .
-* [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Actionable.java) 提供了使用提供程序执行写入操作的简单方法。 详情参考 [here](#actionable_section)
-* [@SchemeMigration](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/SchemeMigration.java) 和 [@Migration](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Migration.java) 提供了一种处理版本之间迁移的简单机制。 详情参考 [here](#migrations_section)
-* [@Expirable](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Expirable.java) 决定该Provider是否将被排除在清除范围之外.详情参考 [here](#expirable_section)
-* [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/EncryptKey.java) 和 [@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Encrypt.java) 提供了一种在持久层上加密/解密数据的简单方法。详情参考 [here](#encryption_section)
+* [@LifeCache](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/LifeCache.java) 设置缓存过期时间. 如果没有设置@LifeCache , 数据将被永久缓存，直到你使用了 [EvictProvider](https://github.com/VictorAlbertos/RxCache/blob/2.x/core/src/main/java/io/rx_cache2/EvictProvider.java), [EvictDynamicKey](https://github.com/VictorAlbertos/RxCache/blob/2.x/core/src/main/java/io/rx_cache2/EvictDynamicKey.java) or [EvictDynamicKeyGroup](https://github.com/VictorAlbertos/RxCache/blob/2.x/core/src/main/java/io/rx_cache2/EvictDynamicKeyGroup.java) .
+* [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/Actionable.java) 提供了使用提供程序执行写入操作的简单方法。 详情参考 [here](#actionable_section)
+* [@SchemeMigration](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/SchemeMigration.java) 和 [@Migration](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/Migration.java) 提供了一种处理版本之间迁移的简单机制。 详情参考 [here](#migrations_section)
+* [@Expirable](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/Expirable.java) 决定该Provider是否将被排除在清除范围之外.详情参考 [here](#expirable_section)
+* [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/EncryptKey.java) 和 [@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/Encrypt.java) 提供了一种在持久层上加密/解密数据的简单方法。详情参考 [here](#encryption_section)
 
 ### <h3 id="2.3">新建Provider实例并使用它</h3> 
 
@@ -325,7 +325,7 @@ getMocksFilteredPaginateInvalidate(oMocks, new DynamicKeyGroup("actives", "page1
 
 **限制：目前actionable的API仅支持Observable的数据类型。**
 
-这个actionable的API提供了一种Application执行文件写入操作的简单方法。 尽管使用RxCache经典的api也可以实现写入操作，但经典的api有着复杂性且容易出错。实际上，[Actions](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/ActionsList.java)类是围绕经典api的进行了一层包装。
+这个actionable的API提供了一种Application执行文件写入操作的简单方法。 尽管使用RxCache经典的api也可以实现写入操作，但经典的api有着复杂性且容易出错。实际上，[Actions](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/ActionsList.java)类是围绕经典api的进行了一层包装。
 
 为了能够使用该actionable API，首先，你需要添加 [repository compiler](https://github.com/VictorAlbertos/RxCache/tree/master/compiler) 的依赖到您的build.gradle:
 
@@ -348,7 +348,7 @@ dependencies {
 }
 ```
 
-配置完成后，为每个Provider添加注解 [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Actionable.java) `annotation` 
+配置完成后，为每个Provider添加注解 [@Actionable](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/Actionable.java) `annotation` 
 
 编译器会生成一个新的类，该类与接口名称相同，但是附加了一个“Actionable”后缀，并暴露出和该接口同样多的方法
 
@@ -377,7 +377,7 @@ RxProvidersActionable.mocksDynamicKey(RxProviders proxy, DynamicKey dynamicKey);
 RxProvidersActionable.mocksDynamicKeyGroup(RxProviders proxy, DynamicKeyGroup dynamicKeyGroup);
 ```
 
-这些方法返回“Actions”类的一个实例，现在你已经可以尝试使用每个可用的写操作 [Actions](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/ActionsList.java) .建议您浏览[ActionsTest](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/test/java/io/rx_cache/internal/ActionsListTest.java)类，以查看哪些操作适合更适合你的现实需求。
+这些方法返回“Actions”类的一个实例，现在你已经可以尝试使用每个可用的写操作 [Actions](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/ActionsList.java) .建议您浏览[ActionsTest](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/test/java/io/rx_cache/internal/ActionsListTest.java)类，以查看哪些操作适合更适合你的现实需求。
 
 一些示例代码：
 
@@ -422,7 +422,7 @@ RxCache提供了一种处理版本之间缓存数据迁移的简单方式。
 
 > 简单来说，最新的版本中某个接口返回值类型内部发生了改变,从而获取数据的方式发生了改变,但是存储在本地的数据,是未改变的版本,这样在反序列化时就可能发生错误,为了规避这个风险,作者就加入了数据迁移的功能
 
-您需要为您的Provider接口添加注解 [@SchemeMigration](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/SchemeMigration.java). 这个注解接受一个数组 [@Migration](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Migration.java) ，反过来，Migration注释同时接受一个版本号和一个Classes的数组，这些数组将从持久层中删除。
+您需要为您的Provider接口添加注解 [@SchemeMigration](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/SchemeMigration.java). 这个注解接受一个数组 [@Migration](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/Migration.java) ，反过来，Migration注释同时接受一个版本号和一个Classes的数组，这些数组将从持久层中删除。
 
 ```java
 @SchemeMigration({
@@ -461,9 +461,9 @@ interface Providers {}
 
 RxCache提供了一种加密数据的简单机制。
 
-您需要为您的Provider接口添加注解[@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/EncryptKey.java). 这个`annotation`接受一个字符串作为加密/解密数据所必需的`key`。 但是，您需要使用[@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Encrypt.java)对Provider的缓存进行注解，以便缓存数据加密。 如果没有设置[@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Encrypt.java)，则不会进行加密。
+您需要为您的Provider接口添加注解[@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/EncryptKey.java). 这个`annotation`接受一个字符串作为加密/解密数据所必需的`key`。 但是，您需要使用[@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/Encrypt.java)对Provider的缓存进行注解，以便缓存数据加密。 如果没有设置[@Encrypt](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/Encrypt.java)，则不会进行加密。
 
-**重要提示：**如果提供的“key”值 [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/EncryptKey.java) 在编译期间进行了修改，那么以前的缓存数据将无法被RxCache驱逐/获取。
+**重要提示：**如果提供的“key”值 [@EncryptKey](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/EncryptKey.java) 在编译期间进行了修改，那么以前的缓存数据将无法被RxCache驱逐/获取。
 
 ```java
 @EncryptKey("myStrongKey-1234")
@@ -491,7 +491,7 @@ new RxCache.Builder()
 
 当达到此限制时，RxCache将无法继续缓存数据。 这就是为何当缓存数据容量即将达到阈值时，RxCache有一个自动化的过程来驱逐任何记录，即使没有满足失效时间的缓存数据也被驱逐。
 
-唯一的例外是，当您的Provider的某方法用[@Expirable](https://github.com/VictorAlbertos/RxCache/blob/master/runtime/src/main/java/io/rx_cache/Expirable.java) 注解注释，并将其值设置为false将会被保存，而不会被RxCache自动化驱逐。
+唯一的例外是，当您的Provider的某方法用[@Expirable](https://github.com/VictorAlbertos/RxCache/blob/2.x/runtime/src/main/java/io/rx_cache2/Expirable.java) 注解注释，并将其值设置为false将会被保存，而不会被RxCache自动化驱逐。
 
 ```java
 interface Providers {
