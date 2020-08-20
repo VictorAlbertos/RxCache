@@ -21,11 +21,9 @@ buildscript {
 
 apply plugin: 'idea'
 apply plugin: "net.ltgt.apt"
-apply plugin: 'maven'
-
-group = 'com.github.VictorAlbertos'
-version='1.8.0-2.x'
-
+apply plugin: 'com.github.dcendents.android-maven'
+group = 'com.github.BryceLee'
+version='2.0.0'
 configurations {
   provided
 }

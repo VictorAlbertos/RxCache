@@ -34,6 +34,10 @@ abstract class Action {
     this.persistence = persistence;
   }
 
+  public static String getPrefixDynamicKey() {
+    return PREFIX_DYNAMIC_KEY;
+  }
+
   protected String composeKey(String providerKey, String dynamicKey, String dynamicKeyGroup) {
     return providerKey
         + PREFIX_DYNAMIC_KEY

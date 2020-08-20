@@ -26,7 +26,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
+import javax.swing.Action;
 
+import io.rx_cache2.internal.cache.SaveRecord;
 import io.rx_cache2.internal.encrypt.FileEncryptor;
 import io.victoralbertos.jolyglot.JolyglotGenerics;
 
@@ -151,6 +153,32 @@ public final class Disk implements Persistence {
     final File file = new File(cacheDirectory, key);
     file.delete();
   }
+
+  /**
+   * Delete the object previously saved that with particular key
+   *
+   * @param key
+   */
+  @Override
+  public void evictProvider(String key) {
+    if (key==null||key.isEmpty()){
+      return;
+    }
+    key = safetyKey(key);
+    File[] files = cacheDirectory.listFiles();
+    if (null != files) {
+      for (File file : files) {
+        if (file != null){
+          String name = file.getName();
+          String provider = name.substring(0,name.lastIndexOf(SaveRecord.getPrefixDynamicKey()));
+          if (key.equals(provider)){
+            file.delete();
+          }
+        }
+      }
+    }
+  }
+
 
   /**
    * Delete all objects previously saved.

@@ -52,6 +52,12 @@ public interface Persistence {
    * @param key The key associated with the object to be deleted from persistence
    */
   void evict(String key);
+  /**
+   * Delete the data file with its particular key
+   *
+   * @param key The key associated with the object to be deleted from persistence
+   */
+  void evictProvider(String key);
 
   /**
    * Delete all the data

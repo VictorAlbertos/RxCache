@@ -18,7 +18,7 @@ android {
   defaultConfig {
     applicationId "victoralbertos.io.android"
     minSdkVersion 16
-    targetSdkVersion 23
+    targetSdkVersion 22
     versionCode 1
     versionName "1.0"
   }
@@ -44,6 +44,27 @@ dependencies {
   annotationProcessor "com.google.dagger:dagger-compiler:2.14.1"
   compile "com.google.dagger:dagger:2.14.1"
   provided "org.glassfish:javax.annotation:10.0-b28"
+
+  implementation(rootProject.ext.dependencies["retrofit-converter-gson"]) {
+    exclude module: 'gson'
+    exclude module: 'okhttp'
+    exclude module: 'okio'
+    exclude module: 'retrofit'
+  }
+  implementation(rootProject.ext.dependencies["retrofit-adapter-rxjava2"]) {
+    exclude module: 'rxjava'
+    exclude module: 'okhttp'
+    exclude module: 'retrofit'
+    exclude module: 'okio'
+  }
+  api rootProject.ext.dependencies["okhttp3"]
+  api 'com.squareup.okhttp3:logging-interceptor:3.5.0'
+  api(rootProject.ext.dependencies["retrofit"]) {
+    exclude module: 'okhttp'
+    exclude module: 'okio'
+  }
+
+  api rootProject.ext.dependencies["rxandroid2"]
 }
 
 
